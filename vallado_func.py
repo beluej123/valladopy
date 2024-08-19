@@ -47,6 +47,7 @@ def calc_ecc(r_peri: float, r_apo: float) -> float:  # calculate eccentricity
 def val_hohmann(r_init: float, r_final: float, mu_trans: float):
     """Vallado Hohmann Transfer, algorithm 36
     Assume one central body; inner and outter orbits r circular.
+    See Vallado fig 6-5, p324.
 
     Parameters
     ----------
@@ -72,9 +73,9 @@ def val_hohmann(r_init: float, r_final: float, mu_trans: float):
     print(f"transfer semimajor axis (a): {a_trans:0.8g} [km]")
 
     # transfer ellipse relations: point a and point b
-    v_trans_a = calc_v2(mu, r1, a_trans)  # elliptical orbit velocity
+    v_trans_a = calc_v2(mu, r1, a_trans)  # elliptical orbit velocity at a
     print(f"velocity, transfer periapsis: {v_trans_a:0.8g} [km/s]")
-    v_trans_b = calc_v2(mu, r2, a_trans)  # elliptical orbit velocity
+    v_trans_b = calc_v2(mu, r2, a_trans)  # elliptical orbit velocity at b
     print(f"velocity, transfer apoapsis: {v_trans_b:0.8g} [km/s]")
 
     # delta-velocity relations
@@ -97,6 +98,7 @@ def val_hohmann(r_init: float, r_final: float, mu_trans: float):
         r_apo = r_init
 
     ecc_trans = calc_ecc(r_peri, r_apo)
+    return (tof_hoh, ecc_trans, dv_total)
     print(f"transfer eccentricity = {ecc_trans:0.8g}")
 
 

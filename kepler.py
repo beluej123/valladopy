@@ -6,20 +6,21 @@ Created on Sun Jan 31 16:41:34 2016
 """
 
 import numpy as np
+
 from solarsys import *
 
 
-def find_c2c3(psi):
-    """c(:math:`\psi`) functions for the universal formulation (Algorithm 1)
+def find_c2c3(psi: float):
+    """c(:math:`psi`) functions for the universal formulation (Algorithm 1)
 
-    A trigonometric implementation of the :math:`c(\psi)` functions needed in
+    A trigonometric implementation of the :math:`c(psi)` functions needed in
     the universal formulation of Kepler's Equation. For reference, see
     Algorithm 1 in Vallado (Fourth Edition), Section 2.2 (pg 63).
 
     Parameters
     ----------
     psi: double
-        :math:`\psi = \chi^2/a` where :math:`\chi` is universal
+        :math:`psi = chi^2/a` where :math:`chi` is universal
         variable and a is the semi-major axis
 
     Returns
@@ -113,7 +114,7 @@ def kep_eqtnP(del_t, p, mu=Earth.mu):
     return B
 
 
-def kep_eqtnH(M, e, tol=1e-8):
+def kep_eqtnH(M, ecc, tol=1e-8):
     """Hyperbolic solution to Kepler's Equation (Algorithm 4)
 
     A Newton-Raphson iterative approach to solving Kepler's Equation for
@@ -134,20 +135,20 @@ def kep_eqtnH(M, e, tol=1e-8):
     H: double
         Hyperbolic Anomaly (radians)
     """
-    if e < 1.6:
+    if ecc < 1.6:
         if (M > -np.pi and M < 0) or (M > np.pi):
-            H = M - e
+            H = M - ecc
         else:
-            H = M + e
+            H = M + ecc
     else:
-        if e < 3.6 and (np.abs(M) > np.pi):
-            H = M - np.sign(M) * e
+        if ecc < 3.6 and (np.abs(M) > np.pi):
+            H = M - np.sign(M) * ecc
         else:
-            H = M / (e - 1)
+            H = M / (ecc - 1)
 
     diff = np.inf
     while diff > tol:
-        H_new = H + (M - e * np.sinh(H) + H) / (e * np.cosh(H) - 1)
+        H_new = H + (M - ecc * np.sinh(H) + H) / (ecc * np.cosh(H) - 1)
         diff = np.abs(H_new - H)
         H = H_new
     return H
@@ -441,33 +442,26 @@ def coe2rv(p, ecc, inc, raan, aop, anom, mu=Earth.mu):
 
 
 def findTOF(r0, r, p, mu=Earth.mu):
-    """Finds the Time of Flight between two position vectors (Algorithm 11)
-
-    Finds the time of flight bewteen two position vectors in the IJK frame.
-    For reference, see Algorithm 11 in Vallado (Fourth Edition), Section 2.8
-    (pg 126)
+    """Find time-of-flight between two position vectors in IJK frame
+    Vallado 4th ed, section 2.8, algorithm 11, p126.
 
     Parameters
     ----------
-    r0: numpy.matrix (3x1)
-        Initial position vector (km)
-    r: numpy.matrix (3x1)
-        Second position vector (km)
-    p: double
-        Semi-parameter (km)
-    mu: double, optional, default=3.986004415E5 (Earth.mu in solarsys.py)
-        Gravitational parameter (km^3/s^2)
+    r0: numpy.matrix (3x1), Initial position vector [km]
+    r: numpy.matrix (3x1), Second position vector [km]
+    p: double, Semi-parameter [km]
+    mu: double, optional, default=3.986004415E5 [Earth.mu in solarsys.py]
+        Gravitational parameter [km^3/s^2]
 
     Returns
     -------
-    TOF: double
-        Time of flight (seconds)
+    TOF: double, time-of-flight [seconds]
     """
 
     r0_mag = np.linalg.norm(r0)
     r_mag = np.linalg.norm(r)
 
-    cosdv = np.dot(r0.T, r) / (r0_mag * r_mag)
+    cosdv = np.dot(r0.T, r) / (r0_mag * r_mag)  # note r0.T = transpose
     del_anom = np.arccos(cosdv)
     k = r0_mag * r_mag * (1.0 - cosdv)
     l = r0_mag + r_mag
@@ -545,7 +539,7 @@ def keplerCOE(r0, v0, dt, mu=Earth.mu):
             t_anom = eccentric_to_true(E, ecc)
         else:  # circular
             t_anom = E
-    elif e == 1.0:  # ecc = 1.0 -> Parabolic
+    elif ecc == 1.0:  # ecc = 1.0 -> Parabolic
         M0 = anom0 + anom0**3 / 3
         B = kep_eqtnP(dt, p)
         t_anom = parabolic_to_true(B)
@@ -591,7 +585,7 @@ def kepler(r0, v0, dt, mu=Earth.mu, tol=1e-6):
     v_mag = np.linalg.norm(v0)
     alpha = -(v_mag**2) / mu + 2.0 / r_mag
 
-    if alpha > 0.000001:  # ELliptical or circular
+    if alpha > 0.000001:  # elliptical or circular
         chi0 = np.sqrt(mu) * dt * alpha
     elif alpha < -0.000001:  # Hyperbolic
         a = 1 / alpha

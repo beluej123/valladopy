@@ -73,13 +73,44 @@ def one_tan_burn_ex6_3():
     vfunc.val_one_tan_burn(r1, r2, nu_trans_b, mu_trans)
 
 
-def main() -> None:
-    pass  # placeholder
+import math
+
+from kepler import findTOF
+
+
+def test_tof_prob2_7() -> None:
+    """
+    Find time of flight. Vallado section 2, problem 2.7, p.128.
+    Note:
+    The problem gives the value for sp (semi-parameter, aka p), but in practice
+    it is not clear, to me, how to chose sp because ecc (eccentricity) and or
+    sma (semi-major axis) are parameter I can intuitively grasp.  And in that case
+    the tof routine does not need to internally calculate sma...
+    """
+    print(f"\nVallado test time-of-flight, prob 2.7:")
+    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado p.1041, tbl.D-3
+    au = 149597870.7  # [km/au] Vallado p.1042, tbl.D-5
+    r_earth = 6378.1363  # [km] earth radius; Vallado p.1041, tbl.D-3
+
+    r0_vec = np.array([-2574.9533, 4267.0671, 4431.5026])  # [km]
+    r1_vec = np.array([2700.6738, -4303.5378, -4358.2499])  # [km/s]
+    sp = 6681.571  # [km] semi-parameter (aka p, also, aka semi-latus rectum)
+    r0_mag = np.linalg.norm(r0_vec)
+    r1_mag = np.linalg.norm(r1_vec)
+    # TODO calculate delta true anomalies...
+    cosdv = np.dot(r0_vec.T, r1_vec) / (
+        r0_mag * r1_mag
+    )  # note r0_vec.T = transpose of r0_vec
+    print(f"delta true anomaly's, {math.acos(cosdv)*180/math.pi:.6g} [deg]")
+
+    tof = findTOF(r0=r0_vec, r=r1_vec, p=sp, mu=mu_earth_km)
+    print(f"time of flight, tof= {tof:.8g} [s]")
+    return
 
 
 # Main code. Functions and class methods are called from main.
 if __name__ == "__main__":
     # hohmann_ex6_1()  # hohmann transfer, vallado example 6-1
     # bielliptic_ex6_2()  # bi-elliptic transfer, vallado example 6-2
-    one_tan_burn_ex6_3()  # one-tangent transfer, vallado example 6-3
-    main()  # placeholder function
+    # one_tan_burn_ex6_3()  # one-tangent transfer, vallado example 6-3
+    test_tof_prob2_7()  #
