@@ -1,8 +1,17 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Jan 31 16:41:34 2016
-
 @author: Alex
+Edits 2024-08-21 +, Jeff Belue.
+
+References
+----------
+    [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
+        Fundamentals of Astrodynamics. Dover Publications Inc.
+    [2] Vallado, David A., (2013, 4th ed.)
+        Fundamentals of Astrodynamics and Applications, Microcosm Press.
+    [3] Curtis, H.W. (2009 2nd ed.).
+        Orbital Mechanics for Engineering Students.
 """
 
 import numpy as np
@@ -13,9 +22,9 @@ from solarsys import *
 def find_c2c3(psi: float):
     """c(:math:`psi`) functions for the universal formulation (Algorithm 1)
 
-    A trigonometric implementation of the :math:`c(psi)` functions needed in
-    the universal formulation of Kepler's Equation. For reference, see
-    Algorithm 1 in Vallado (Fourth Edition), Section 2.2 (pg 63).
+    Trigonometric implementation of the :math:`c(psi)` functions needed in
+    the universal formulation of Kepler's Equation.  Reference Vallado [2],
+    section 2.2, p.63, algorithm 1.
 
     Parameters
     ----------
@@ -52,9 +61,8 @@ def find_c2c3(psi: float):
 def kep_eqtnE(M, e, tol=1e-8):
     """Elliptical solution to Kepler's Equation (Algorithm 2)
 
-    A Newton-Raphson iterative approach to solving Kepler's Equation for
-    elliptical orbits. For reference, see Algorithm 2 in Vallado (Fourth
-    Edition), Section 2.2 (pg 65).
+    Newton-Raphson iterative approach solving Kepler's Equation for
+    elliptical orbits. Reference Vallado [2], section 2.2, p.65, algorithm 2.
 
     Parameters
     ----------
@@ -88,8 +96,7 @@ def kep_eqtnP(del_t, p, mu=Earth.mu):
     """Parabolic solution to Kepler's Equation (Algorithm 3)
 
     A trigonometric approach to solving Kepler's Equation for
-    parabolic orbits. For reference, see Algorithm 3 in Vallado (Fourth
-    Edition), Section 2.2 (pg 69).
+    parabolic orbits. Reference Vallado [2], section 2.2, p.69, algorithm 3.
 
     Parameters
     ----------
@@ -118,8 +125,7 @@ def kep_eqtnH(M, ecc, tol=1e-8):
     """Hyperbolic solution to Kepler's Equation (Algorithm 4)
 
     A Newton-Raphson iterative approach to solving Kepler's Equation for
-    hyperbolic orbits. For reference, see Algorithm 4 in Vallado (Fourth
-    Edition), Section 2.2 (pg 71).
+    hyperbolic orbits. Reference Vallado [2], section 2.2, p.71, algorithm 4.
 
     Parameters
     ----------
@@ -159,8 +165,7 @@ def true_to_anom(true_anom, e):
 
     Converts true anomaly to eccentric (E) anomaly for elliptical orbits,
     parabolic (B) anomaly for parabolic orbits, or hyperbolic anomaly (H) for
-    hyperbolic orbits.  For reference, see Algorithm 5 in Vallado (Fourth
-    Edition), Section 2.2 (pg 77).
+    hyperbolic orbits.  Reference Vallado [2], section 2.2, p.77, algorithm 5.
 
     Parameters
     ----------
@@ -192,8 +197,8 @@ def true_to_anom(true_anom, e):
 def eccentric_to_true(E, e):
     """Converts Eccentric Anomaly (E) to true anomaly (Algorithm 6 (a))
 
-    Converts eccentric anomaly (E) to true anomaly for elliptical orbits. For
-    reference, see Algorithm 6 in Vallado (Fourth Edition), Section 2.2 (pg 77)
+    Converts eccentric anomaly (E) to true anomaly for elliptical orbits.
+    Reference Vallado [2], section 2.2, p.77, algorithm 6.
 
     Parameters
     ----------
@@ -216,8 +221,8 @@ def eccentric_to_true(E, e):
 def parabolic_to_true(B):  # , p, r):
     """Converts parabolic anomaly (B) to true anomaly (Algorithm 6 (b))
 
-    Converts parabolic anomaly (B) to true anomaly for parabolic orbits. For
-    reference, see Algorithm 6 in Vallado (Fourth Editon), Section 2.2 (pg 77)
+    Converts parabolic anomaly (B) to true anomaly for parabolic orbits.
+    Reference Vallado [2], section 2.2, p.77, algorithm 6.
 
     Parameters
     ----------
@@ -241,8 +246,8 @@ def parabolic_to_true(B):  # , p, r):
 def hyperbolic_to_true(H, e):
     """Converts hyperbolic anomaly (H) to true anomaly (Algorithm 6 (c))
 
-    Converts hyperbolic anomaly (H) to true anomaly for hyperbolic orbits. For
-    reference, see Algorithm 6 in Vallado (Fourth Edition), Section 2.2 (pg 77)
+    Converts hyperbolic anomaly (H) to true anomaly for hyperbolic orbits.
+    Reference Vallado [2], section 2.2, p.77, algorithm 6.
 
     Parameters
     ----------
@@ -267,8 +272,7 @@ def rv2coe(r, v, mu=Earth.mu):
     """Converts position/velocity to Keplerian orbital elements (Algorithm 9)
 
     Converts position and velocity vectors in the IJK frame to Keplerian
-    orbital elements.  For reference, see Algorithm 9 in Vallado (Fourth
-    Edition), Section 2.5 (pg 113)
+    orbital elements.  Reference Vallado [2], section 2.5, p.113, algorithm 9.
 
     Parameters
     ----------
@@ -370,8 +374,7 @@ def coe2rv(p, ecc, inc, raan, aop, anom, mu=Earth.mu):
     """Converts Keplerian orbital elements to pos/vel vectors (Algorithm 10)
 
     Converts Keplerian orbital elements to position/velocity vectors (km, km/s)
-    in the IJK frame.  For reference, see Algorithm 10 in Vallado (Fourth
-    Edition), Section 2.6 (pg 118).
+    in the IJK frame.  Reference Vallado [2], section 2.6, p.118, algorithm 10.
 
     Parameters
     ----------
@@ -442,20 +445,32 @@ def coe2rv(p, ecc, inc, raan, aop, anom, mu=Earth.mu):
 
 
 def findTOF(r0, r, p, mu=Earth.mu):
-    """Find time-of-flight between two position vectors in IJK frame
-    Vallado 4th ed, section 2.8, algorithm 11, p126.
+    """
+    Find tof (time-of-flight) between two position vectors in IJK frame.
+    Reference Vallado [2], section 2.8, p.126, algorithm 11.
+
+    Note:
+    ----------
+        This routine requires a value for sp (semi-parameter, aka p), but in
+        practice ecc (eccentricity) and or sma (semi-major axis) must be
+        chosen to completely define the orbit -  to understand the sp limits
+        see findTOF_a() which returns sp limits on ellipse orbit, noting
+        that parabolic and hyperbolic relations come out of the ellipse limits.
+
+        As long as consistant units are passed to this routine unit definitions
+        are not explicitely required.
 
     Parameters
     ----------
-    r0: numpy.matrix (3x1), Initial position vector [km]
-    r: numpy.matrix (3x1), Second position vector [km]
-    p: double, Semi-parameter [km]
-    mu: double, optional, default=3.986004415E5 [Earth.mu in solarsys.py]
-        Gravitational parameter [km^3/s^2]
+        r0: numpy.matrix (3x1), Initial position vector
+        r: numpy.matrix (3x1), Second position vector
+        p: double, Semi-parameter
+        mu: double, optional, default=3.986004415E5 [Earth.mu in solarsys.py]
+            Gravitational parameter [km^3/s^2]
 
     Returns
     -------
-    TOF: double, time-of-flight [seconds]
+        TOF: double, time-of-flight [seconds]
     """
 
     r0_mag = np.linalg.norm(r0)
@@ -496,6 +511,88 @@ def findTOF(r0, r, p, mu=Earth.mu):
     else:
         TOF = None
         return TOF
+
+
+def findTOF_a(r0, r1, p, mu=Earth.mu):
+    """
+    Same as findTOF() except this function returns internal calculations
+    allowing user to understand orbit type; range of sp (semi-parameter).
+
+    Find tof (time-of-flight) between two position vectors in IJK frame.
+    Reference Vallado [2], section 2.8, p.126, algorithm 11.
+
+    Note:
+    ----------
+        This routine requires a value for sp (semi-parameter, aka p), but in
+        practice ecc (eccentricity) and or sma (semi-major axis) must be
+        chosen to completely define the orbit. This routine returns limits
+        on ellipse orbit; parabolic and hyperbolic relations come out of
+        the ellipse limits.
+
+    Parameters
+    ----------
+    r0: numpy.matrix (3x1), Initial position vector
+    r1: numpy.matrix (3x1), Second position vector
+    p : float, Semi-parameter
+    mu: float, optional, default=3.986004415E5 [Earth.mu in solarsys.py]
+        Gravitational parameter [km^3/s^2]
+
+    Returns
+    -------
+        TOF  : float, time-of-flight [seconds]
+        a    : float, semi-major axis (aka sma)
+        sp_i : float, minimum ellipse semi-parameter (aka p)
+        sp_ii: float, maximum ellipse semi-parameter (aka p)
+    """
+
+    r0_mag = np.linalg.norm(r0)
+    r1_mag = np.linalg.norm(r1)
+
+    cosdv = np.dot(r0.T, r1) / (r0_mag * r1_mag)  # [rad] note r0.T = transpose
+    del_anom = np.arccos(cosdv)  # [rad]
+
+    # constants; given r0, r1, angle
+    k = r0_mag * r1_mag * (1.0 - cosdv)
+    l = r0_mag + r1_mag
+    m = r0_mag * r1_mag * (1.0 + cosdv)
+
+    # bracket p values for ellipse, p_i & p_ii; BMWS [2], p.205
+    # values > sp_ii will be hyperbolic trajectories
+    # value at sp_ii will be parabolic trajectory
+    # minimum sp for ellipse; calculated value maybe degenerate...
+    sp_i = k / (l + np.sqrt(2 * m))  # BMWS [2], p.208, eqn 5-52
+    # maximum sp for ellipse; calculated value is actually a parabola
+    sp_ii = k / (l - np.sqrt(2 * m))  # BMWS [2], p.208, eqn 5-53
+
+    a = m * k * p / ((2.0 * m - l * l) * p * p + 2.0 * k * l * p - k * k)
+    f = 1.0 - (r1_mag / p) * (1.0 - cosdv)
+    g = r0_mag * r1_mag * np.sin(del_anom) / (np.sqrt(mu * p))
+
+    if a > 0.0:
+        if a == np.inf:
+            c = np.sqrt(r0_mag**2 + r1_mag**2 - 2.0 * r0_mag * r1_mag * cosdv)
+            s = (r0_mag + r1_mag + c) * 0.5
+            TOF = (2.0 / 3.0) * np.sqrt(0.5 * s**3 / mu) * (1.0 - ((s - c) / s) ** 1.5)
+            return TOF, a, sp_i, sp_ii
+        else:
+            f_dot = (
+                np.sqrt(mu / p)
+                * np.tan(0.5 * del_anom)
+                * ((1.0 - cosdv) / p - 1.0 / r0_mag - 1 / r1_mag)
+            )
+            cosde = 1.0 - (r0_mag / a) * (1.0 - f)
+            sinde = (-r0_mag * r1_mag * f_dot) / (np.sqrt(mu * a))
+            del_E = np.arccos(cosde)
+            TOF = g + np.sqrt(a**3 / mu) * (del_E - sinde)
+            return TOF, a, sp_i, sp_ii
+    elif a < 0.0:
+        coshdh = 1.0 + (f - 1.0) * (r0_mag / a)
+        del_H = np.arccosh(coshdh)
+        TOF = g + np.sqrt((-a) ** 3 / mu) * (np.sinh(del_H) - del_H)
+        return TOF, a, sp_i, sp_ii
+    else:
+        TOF = None
+        return TOF, a, sp_i, sp_ii
 
 
 def keplerCOE(r0, v0, dt, mu=Earth.mu):

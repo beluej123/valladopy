@@ -1,6 +1,22 @@
-# Vallado functions
-# Cannot get black formatter to work within VSCode, in terminal type; black vallado_func.py
-# Remember VSCode DocString, Keyboard shortcut: ctrl+shift+2
+"""
+Vallado functions.
+
+Notes:
+----------
+    Reminder to me; cannot get black formatter to work within VSCode,
+        so in terminal type; black *.py
+    Reminder to me; VSCode DocString, Keyboard shortcut: ctrl+shift+2
+
+References
+----------
+    [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
+        Fundamentals of Astrodynamics. Dover Publications Inc.
+    [2] Vallado, David A., (2013, 4th ed.)
+        Fundamentals of Astrodynamics and Applications, Microcosm Press.
+    [3] Curtis, H.W. (2009 2nd ed.).
+        Orbital Mechanics for Engineering Students.
+"""
+
 import numpy as np
 
 
@@ -228,3 +244,99 @@ def val_one_tan_burn(r_init: float, r_final: float, nu_trans_b: float, mu_trans:
     print(f"tof_trans = {tof_trans:0.8g} [sec]")
     print(f"tof_trans = {tof_trans/60:0.8g} [min]")
     print(f"tof_trans = {(tof_trans/(60*60)):0.8g} [hr]")
+
+
+
+def plot_sp_vs_sma(r0_mag, r1_mag, delta_nu, sp=1.0, clip1=True)->None:
+    """
+    Plot sp (semi-parameter) as a function of sma (semi-major axis).
+    May clip calculated sma, if enabled; since sma may calculate to infinite.
+    Plotting may take some fooling with to get the outcome u want.
+    Feel free to improve plot lables, etc.
+
+    Parameters
+    ----------
+    r0_mag   : float, focus to initial radius
+    r1_mag   : float, focus to 2nd radius
+    delta_nu : float, angular distance between r0, r1; focus is central point
+    sp       : float, optional, default 1.0 turns off sp marker in plot
+    clip1    : boolean, optional, default true; NOTE sma maybe near infinite
+
+    Returns
+    -------
+    Plot sp vs. sma.
+    """
+    
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    # constants for given r0, r1, angle
+    k = r0_mag * r1_mag * (1 - np.cos(delta_nu))  # BMWS [1], p.204, eqn 5-42
+    l = r0_mag + r1_mag
+    m = abs(r0_mag) * abs(r1_mag) * (1 + np.cos(delta_nu))
+
+    # bracket p values for ellipse, p_i & p_ii; BMWS [1], p.205
+    # values > p_ii, hyperbolic trajectories
+    # value at p_ii, parabolic trajectory
+    # minimum sp for ellipse; calculated value maybe degenerate...
+    sp_i = k / (l + np.sqrt(2 * m))  # BMWS [1], p.208, eqn 5-52
+    sp_i_min = sp_i * 1.001  # practical minimum for ellipse
+    # maximum sp for ellipse; calculated value is actually a parabola
+    sp_ii = k / (l - np.sqrt(2 * m))  # BMWS [1], p.208, eqn 5-53
+    sp_ii_max = sp_ii * 1.01  # will show part of hyperbola
+    sp_i_mid= (sp_ii-sp_i)/2
+
+    x = np.linspace(sp_i_min, sp_ii_max, 100)  # between sp_min & sp_max plot 100 points
+    y = k_l_m_sp(k, l, m, x)
+    print(f"noclip: min={np.min(y)}, max={np.max(y)}")
+    
+    # if clipping enabled, limit y value excursions
+    if clip1==True:
+        y=np.clip(y,-sp_i_mid*200, sp_i_mid*500)
+        print(f"clip enabled: min={np.min(y)}, max={np.max(y)}")
+
+    fig, ax = plt.subplots()
+    ax.plot(x, y)
+    # if optional sp in calling routine, add marker
+    if sp != 1.0:  # optional input parameter sp defined
+        sma = k_l_m_sp(k, l, m, sp)
+        ax.plot(sp, sma, marker="h", ms=10, mfc='red')
+        plt.text(sp, sma, f"sp={sp:.6g}\nsma={sma:.6g}",
+                 horizontalalignment="left", verticalalignment="bottom")
+    text1 = "Ellipse= between positive peaks.\nHyperbola= -sma"
+    text2 = (
+        f"r0={r0_mag:8g}\nr1={r1_mag:.8g}\ndelta angle={delta_nu*180/np.pi:.6g} [deg]"
+    )
+    plt.text(
+        0.5,
+        0.9,
+        text2,
+        horizontalalignment="left",
+        verticalalignment="center",
+        transform=ax.transAxes,
+    )
+    plt.text(
+        0.4,
+        0.75,
+        text1,
+        horizontalalignment="center",
+        verticalalignment="center",
+        transform=ax.transAxes,
+    )
+    plt.xlabel("sp (semi-parameter, aka p)")
+    plt.ylabel("sma (semi-major axis, aka a)")
+    plt.grid(True)
+    plt.title("SMA vs. SP")
+    # not so sure about a graphic fill to denote ellipse
+    # ax.fill_between(x, np.max(y), where=y > 0, facecolor="green", alpha=0.5)
+    plt.show()
+    return None
+
+
+def k_l_m_sp(k, l, m, sp):
+    """
+    Calculate sma from input parameters
+    """
+    # BMWS [2], p.204, eqn 5-42
+    sma = (m * k * sp) / ((2 * m - l**2) * sp**2 + (2 * k * l * sp - k**2))
+    return sma

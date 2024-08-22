@@ -1,5 +1,22 @@
-# Vallado_examples
-# Cannot get black formatter to work within VSCode; so in terminal type; black vallado_func.py
+"""
+Collection of Vallado [2] solutions to examples and problems.
+
+Notes:
+----------
+    Reminder to me; cannot get black formatter to work within VSCode,
+        so in terminal type; black *.py
+    Reminder to me; VSCode DocString, Keyboard shortcut: ctrl+shift+2
+
+References
+----------
+    [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
+        Fundamentals of Astrodynamics. Dover Publications Inc.
+    [2] Vallado, David A., (2013, 4th ed.)
+        Fundamentals of Astrodynamics and Applications, Microcosm Press.
+    [3] Curtis, H.W. (2009 2nd ed.).
+        Orbital Mechanics for Engineering Students.
+"""
+
 import numpy as np
 
 import vallado_func as vfunc  # Vallado functions
@@ -75,21 +92,26 @@ def one_tan_burn_ex6_3():
 
 import math
 
-from kepler import findTOF
+from kepler import findTOF, findTOF_a
 
 
 def test_tof_prob2_7() -> None:
     """
-    Find time of flight. Vallado section 2, problem 2.7, p.128.
-    Note:
-    The problem gives the value for sp (semi-parameter, aka p), but in practice
-    it is not clear, to me, how to chose sp because ecc (eccentricity) and or
-    sma (semi-major axis) are parameter I can intuitively grasp.  And in that case
-    the tof routine does not need to internally calculate sma...
+    Find time of flight (tof).
+    Reference Vallado [2], problem 2.7, p.128.
+    Reference Vallado [2], tof, section 2.8, p.126, algorithm 11.
+
+    Notes:
+    ----------
+        If a value for sp (semi-parameter, aka p) is given then in a broader
+        context ecc (eccentricity) and/or sma (semi-major axis) must be
+        chosen to completely define the orbit; more than just defining the
+        the central body.  It is useful to understand the limits on orbit
+        definition; see test_tof_prob2_7a.
     """
-    print(f"\nVallado test time-of-flight, prob 2.7:")
+    print(f"\nVallado time-of-flight, prob 2.7:")
     mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado p.1041, tbl.D-3
-    au = 149597870.7  # [km/au] Vallado p.1042, tbl.D-5
+    au = 149597870.7  # [km/au] Vallado p.1043, tbl.D-5
     r_earth = 6378.1363  # [km] earth radius; Vallado p.1041, tbl.D-3
 
     r0_vec = np.array([-2574.9533, 4267.0671, 4431.5026])  # [km]
@@ -108,9 +130,69 @@ def test_tof_prob2_7() -> None:
     return
 
 
+def test_tof_prob2_7a() -> None:
+    """
+    Find time of flight (tof) and orbit parameter limits.
+    Reference Vallado [2], problem 2.7, p.128.
+    Reference Vallado [2], tof, section 2.8, p.126, algorithm 11.
+    Reference BMWS [1], sma as a function of sp, section 5.4.2, p.204.
+
+    Notes:
+    ----------
+        Problem statement gives a value for sp (semi-parameter, aka p), thus
+        defining orbital energy.  Since sp is given ths routine explores the
+        limits of orbit definition by looking at ellipse limits.
+
+    Assume r0 in the vicinity of earth; thus assume
+    Choose v0
+    """
+    from vallado_func import plot_sp_vs_sma
+
+    print(f"\nVallado time-of-flight, prob 2.7a:")
+    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado p.1041, tbl.D-3
+    au = 149597870.7  # [km/au] Vallado p.1042, tbl.D-5
+    r_earth = 6378.1363  # [km] earth radius; Vallado p.1041, tbl.D-3
+
+    r0_vec = np.array([-2574.9533, 4267.0671, 4431.5026])  # [km]
+    r1_vec = np.array([2700.6738, -4303.5378, -4358.2499])  # [km/s]
+    sp = 6681.571  # [km] semi-parameter (aka p, also, aka semi-latus rectum)
+
+    r0_mag = np.linalg.norm(r0_vec)
+    r1_mag = np.linalg.norm(r1_vec)
+    # calculate delta true anomalies...
+    # note r0_vec.T = transpose of r0_vec
+    cosdv = np.dot(r0_vec.T, r1_vec) / (r0_mag * r1_mag)
+    print(f"semi-parameter, sp= {sp:.6g} [km]")
+    delta_nu = math.acos(cosdv)
+    print(f"delta true anomaly's, {delta_nu*180/math.pi:.6g} [deg]")
+
+    tof, sma, sp_i, sp_ii = findTOF_a(r0=r0_vec, r1=r1_vec, p=sp, mu=mu_earth_km)
+    ecc = math.sqrt(1 - sp / sma)
+    print(f"semi-major axis, sma= {sma:.8g}")
+    print(f"eccemtricity, ecc= {ecc:.8g}")
+    print(f"time of flight, tof= {tof:.8g} [s]")
+
+    # inform user of sp limits
+    print_text1 = f"sp limits; sp_i= {sp_i:.6g}, sp= {sp:.6g}, sp_ii= {sp_ii:.6g}"
+    if sp > sp_i and sp < sp_ii:
+        print(f"ellipse, {print_text1}")
+    elif sp == sp_ii or sp == sp_i:
+        print(f"parabola, {print_text1}")
+    elif sp > sp_ii:
+        print(f"hyperbola, {print_text1}")
+    else:
+        print(f"sp < sp_i; not sure orbit type.")
+
+    # plot marker at sp is optional; sp=1.0 turns off sp marker.
+    # since sma may go near-infinate, optional clipping should always be thurned on.
+    plot_sp_vs_sma(r0_mag, r1_mag, delta_nu, sp=sp, clip1=True)
+    return
+
+
 # Main code. Functions and class methods are called from main.
 if __name__ == "__main__":
     # hohmann_ex6_1()  # hohmann transfer, vallado example 6-1
     # bielliptic_ex6_2()  # bi-elliptic transfer, vallado example 6-2
     # one_tan_burn_ex6_3()  # one-tangent transfer, vallado example 6-3
-    test_tof_prob2_7()  #
+    test_tof_prob2_7()  # vallado tof
+    test_tof_prob2_7a()  # vallado tof, and plot sma vs. sp
