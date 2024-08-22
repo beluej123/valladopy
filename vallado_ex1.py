@@ -130,12 +130,11 @@ def test_tof_prob2_7() -> None:
     return
 
 
-def test_tof_prob2_7a() -> None:
+def test_tof_prob2_7a(plot_sp=False) -> None:
     """
     Find time of flight (tof) and orbit parameter limits.
-    Reference Vallado [2], problem 2.7, p.128.
-    Reference Vallado [2], tof, section 2.8, p.126, algorithm 11.
-    Reference BMWS [1], sma as a function of sp, section 5.4.2, p.204.
+    Note Vallado [2], problem 2.7, p.128; tof, section 2.8, p.126, algorithm 11.
+    Note BMWS [1], sma as a function of sp, section 5.4.2, p.204.
 
     Notes:
     ----------
@@ -185,8 +184,16 @@ def test_tof_prob2_7a() -> None:
 
     # plot marker at sp is optional; sp=1.0 turns off sp marker.
     # since sma may go near-infinate, optional clipping should always be thurned on.
-    plot_sp_vs_sma(r0_mag, r1_mag, delta_nu, sp=sp, clip1=True)
-    return
+    # plot_sp_vs_sma(r0_mag, r1_mag, delta_nu, sp=sp, clip1=True)
+
+    if plot_sp == True:
+        # plot_sp=True, to see possible range of orbit parameters plot sp vs. sma
+        # note, plot marker at sp is optional; sp=1.0 turns off sp marker.
+        # note, since sma may be near-infinate, optional clipping should always be thurned on.
+        plot_sp_vs_sma(
+            r0_mag=r0_mag, r1_mag=r1_mag, delta_nu=delta_nu, sp=sp, clip1=True
+        )
+    return  # test_tof_prob2_7a()
 
 
 # Main code. Functions and class methods are called from main.
@@ -195,4 +202,4 @@ if __name__ == "__main__":
     # bielliptic_ex6_2()  # bi-elliptic transfer, vallado example 6-2
     # one_tan_burn_ex6_3()  # one-tangent transfer, vallado example 6-3
     test_tof_prob2_7()  # vallado tof
-    test_tof_prob2_7a()  # vallado tof, and plot sma vs. sp
+    test_tof_prob2_7a(plot_sp=False)  # vallado tof; plot sma vs. sp

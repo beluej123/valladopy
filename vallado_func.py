@@ -246,27 +246,29 @@ def val_one_tan_burn(r_init: float, r_final: float, nu_trans_b: float, mu_trans:
     print(f"tof_trans = {(tof_trans/(60*60)):0.8g} [hr]")
 
 
-
-def plot_sp_vs_sma(r0_mag, r1_mag, delta_nu, sp=1.0, clip1=True)->None:
+def plot_sp_vs_sma(r0_mag, r1_mag, delta_nu, sp=1.0, clip1=True) -> None:
     """
-    Plot sp (semi-parameter) as a function of sma (semi-major axis).
-    May clip calculated sma, if enabled; since sma may calculate to infinite.
+    Plot sp (semi-parameter) vs. sma (semi-major axis); note BMWS, p.205, fig.5-3.
+    Plot range recognizes difference between ellipse and hyperbolic trajectories.
+    User may choose to clip calculated sma, since sma may calculate to infinite.
     Plotting may take some fooling with to get the outcome u want.
     Feel free to improve plot lables, etc.
 
-    Parameters
+    Input Parameters
     ----------
-    r0_mag   : float, focus to initial radius
-    r1_mag   : float, focus to 2nd radius
-    delta_nu : float, angular distance between r0, r1; focus is central point
-    sp       : float, optional, default 1.0 turns off sp marker in plot
-    clip1    : boolean, optional, default true; NOTE sma maybe near infinite
+        r0_mag   : float, focus to initial radius
+        r1_mag   : float, focus to 2nd radius
+        delta_nu : float, angular distance between r0, r1; focus is central point
+        sp       : float, optional, default 1.0 turns off sp marker in plot
+        clip1    : boolean, optional, default true; NOTE sma maybe near infinite
 
     Returns
     -------
-    Plot sp vs. sma.
+        Plot sp vs. sma.
     """
-    
+
+    import math
+
     import matplotlib.pyplot as plt
     import numpy as np
 
@@ -274,6 +276,7 @@ def plot_sp_vs_sma(r0_mag, r1_mag, delta_nu, sp=1.0, clip1=True)->None:
     k = r0_mag * r1_mag * (1 - np.cos(delta_nu))  # BMWS [1], p.204, eqn 5-42
     l = r0_mag + r1_mag
     m = abs(r0_mag) * abs(r1_mag) * (1 + np.cos(delta_nu))
+    sma = k_l_m_sp(k, l, m, sp)  # semi-major axis
 
     # bracket p values for ellipse, p_i & p_ii; BMWS [1], p.205
     # values > p_ii, hyperbolic trajectories
@@ -284,25 +287,35 @@ def plot_sp_vs_sma(r0_mag, r1_mag, delta_nu, sp=1.0, clip1=True)->None:
     # maximum sp for ellipse; calculated value is actually a parabola
     sp_ii = k / (l - np.sqrt(2 * m))  # BMWS [1], p.208, eqn 5-53
     sp_ii_max = sp_ii * 1.01  # will show part of hyperbola
-    sp_i_mid= (sp_ii-sp_i)/2
+    sp_i_mid = (sp_ii - sp_i) / 2
 
-    x = np.linspace(sp_i_min, sp_ii_max, 100)  # between sp_min & sp_max plot 100 points
+    if sma > 0 and sp > 1.0:  # ellipse
+        x = np.linspace(
+            sp_i_min, sp_ii_max, 100
+        )  # between sp_min & sp_max plot 100 points
+    elif sma <= 0 and sp > 1.0:  # parabolic or hyperbolic
+        x = np.linspace(sp_ii_max, sp * 10)  # between sp_min & sp_max plot 100 points
     y = k_l_m_sp(k, l, m, x)
-    print(f"noclip: min={np.min(y)}, max={np.max(y)}")
-    
+
     # if clipping enabled, limit y value excursions
-    if clip1==True:
-        y=np.clip(y,-sp_i_mid*200, sp_i_mid*500)
-        print(f"clip enabled: min={np.min(y)}, max={np.max(y)}")
+    if clip1 == True and sma > 0:
+        y = np.clip(y, -sp_i_mid * 200, sp_i_mid * 500)
+    else:  # parabolic or hyperbolic plot range near extremes...
+        y = np.clip(y, -sp * 5, sp * 5)
 
     fig, ax = plt.subplots()
     ax.plot(x, y)
     # if optional sp in calling routine, add marker
     if sp != 1.0:  # optional input parameter sp defined
-        sma = k_l_m_sp(k, l, m, sp)
-        ax.plot(sp, sma, marker="h", ms=10, mfc='red')
-        plt.text(sp, sma, f"sp={sp:.6g}\nsma={sma:.6g}",
-                 horizontalalignment="left", verticalalignment="bottom")
+        ecc = math.sqrt(1 - sp / sma)  # BMWS [2] p.21, eqn.1-44
+        ax.plot(sp, sma, marker="h", ms=10, mfc="red")
+        plt.text(
+            sp,
+            sma,
+            f"sp={sp:.6g}\nsma={sma:.6g}\n ecc={ecc:.6g}",  # move ecc text away from marker
+            horizontalalignment="left",
+            verticalalignment="bottom",
+        )
     text1 = "Ellipse= between positive peaks.\nHyperbola= -sma"
     text2 = (
         f"r0={r0_mag:8g}\nr1={r1_mag:.8g}\ndelta angle={delta_nu*180/np.pi:.6g} [deg]"
@@ -327,10 +340,10 @@ def plot_sp_vs_sma(r0_mag, r1_mag, delta_nu, sp=1.0, clip1=True)->None:
     plt.ylabel("sma (semi-major axis, aka a)")
     plt.grid(True)
     plt.title("SMA vs. SP")
-    # not so sure about a graphic fill to denote ellipse
+    # not so sure about a graphic fill, below, to graphically denote ellipse
     # ax.fill_between(x, np.max(y), where=y > 0, facecolor="green", alpha=0.5)
     plt.show()
-    return None
+    return None  # plot_sp_vs_sma
 
 
 def k_l_m_sp(k, l, m, sp):
