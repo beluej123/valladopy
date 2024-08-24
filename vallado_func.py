@@ -11,10 +11,10 @@ References
 ----------
     [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
         Fundamentals of Astrodynamics. Dover Publications Inc.
-    [2] Vallado, David A., (2013, 4th ed.)
-        Fundamentals of Astrodynamics and Applications, Microcosm Press.
+    [2] Vallado, David A., (2013, 4th ed.).
+        Fundamentals of Astrodynamics and Applications. Microcosm Press.
     [3] Curtis, H.W. (2009 2nd ed.).
-        Orbital Mechanics for Engineering Students.
+        Orbital Mechanics for Engineering Students. Elsevier Ltd.
 """
 
 import numpy as np
@@ -173,77 +173,104 @@ def val_bielliptic(r_init: float, r_b: float, r_final: float, mu_trans: float):
 
 
 def val_one_tan_burn(r_init: float, r_final: float, nu_trans_b: float, mu_trans: float):
-    """Vallado One-Tangent Burn Transfer, algorithm 38
-        Assume one central body.  See Vallado fig 6-7, p331.
-    TODO: account for quadrants; R_ratio, see Vallado p.331-334.
-    TODO: manage transfer start; peri vs apoapsis; see Vallado p.335.
+    """
+    Vallado One-Tangent Burn Transfer, algorithm 38, pp.333.
+    Assume one central body, transfer to an orbit, not a planet.
+        See Vallado fig 6-7, p.331.
+    Assume initial and final orbits are circular!
+    Notation: b= point b, the transfer intercept point.
+
+    TODO: account for quadrants; R_ratio & (peri vs. apo) for ecc and sma, Vallado p.332
+        2024-08-23, done, but not completely tested; parabolic & hyperbolic.
+    TODO: manage transfer start E0, now E0=0; Vallado p.335.
+        2024-08-23, note Curtis section 6.6, pp.338
+    TODO: manage transfer time vs angle (acos(E)); Vallado p.335.
+        2024-08-24, done, but not completely tested; parabolic & hyperbolic.
 
     Parameters
     ----------
-    r_init : float, initial orbit radius
-    r_final: float, final orbit radius
-    nu_trans_b : float, true anomaly (angle to point)
-    mu_trans : float, transfer central body gravitational constant
+        r_init     : float, initial orbit radius
+        r_final    : float, final orbit radius
+        nu_trans_b : float, [deg] true anomaly (angle to point)
+        mu_trans   : float, transfer central body gravitational constant
     """
+    import math  # some math functions are more effficient than numpy
+    print(f"\n*** Vallado One-Tangent Burn Transfer ***")  # temporary print
+    
     r1 = r_init
     r2 = r_final
     mu = mu_trans
     # convert input degrees to radians
     nu_trans_b1 = nu_trans_b * np.pi / 180
 
-    print("*** Vallado One-Tangent Burn Transfer ***")  # temporary print
-
     R_ratio = r_init / r_final
     print(f"orbital radius ratio = {R_ratio:0.8g}")
+    
+    # periapsis or apoapsis launch sets ecc (eccentricity), Vallado p.332
+    cos_R_ratio=math.cos(nu_trans_b)
+    if (R_ratio > 1.0 and cos_R_ratio > R_ratio) or \
+        (R_ratio < 1.0 and cos_R_ratio < R_ratio):
+        print(f"periapsis launch")
+        
+        ecc_trans = (R_ratio - 1) / (np.cos(nu_trans_b1) - R_ratio)
+        a_trans = r_init / (1 - ecc_trans)  # transfer semi-major axis
+    else:
+        print(f"apoapsis launch")
 
-    ecc_trans = (R_ratio - 1) / (np.cos(nu_trans_b1) - R_ratio)
+        ecc_trans = (R_ratio - 1) / (np.cos(nu_trans_b1) + R_ratio)
+        a_trans = r_init / (1 + ecc_trans)  # transfer semi-major axis
+        
     print(f"transfer eccentricity = {ecc_trans:0.8g}")
-
-    a_trans = r_init / (1 - ecc_trans)  # transfer semi-major axis
     print(f"semimajor axis, transfer: {a_trans:0.8g} [km]")
 
-    v_1 = calc_v1(mu, r1)  # circular orbit velocity
+    v_1 = calc_v1(mu, r1) # circular orbit velocity, for launch
+    v_2 = calc_v1(mu, r2) # circular orbit velocity, for destination
     print(f"v1 initial velocity: {v_1:0.8g} [km/s]")
-    v_2 = calc_v1(mu, r2)
     print(f"v2 final velocity: {v_2:0.8g} [km/s]")
 
-    # transfer ellipse
-    v_trans_a = calc_v2(mu, r1, a_trans)  # ellipse orbit velocity
-    print(f"velocity, transfer a: {v_trans_a:0.8g} [km/s]")
+    # launch transfer ellipse orbit velocity; point a
+    v_trans_a = calc_v2(mu, r1, a_trans)
+    # arrive ellipse orbit velocity; point b
     v_trans_b = calc_v2(mu, r2, a_trans)  # ellipse orbit velocity
+    print(f"velocity, transfer a: {v_trans_a:0.8g} [km/s]")
     print(f"velocity, transfer b: {v_trans_b:0.8g} [km/s]")
 
-    # delta-velocity relations
-    dv_a = v_trans_a - v_1
-    print(f"delta-velocity a: {dv_a:0.8g} [km/s]")
+    # delta-velocity relation at launch; point a
+    dv_a = v_trans_a - v_1 # [km/s]
+    print(f"delta-velocity at launch (point a): {dv_a:0.8g} [km/s]")
 
-    # flight path angle
+    # fpa (flight path angle)
     fpa_tan = ecc_trans * np.sin(nu_trans_b1) / (1 + ecc_trans * np.cos(nu_trans_b1))
     fpa_trans_b = np.arctan(fpa_tan)  # [rad]
     print(f"flight path angle, transfer = {fpa_trans_b*180/np.pi:0.8g} [deg]")
 
-    # orbit delta velocities
+    # delta-velocity at arrive; point b
     dv_b = np.sqrt(v_2**2 + v_trans_b**2 - 2 * v_2 * v_trans_b * np.cos(fpa_trans_b))
-    print(f"delta velocity b = {dv_b:0.8g} [km/s]")
     dv_orb = abs(dv_a) + abs(dv_b)
+    print(f"delta velocity b = {dv_b:0.8g} [km/s]")
     print(f"orbit delta velocity = {dv_orb:0.8g} [km/s]")
 
-    # calculate time-of-flight (tof), see Vallado p335
+    # calculate time-of-flight (tof), see Vallado p.335
     tof_cosE = (ecc_trans + np.cos(nu_trans_b1)) / (1 + ecc_trans * np.cos(nu_trans_b1))
     print(f"tof_cosE = {tof_cosE:0.8g}")
-    # tof_cosE alway has two allowable solutions
+    
+    # tof_cosE always has two allowable solutions
     tof_E = np.arccos(tof_cosE)
+    if nu_trans_b>180 and nu_trans_b<=360:
+        tof_E=math.pi+tof_E
     print(f"tof_E = {(tof_E * 180/np.pi):0.8g} [deg]")
-    # Notes: 1) transfer starts at periapsis, thus E0=0,
-    #   2) transfer does not pass periapsis, thus k=0; see Vallado p335.
+    
+    # Notes, Vallado p.335:
+    #   1) transfer starts at periapsis, thus E0=0,
+    #   2) transfer does not pass periapsis, thus k=0 in 2*pi*k relation
     tof_trans = np.sqrt(a_trans**3 / mu) * (
         2 * np.pi * 0
         + (tof_E - ecc_trans * np.sin(tof_E))
         - (0 - ecc_trans * np.sin(0))
     )
-    print(f"tof_trans = {tof_trans:0.8g} [sec]")
-    print(f"tof_trans = {tof_trans/60:0.8g} [min]")
-    print(f"tof_trans = {(tof_trans/(60*60)):0.8g} [hr]")
+    print(
+        f"tof_trans= {tof_trans:0.8g} [sec], {tof_trans/60:0.8g} [min], {(tof_trans/(60*60)):0.8g} [hr]"
+    )
 
 
 def plot_sp_vs_sma(r0_mag, r1_mag, delta_nu, sp=1.0, clip1=True) -> None:
@@ -343,7 +370,7 @@ def plot_sp_vs_sma(r0_mag, r1_mag, delta_nu, sp=1.0, clip1=True) -> None:
     # not so sure about a graphic fill, below, to graphically denote ellipse
     # ax.fill_between(x, np.max(y), where=y > 0, facecolor="green", alpha=0.5)
     plt.show()
-    return None  # plot_sp_vs_sma
+    return None  # plot_sp_vs_sma()
 
 
 def k_l_m_sp(k, l, m, sp):

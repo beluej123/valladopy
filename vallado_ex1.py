@@ -11,10 +11,10 @@ References
 ----------
     [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
         Fundamentals of Astrodynamics. Dover Publications Inc.
-    [2] Vallado, David A., (2013, 4th ed.)
-        Fundamentals of Astrodynamics and Applications, Microcosm Press.
+    [2] Vallado, David A., (2013, 4th ed.).
+        Fundamentals of Astrodynamics and Applications. Microcosm Press.
     [3] Curtis, H.W. (2009 2nd ed.).
-        Orbital Mechanics for Engineering Students.
+        Orbital Mechanics for Engineering Students. Elsevier Ltd.
 """
 
 import numpy as np
@@ -70,24 +70,30 @@ def bielliptic_ex6_2():
 
 
 def one_tan_burn_ex6_3():
-    """Vallado One-Tangent Burn Transfer, example 6-3, p334.
+    """
+    Vallado One-Tangent Burn Transfer, example 6-3, p334.
     One-Tangent Burn uses one central body for the transfer ellipse.
     Interplanetary missions with patched conic in chapter 12.
     """
-    # define constants
-    r_earth = 6378.137  # [km]
-    mu_earth = 3.986012e5  # [km^3 / s^2] gravatational constant, earth
-    mu_sun = 1.327e11  # [km^3 / s^2] gravatational constant, sun
+    # constants
+    au = 149597870.7  # [km/au] Vallado p.1043, tbl.D-5
+    mu_sun_km = 1.32712428e11  # [km^3/s^2], Vallado p.1043, tbl.D-5
+    mu_sun_au = mu_sun_km / (au**3)  # unit conversion
+    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado p.1041, tbl.D-3
+    r_earth = 6378.1363  # [km] earth radius; Vallado p.1041, tbl.D-3
 
     # define inputs; one-tangent transfer (two burns/impulses)
-    r1 = r_earth + 191.34411  # [km]
-    # r2 = r_earth + 35781.34857  # [km], example 6-3
-    r2 = r_earth + 376310  # [km], table 6-1, moon
-    # nu_trans_b = 160  # [degrees], example 6-3
-    nu_trans_b = 175  # [degrees], table 6-1, moon
-    mu_trans = mu_earth  # [km^3 / s^2] gravatational constant
+    r0_mag = r_earth + 191.34411  # [km], example 6-3
+    r1_mag = r_earth + 35781.34857  # [km], example 6-3
+    nu_trans_b = 160  # [deg], example 6-3
 
-    vfunc.val_one_tan_burn(r1, r2, nu_trans_b, mu_trans)
+    # r1 = r_earth + 376310  # [km], table 6-1, moon
+    # nu_trans_b = 175  # [deg], table 6-1, moon
+
+    # val_one_tan_burn(r_init: float, r_final: float, nu_trans_b: float, mu_trans: float)
+    vfunc.val_one_tan_burn(
+        r_init=r0_mag, r_final=r1_mag, nu_trans_b=nu_trans_b, mu_trans=mu_earth_km
+    )
 
 
 import math
@@ -182,10 +188,6 @@ def test_tof_prob2_7a(plot_sp=False) -> None:
     else:
         print(f"sp < sp_i; not sure orbit type.")
 
-    # plot marker at sp is optional; sp=1.0 turns off sp marker.
-    # since sma may go near-infinate, optional clipping should always be thurned on.
-    # plot_sp_vs_sma(r0_mag, r1_mag, delta_nu, sp=sp, clip1=True)
-
     if plot_sp == True:
         # plot_sp=True, to see possible range of orbit parameters plot sp vs. sma
         # note, plot marker at sp is optional; sp=1.0 turns off sp marker.
@@ -198,8 +200,8 @@ def test_tof_prob2_7a(plot_sp=False) -> None:
 
 # Main code. Functions and class methods are called from main.
 if __name__ == "__main__":
-    # hohmann_ex6_1()  # hohmann transfer, vallado example 6-1
-    # bielliptic_ex6_2()  # bi-elliptic transfer, vallado example 6-2
-    # one_tan_burn_ex6_3()  # one-tangent transfer, vallado example 6-3
-    test_tof_prob2_7()  # vallado tof
-    test_tof_prob2_7a(plot_sp=False)  # vallado tof; plot sma vs. sp
+    # hohmann_ex6_1()  # test hohmann transfer, example 6-1
+    # bielliptic_ex6_2()  # test bi-elliptic transfer, example 6-2
+    one_tan_burn_ex6_3()  # test one-tangent transfer, example 6-3
+    # test_tof_prob2_7()  # test tof, problem 2-7
+    # test_tof_prob2_7a(plot_sp=False)  # test tof; plot sma vs. sp
