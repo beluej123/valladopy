@@ -71,10 +71,22 @@ def bielliptic_ex6_2():
 
 def one_tan_burn_ex6_3():
     """
-    Vallado One-Tangent Burn Transfer, example 6-3, p334.
-    One-Tangent Burn uses one central body for the transfer ellipse.
-    Interplanetary missions with patched conic in chapter 12.
+    Test Vallado One-Tangent Burn Transfer, example 6-3, p334.
+    
+    Input Parameters:
+    ----------
+        None
+    Returns:
+    -------
+        None
+    Notes:
+    -------
+        One-Tangent Burn uses one central body for the transfer ellipse.
+        Interplanetary missions with patched conic in chapter 12.
+
+        References: see list at file beginning.
     """
+    print(f"\nTest one-tangent burn, Vallado example 6-3:")
     # constants
     au = 149597870.7  # [km/au] Vallado p.1043, tbl.D-5
     mu_sun_km = 1.32712428e11  # [km^3/s^2], Vallado p.1043, tbl.D-5
@@ -91,9 +103,17 @@ def one_tan_burn_ex6_3():
     # nu_trans_b = 175  # [deg], table 6-1, moon
 
     # val_one_tan_burn(r_init: float, r_final: float, nu_trans_b: float, mu_trans: float)
-    vfunc.val_one_tan_burn(
+    ecc_tx, sma_tx, tof_tx, dv_0, dv_1 = vfunc.val_one_tan_burn(
         r_init=r0_mag, r_final=r1_mag, nu_trans_b=nu_trans_b, mu_trans=mu_earth_km
     )
+    print(f"transfer eccentricity, ecc_tx= {ecc_tx:.6g}")
+    print(f"transfer semi-major axis, sma_tx= {sma_tx:.6g}")
+    print(f"delta velocity at v0, dv_0= {dv_0:.6g}")
+    print(f"delta velocity at v1, dv_1= {dv_1:.6g}")
+    print(
+        f"tof_trans= {tof_tx:0.8g} [sec], {tof_tx/60:0.8g} [min], {(tof_tx/(60*60)):0.8g} [hr]"
+    )
+    return None  # one_tan_burn_ex6_3()
 
 
 import math
@@ -103,17 +123,22 @@ from kepler import findTOF, findTOF_a
 
 def test_tof_prob2_7() -> None:
     """
-    Find time of flight (tof).
-    Reference Vallado [2], problem 2.7, p.128.
-    Reference Vallado [2], tof, section 2.8, p.126, algorithm 11.
-
-    Notes:
+    Find time of flight (tof). Vallado, problem 2.7, p.128.
+    
+    Input Parameters:
     ----------
-        If a value for sp (semi-parameter, aka p) is given then in a broader
-        context ecc (eccentricity) and/or sma (semi-major axis) must be
-        chosen to completely define the orbit; more than just defining the
-        the central body.  It is useful to understand the limits on orbit
-        definition; see test_tof_prob2_7a.
+        None
+    Returns:
+    -------
+        None
+    Notes:
+    -------
+        Interplanetary missions with patched conic in Vallado chapter 12.
+        Note Vallado, tof, section 2.8, p.126, algorithm 11.
+        It is useful to understand the limits on orbit definition; see
+            test_tof_prob2_7a.
+
+        Reference Details: see list at file beginning.
     """
     print(f"\nVallado time-of-flight, prob 2.7:")
     mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado p.1041, tbl.D-3

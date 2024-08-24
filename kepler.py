@@ -659,23 +659,23 @@ def kepler(r0, v0, dt, mu=Earth.mu, tol=1e-6):
 
     Parameters
     ----------
-    r0: numpy.matrix (3x1)
-        Initial position vector (km)
-    v0: numpy.matrix (3x1)
-        Initial velocity vector (km/s)
-    dt: double
-        Time to propagate (seconds)
-    mu: double, optional, default=3.986004415E5 (Earth.mu in solarsys.py)
-        Gravitational parameter (km^3/s^2)
-    tol: double, optional, default=1E-6
-        Convergence criterion (iteration difference)
+        r0: numpy.matrix (3x1)
+            Initial position vector (km)
+        v0: numpy.matrix (3x1)
+            Initial velocity vector (km/s)
+        dt: double
+            Time to propagate (seconds)
+        mu: double, optional, default=3.986004415E5 (Earth.mu in solarsys.py)
+            Gravitational parameter (km^3/s^2)
+        tol: double, optional, default=1E-6
+            Convergence criterion (iteration difference)
 
     Returns
     -------
-    r: numpy.matrix (3x1)
-        New position vector (km)
-    v: numpy.matrix (3x1)
-        New velocity vector (km/s)
+        r: numpy.matrix (3x1)
+            New position vector (km)
+        v: numpy.matrix (3x1)
+            New velocity vector (km/s)
     """
 
     r_mag = np.linalg.norm(r0)
