@@ -1,11 +1,18 @@
 """
-Vallado functions.
+Vallado function collection.
+Edits 2024-08-21 +, Jeff Belue.
 
 Notes:
 ----------
+    TODO, This file is organized ...
+    Generally, units shown in brackets [km, rad, deg, etc.].
+    Generally, angles are saved in [rad], distance [km].
     Reminder to me; cannot get black formatter to work within VSCode,
         so in terminal type; black *.py
     Reminder to me; VSCode DocString, Keyboard shortcut: ctrl+shift+2
+    
+    Test for the functions below may be found in other files, for example,
+        astro_time.py, kepler.py, test_kepler, vallado_ex1.py etc...
 
 References
 ----------
@@ -20,56 +27,58 @@ References
 import numpy as np
 
 
-def cal_a(r1, r2):
+def cal_a(r1: float, r2: float):
     """Calculate semi-major axis, a
     Parameters
     ----------
-    r1 : float, 1st orbit radius
-    r2 : float, 2nd orbit radius
+        r1 : float, 1st orbit radius
+        r2 : float, 2nd orbit radius
     Returns
     -------
-    float, semi-major axis, a
+        float, semi-major axis, a
     """
     return (r1 + r2) / 2
 
 
-def calc_v1(mu, r1):  # circular orbit velocity
+def calc_v1(mu: float, r1: float):  # circular orbit velocity
     return np.sqrt(mu / r1)
 
 
-def calc_v2(mu, r1, a):  # elliptical orbit velocity
+def calc_v2(mu: float, r1: float, a: float):  # elliptical orbit velocity
     return np.sqrt(mu * ((2 / r1) - (1 / a)))
 
 
-def calc_tof(mu, a):  # time of flight for complete orbit
+def calc_tof(mu: float, a: float):  # time of flight for complete orbit
     return 2 * np.pi * np.sqrt(a**3 / mu)
 
 
 def calc_ecc(r_peri: float, r_apo: float) -> float:  # calculate eccentricity
-    """Calculate Eccentricity
+    """
+    Calculate Eccentricity
 
     Parameters
     ----------
-    r_peri : float, radius of periapsis
-    r_apo : float, radius of apoapsis
+        r_peri : float, radius of periapsis
+        r_apo : float, radius of apoapsis
 
     Returns
     -------
-    eccentricity : float
+        eccentricity : float
     """
     return (r_apo - r_peri) / (r_apo + r_peri)
 
 
 def val_hohmann(r_init: float, r_final: float, mu_trans: float):
-    """Vallado Hohmann Transfer, algorithm 36
+    """
+    Vallado Hohmann Transfer, algorithm 36
     Assume one central body; inner and outter orbits r circular.
     See Vallado fig 6-5, p324.
 
     Parameters
     ----------
-    r_init : float, initial orbit radius
-    r_final: float, final orbit radius
-    mu_trans : float, transfer central body gravitational constant
+        r_init : float, initial orbit radius
+        r_final: float, final orbit radius
+        mu_trans : float, transfer central body gravitational constant
 
     Returns
     -------
@@ -116,12 +125,14 @@ def val_hohmann(r_init: float, r_final: float, mu_trans: float):
     ecc_trans = calc_ecc(r_peri, r_apo)
     return (tof_hoh, ecc_trans, dv_total)
     print(f"transfer eccentricity = {ecc_trans:0.8g}")
+    return None
 
 
 def val_bielliptic(r_init: float, r_b: float, r_final: float, mu_trans: float):
-    """Vallado Bi-Elliptic Transfer, algorithm 37
+    """
+    Vallado Bi-Elliptic Transfer, algorithm 37
         Assume one central body.  See Vallado fig 6-5, p324.
-    Parameters
+    Input Parameters:
     ----------
     r_init : float, initial orbit radius
     r_b : float, point b, beyond r_final orbit
@@ -170,6 +181,7 @@ def val_bielliptic(r_init: float, r_b: float, r_final: float, mu_trans: float):
     print(f"\nBi-Elliptic transfer time: {tof_bielliptic:0.8g} [s]")
     print(f"Bi-Elliptic transfer time: {tof_bielliptic/(60):0.8g} [m]")
     print(f"Bi-Elliptic transfer time: {tof_bielliptic/(60*60):0.8g} [hr]")
+    return None
 
 
 def val_one_tan_burn(r_init: float, r_final: float, nu_trans_b: float, mu_trans: float):
@@ -219,23 +231,24 @@ def val_one_tan_burn(r_init: float, r_final: float, nu_trans_b: float, mu_trans:
     # convert input degrees to radians
     nu_trans_b1 = nu_trans_b * np.pi / 180
 
-    R_ratio = r_init / r_final
-    # print(f"orbital radius ratio = {R_ratio:0.8g}")
+    R_ratio = r1 / r2
+    print(f"orbital radius ratio = {R_ratio:0.8g}")
 
     # periapsis or apoapsis launch sets ecc (eccentricity), Vallado p.332
-    cos_R_ratio = math.cos(nu_trans_b)
+    cos_R_ratio = math.cos(nu_trans_b1)
+    # print(f"cos_R_ratio= {cos_R_ratio:.4g}")
     if (R_ratio > 1.0 and cos_R_ratio > R_ratio) or (
         R_ratio < 1.0 and cos_R_ratio < R_ratio
     ):
         print(f"periapsis launch")
 
         ecc_trans = (R_ratio - 1) / (np.cos(nu_trans_b1) - R_ratio)
-        a_trans = r_init / (1 - ecc_trans)  # transfer semi-major axis
+        a_trans = r1 / (1 - ecc_trans)  # transfer semi-major axis
     else:
         print(f"apoapsis launch")
 
         ecc_trans = (R_ratio - 1) / (np.cos(nu_trans_b1) + R_ratio)
-        a_trans = r_init / (1 + ecc_trans)  # transfer semi-major axis
+        a_trans = r1 / (1 + ecc_trans)  # transfer semi-major axis
 
     # print(f"transfer eccentricity = {ecc_trans:0.8g}")
     # print(f"semimajor axis, transfer: {a_trans:0.8g} [km]")
@@ -246,7 +259,7 @@ def val_one_tan_burn(r_init: float, r_final: float, nu_trans_b: float, mu_trans:
     # print(f"v2 final velocity: {v_2:0.8g} [km/s]")
 
     # launch transfer ellipse orbit velocity; point a
-    v_trans_a = calc_v2(mu, r1, a_trans)
+    v_trans_a = calc_v2(mu, r1, a_trans)  # v2=elliptical calc
     # arrive ellipse orbit velocity; point b
     v_trans_b = calc_v2(mu, r2, a_trans)  # ellipse orbit velocity
     # print(f"velocity, transfer a: {v_trans_a:0.8g} [km/s]")

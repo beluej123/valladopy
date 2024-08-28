@@ -1,8 +1,21 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Feb  6 11:27:13 2016
+Created on Sat Feb  6 11:27:13 2016, @author: Alex
+Edited 2024-08-28, Jeff Belue
+Notes:
+----------
+    TODO, This file is organized ...
+    Generally, units shown in brackets [km, rad, deg, etc.].
+    Generally, angles are saved in [rad], distance [km].
 
-@author: Alex
+References
+----------
+    [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
+        Fundamentals of Astrodynamics. Dover Publications Inc.
+    [2] Vallado, David A., (2013, 4th ed.).
+        Fundamentals of Astrodynamics and Applications. Microcosm Press.
+    [3] Curtis, H.W. (2009 2nd ed.).
+        Orbital Mechanics for Engineering Students. Elsevier Ltd.
 """
 
 

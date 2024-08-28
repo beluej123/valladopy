@@ -1,15 +1,31 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Aug 20 17:22:44 2016
+Created on Sat Aug 20 17:22:44 2016, @author: Alex
+Edits 2024-08-27 +, by Jeff Belue.
 
-@author: Alex
+Notes:
+----------
+    TODO, This file is organized ...
+    Generally, units shown in brackets [km, rad, deg, etc.].
+    Generally, angles are saved in [rad], distance [km].
+
+References
+----------
+    [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
+        Fundamentals of Astrodynamics. Dover Publications Inc.
+    [2] Vallado, David A., (2013, 4th ed.).
+        Fundamentals of Astrodynamics and Applications. Microcosm Press.
+    [3] Curtis, H.W. (2009 2nd ed.).
+        Orbital Mechanics for Engineering Students. Elsevier Ltd.
 """
 
+import math
 import unittest
 from test import support
-import astro_time
-import math
+
 import numpy as np
+
+import astro_time
 
 
 class TimeExamplesFromBookTestCase(unittest.TestCase):

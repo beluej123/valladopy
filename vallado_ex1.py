@@ -1,13 +1,27 @@
 """
-Collection of Vallado [2] solutions to examples and problems.
+Collection of Vallado solutions to examples and problems.
 
 Notes:
 ----------
-    Reminder to me; cannot get black formatter to work within VSCode,
-        so in terminal type; black *.py
-    Reminder to me; VSCode DocString, Keyboard shortcut: ctrl+shift+2
+    This file is organized with each example as a function; example function name:
+        one_tan_burn_ex6_3():
+    
+    Supporting functions for the test functions below, may be found in other
+        files, for example vallad_func.py, astro_time.py, kepler.py etc...
+        Also note, the test examples are collected right after this document
+        block.  However, the example test functions are defined/enabled at the
+        end of this file.  Each example function is designed to be stand-alone,
+        but, if you use the function as stand alone you will need to copy the
+        imports...
 
-References
+    Reminder to me; cannot get black formatter to work within VSCode,
+        so in terminal type; black *.py.
+    Reminder to me; VSCode DocString, Keyboard shortcut: ctrl+shift+2.
+    
+    Generally, units shown in brackets [km, rad, deg, etc.].
+    Generally angles are saved in [rad], distance [km].
+
+References:
 ----------
     [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
         Fundamentals of Astrodynamics. Dover Publications Inc.
@@ -23,7 +37,8 @@ import vallado_func as vfunc  # Vallado functions
 
 
 def hohmann_ex6_1():
-    """Vallado, Hohmann Transfer, example 6-1, p326.
+    """
+    Vallado, Hohmann Transfer, example 6-1, p326.
     Hohmann uses one central body for the transfer ellipse.
     Interplanetary missions use the patched conic; 3 orbit types:
     1) initial body - departure
@@ -33,7 +48,7 @@ def hohmann_ex6_1():
     Interplanetary missions with patched conic in chapter 12.
     """
     # define constants
-    r_earth = 6378.137  # [km]
+    r_earth = 6378.1363  # [km] earth radius; Vallado p.1041, tbl.D-3
     mu_earth = 3.986012e5  # [km^3 / s^2] gravatational constant, earth
     mu_sun = 1.327e11  # [km^3 / s^2] gravatational constant, sun
 
@@ -46,7 +61,8 @@ def hohmann_ex6_1():
 
 
 def bielliptic_ex6_2():
-    """Vallado, Bi-Elliptic Transfer, example 6-2, p327.
+    """
+    Vallado, Bi-Elliptic Transfer, example 6-2, p327.
     Bi-Elliptic uses one central body for the transfer ellipse.
     Interplanetary missions use the patched conic; 3 orbit types:
     1) initial body - departure
@@ -56,7 +72,7 @@ def bielliptic_ex6_2():
     Interplanetary missions with patched conic in chapter 12.
     """
     # define constants
-    r_earth = 6378.137  # [km]
+    r_earth = 6378.1363  # [km] earth radius; Vallado p.1041, tbl.D-3
     mu_earth = 3.986012e5  # [km^3 / s^2] gravatational constant, earth
     mu_sun = 1.327e11  # [km^3 / s^2] gravatational constant, sun
 
@@ -72,7 +88,7 @@ def bielliptic_ex6_2():
 def one_tan_burn_ex6_3():
     """
     Test Vallado One-Tangent Burn Transfer, example 6-3, p334.
-    
+
     Input Parameters:
     ----------
         None
@@ -96,13 +112,12 @@ def one_tan_burn_ex6_3():
 
     # define inputs; one-tangent transfer (two burns/impulses)
     r0_mag = r_earth + 191.34411  # [km], example 6-3
-    r1_mag = r_earth + 35781.34857  # [km], example 6-3
+    r1_mag = r_earth + 35781.34857  # [km], example 6-3, geosynchronous
     nu_trans_b = 160  # [deg], example 6-3
+    # uncomment below to test moon trajectory
+    # r1_mag = r_earth + 376310  # [km], vallado p.336, tbl 6-1, moon
+    # nu_trans_b = 175  # [deg], vallado p.336, tbl 6-1, moon
 
-    # r1 = r_earth + 376310  # [km], table 6-1, moon
-    # nu_trans_b = 175  # [deg], table 6-1, moon
-
-    # val_one_tan_burn(r_init: float, r_final: float, nu_trans_b: float, mu_trans: float)
     ecc_tx, sma_tx, tof_tx, dv_0, dv_1 = vfunc.val_one_tan_burn(
         r_init=r0_mag, r_final=r1_mag, nu_trans_b=nu_trans_b, mu_trans=mu_earth_km
     )
@@ -110,6 +125,7 @@ def one_tan_burn_ex6_3():
     print(f"transfer semi-major axis, sma_tx= {sma_tx:.6g}")
     print(f"delta velocity at v0, dv_0= {dv_0:.6g}")
     print(f"delta velocity at v1, dv_1= {dv_1:.6g}")
+    print(f"one-tangent, total delta velocity, {dv_0+dv_1:.6g}")
     print(
         f"tof_trans= {tof_tx:0.8g} [sec], {tof_tx/60:0.8g} [min], {(tof_tx/(60*60)):0.8g} [hr]"
     )
@@ -124,7 +140,7 @@ from kepler import findTOF, findTOF_a
 def test_tof_prob2_7() -> None:
     """
     Find time of flight (tof). Vallado, problem 2.7, p.128.
-    
+
     Input Parameters:
     ----------
         None

@@ -1,17 +1,30 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun Jan 31 16:41:34 2016
-@author: Alex
+Created Sun Jan 31 16:41:34 2016, @author: Alex
 Edits 2024-08-21 +, Jeff Belue.
+
+Notes:
+----------
+    TODO, This file is organized ...
+    Generally, units shown in brackets [km, rad, deg, etc.].
+    Generally, angles are saved in [rad], distance [km].
+    
+    Supporting functions for the test functions below, may be found in other
+        files, for example vallad_func.py, astro_time.py, kepler.py etc...
+        Also note, the test examples are collected right after this document
+        block.  However, the example test functions are defined/enabled at the
+        end of this file.  Each example function is designed to be stand-alone,
+        but, if you use the function as stand alone you will need to copy the
+        imports...
 
 References
 ----------
     [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
         Fundamentals of Astrodynamics. Dover Publications Inc.
-    [2] Vallado, David A., (2013, 4th ed.)
-        Fundamentals of Astrodynamics and Applications, Microcosm Press.
+    [2] Vallado, David A., (2013, 4th ed.).
+        Fundamentals of Astrodynamics and Applications. Microcosm Press.
     [3] Curtis, H.W. (2009 2nd ed.).
-        Orbital Mechanics for Engineering Students.
+        Orbital Mechanics for Engineering Students. Elsevier Ltd.
 """
 
 import numpy as np
@@ -26,18 +39,21 @@ def find_c2c3(psi: float):
     the universal formulation of Kepler's Equation.  Reference Vallado [2],
     section 2.2, p.63, algorithm 1.
 
-    Parameters
+    Parameters:
     ----------
-    psi: double
-        :math:`psi = chi^2/a` where :math:`chi` is universal
-        variable and a is the semi-major axis
+        psi: double
+            :math:`psi = chi^2/a` where :math:`chi` is universal
+            variable and a is the semi-major axis
 
-    Returns
+    Returns:
     -------
-    c2: double
-        c2 coefficient in universal formulation of Kepler's Equation
-    c3: double
-        c3 coefficient in universal formulation of Kepler's Equation
+        c2: double
+            c2 coefficient in universal formulation of Kepler's Equation
+        c3: double
+            c3 coefficient in universal formulation of Kepler's Equation
+    Notes:
+    ----------
+        References: see list at file beginning.
     """
 
     if psi > 1e-6:
@@ -59,12 +75,13 @@ def find_c2c3(psi: float):
 
 
 def kep_eqtnE(M, e, tol=1e-8):
-    """Elliptical solution to Kepler's Equation (Algorithm 2)
+    """
+    Elliptical solution to Kepler's Equation (Algorithm 2)
 
     Newton-Raphson iterative approach solving Kepler's Equation for
-    elliptical orbits. Reference Vallado [2], section 2.2, p.65, algorithm 2.
+    elliptical orbits. Reference Vallado, section 2.2, p.65, algorithm 2.
 
-    Parameters
+    Parameters:
     ----------
     M: double
         Mean Anomaly (radians)
@@ -73,10 +90,9 @@ def kep_eqtnE(M, e, tol=1e-8):
     tol: double, optional, default=1E-8
         Convergence tolerance used in Newton-Raphson method
 
-    Returns
+    Returns:
     -------
-    E: double
-        Eccentric Anomaly (radians)
+    E: double, [rad] Eccentric Anomaly
     """
     if ((M > -np.pi) and (M < 0)) or M > np.pi:
         E = M - e
@@ -371,39 +387,34 @@ def rv2coe(r, v, mu=Earth.mu):
 
 
 def coe2rv(p, ecc, inc, raan, aop, anom, mu=Earth.mu):
-    """Converts Keplerian orbital elements to pos/vel vectors (Algorithm 10)
+    """
+    Convert Keplerian orbital elements to pos/vel vectors.
 
     Converts Keplerian orbital elements to position/velocity vectors (km, km/s)
-    in the IJK frame.  Reference Vallado [2], section 2.6, p.118, algorithm 10.
+    in the IJK frame.  Reference Vallado, section 2.6, p.118, algorithm 10.
 
-    Parameters
+    Input Parameters:
     ----------
-    p: double
-        Semi-parameter (km)
-    ecc: double
-        Eccentricity
-    inc: double
-        Inclination (radians)
-    raan: double
-        Right Ascension of the Ascending Node (radians)
-    aop: double
-        Argument of perigee (radians)
-    anom: double
-        True anomaly (radians)
-    mu: double, optional, default=3.986004415E5 (Earth.mu in solarsys.py)
-        Gravitational parameter (km^3/s^2)
-
-    Returns
+        p    : double, [km] Semi-parameter
+        ecc  : double, [--] Eccentricity
+        inc  : double, [rad] Inclination
+        raan : double, [rad] Right Ascension of the Ascending Node
+        aop  : double, [rad]Argument of perigee
+        anom : double, [rad] True angle/anomaly
+        mu   : double, [km^3/s^2] optional, Gravitational parameter
+                default=3.986004415E5 (Earth.mu in solarsys.py)
+    Returns:
     -------
-    r_ijk: numpy.matrix (3x1)
-        Position vector in the IJK frame (km)
-    v_ijk: numpy.matrix (3x1)
-        Velocity vector in the IJK frame (km/s)
+        r_ijk : numpy.matrix (3x1)
+                Position vector in the IJK frame (km)
+        v_ijk : numpy.matrix (3x1)
+                Velocity vector in the IJK frame (km/s)
 
     Note
     ----
-    Algorithm assumes that raan, aop, and anom have been set to account for
-    special cases (circular, equatorial, etc.) as in rv2coe (Algorithm 9)
+        Algorithm assumes that raan, aop, and anom have been set to account for
+        special cases (circular, equatorial, etc.) as in rv2coe (Algorithm 9)
+        Also see Curtis, p.473 example 8.7.
     """
     # Stored trig comps
     cosv = np.cos(anom)

@@ -1,16 +1,39 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Aug 20 17:34:45 2016
+Created on Sat Aug 20 17:34:45 2016, @author: Alex
+Edits 2024-August +, by Jeff Belue.
+Notes:
+----------
+    TODO, This file is organized ...
+    Generally, units shown in brackets [km, rad, deg, etc.].
+    Generally, angles are saved in [rad], distance [km].
+    
+    Supporting functions for the test functions below, may be found in other
+        files, for example vallad_func.py, astro_time.py, kepler.py etc...
+        Also note, the test examples are collected right after this document
+        block.  However, the example test functions are defined/enabled at the
+        end of this file.  Each example function is designed to be stand-alone,
+        but, if you use the function as stand alone you will need to copy the
+        imports...
 
-@author: Alex
+References
+----------
+    [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
+        Fundamentals of Astrodynamics. Dover Publications Inc.
+    [2] Vallado, David A., (2013, 4th ed.).
+        Fundamentals of Astrodynamics and Applications. Microcosm Press.
+    [3] Curtis, H.W. (2009 2nd ed.).
+        Orbital Mechanics for Engineering Students. Elsevier Ltd.
 """
 
-import numpy as np
 import math
+
+import numpy as np
 
 
 def julian_date(yr, mo, d, hr, minute, sec, leap_sec=False):
-    """Converts a date & time to Julian Date
+    """
+    Converts a date & time to Julian Date
 
     Converts a date & time (yr, month, day, hour, second) to a Julian Date.
     Valid for any time system (UT1, UTC, AT, etc.) but should be identified to
