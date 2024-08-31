@@ -3,8 +3,8 @@ Collection of Vallado solutions to examples and problems.
 
 Notes:
 ----------
-    This file is organized with each example as a function; example function name:
-        one_tan_burn_ex6_3():
+    This file is organized with each example as a function; i.e. function name:
+        test_ex6_3_one_tan_burn().
     
     Supporting functions for the test functions below, may be found in other
         files, for example vallad_func.py, astro_time.py, kepler.py etc...
@@ -31,113 +31,15 @@ References:
         Orbital Mechanics for Engineering Students. Elsevier Ltd.
 """
 
+import math
+
 import numpy as np
 
 import vallado_func as vfunc  # Vallado functions
-
-
-def hohmann_ex6_1():
-    """
-    Vallado, Hohmann Transfer, example 6-1, p326.
-    Hohmann uses one central body for the transfer ellipse.
-    Interplanetary missions use the patched conic; 3 orbit types:
-    1) initial body - departure
-    2) transfer body - transfer
-    3) final body - arrival
-
-    Interplanetary missions with patched conic in chapter 12.
-    """
-    # define constants
-    r_earth = 6378.1363  # [km] earth radius; Vallado p.1041, tbl.D-3
-    mu_earth = 3.986012e5  # [km^3 / s^2] gravatational constant, earth
-    mu_sun = 1.327e11  # [km^3 / s^2] gravatational constant, sun
-
-    # define inputs for hohmann transfer
-    r1 = r_earth + 191.34411  # [km]
-    r2 = r_earth + 35781.34857  # [km]
-    mu_trans = mu_earth  # [km^3 / s^2] gravatational constant
-
-    vfunc.val_hohmann(r1, r2, mu_trans)  # vallado hohmann transfer
-
-
-def bielliptic_ex6_2():
-    """
-    Vallado, Bi-Elliptic Transfer, example 6-2, p327.
-    Bi-Elliptic uses one central body for the transfer ellipse.
-    Interplanetary missions use the patched conic; 3 orbit types:
-    1) initial body - departure
-    2) transfer body - transfer
-    3) final body - arrival
-
-    Interplanetary missions with patched conic in chapter 12.
-    """
-    # define constants
-    r_earth = 6378.1363  # [km] earth radius; Vallado p.1041, tbl.D-3
-    mu_earth = 3.986012e5  # [km^3 / s^2] gravatational constant, earth
-    mu_sun = 1.327e11  # [km^3 / s^2] gravatational constant, sun
-
-    # define inputs; bi-elliptic transfer
-    r1 = r_earth + 191.34411  # [km]
-    rb = r_earth + 503873  # [km] point b, beyond r2
-    r2 = r_earth + 376310  # [km]
-    mu_trans = mu_earth  # [km^3 / s^2] gravatational constant
-
-    vfunc.val_bielliptic(r1, rb, r2, mu_trans)  # vallado bi-elliptic transfer
-
-
-def one_tan_burn_ex6_3():
-    """
-    Test Vallado One-Tangent Burn Transfer, example 6-3, p334.
-
-    Input Parameters:
-    ----------
-        None
-    Returns:
-    -------
-        None
-    Notes:
-    -------
-        One-Tangent Burn uses one central body for the transfer ellipse.
-        Interplanetary missions with patched conic in chapter 12.
-
-        References: see list at file beginning.
-    """
-    print(f"\nTest one-tangent burn, Vallado example 6-3:")
-    # constants
-    au = 149597870.7  # [km/au] Vallado p.1043, tbl.D-5
-    mu_sun_km = 1.32712428e11  # [km^3/s^2], Vallado p.1043, tbl.D-5
-    mu_sun_au = mu_sun_km / (au**3)  # unit conversion
-    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado p.1041, tbl.D-3
-    r_earth = 6378.1363  # [km] earth radius; Vallado p.1041, tbl.D-3
-
-    # define inputs; one-tangent transfer (two burns/impulses)
-    r0_mag = r_earth + 191.34411  # [km], example 6-3
-    r1_mag = r_earth + 35781.34857  # [km], example 6-3, geosynchronous
-    nu_trans_b = 160  # [deg], example 6-3
-    # uncomment below to test moon trajectory
-    # r1_mag = r_earth + 376310  # [km], vallado p.336, tbl 6-1, moon
-    # nu_trans_b = 175  # [deg], vallado p.336, tbl 6-1, moon
-
-    ecc_tx, sma_tx, tof_tx, dv_0, dv_1 = vfunc.val_one_tan_burn(
-        r_init=r0_mag, r_final=r1_mag, nu_trans_b=nu_trans_b, mu_trans=mu_earth_km
-    )
-    print(f"transfer eccentricity, ecc_tx= {ecc_tx:.6g}")
-    print(f"transfer semi-major axis, sma_tx= {sma_tx:.6g}")
-    print(f"delta velocity at v0, dv_0= {dv_0:.6g}")
-    print(f"delta velocity at v1, dv_1= {dv_1:.6g}")
-    print(f"one-tangent, total delta velocity, {dv_0+dv_1:.6g}")
-    print(
-        f"tof_trans= {tof_tx:0.8g} [sec], {tof_tx/60:0.8g} [min], {(tof_tx/(60*60)):0.8g} [hr]"
-    )
-    return None  # one_tan_burn_ex6_3()
-
-
-import math
-
 from kepler import findTOF, findTOF_a
 
 
-def test_tof_prob2_7() -> None:
+def test_prb2_7_tof() -> None:
     """
     Find time of flight (tof). Vallado, problem 2.7, p.128.
 
@@ -177,11 +79,11 @@ def test_tof_prob2_7() -> None:
     return
 
 
-def test_tof_prob2_7a(plot_sp=False) -> None:
+def test_prb2_7a_tof(plot_sp=False) -> None:
     """
     Find time of flight (tof) and orbit parameter limits.
-    Note Vallado [2], problem 2.7, p.128; tof, section 2.8, p.126, algorithm 11.
-    Note BMWS [1], sma as a function of sp, section 5.4.2, p.204.
+    Note Vallado, problem 2.7, p.128; tof, section 2.8, p.126, algorithm 11.
+    Note BMWS, sma as a function of sp, section 5.4.2, p.204.
 
     Notes:
     ----------
@@ -239,10 +141,134 @@ def test_tof_prob2_7a(plot_sp=False) -> None:
     return  # test_tof_prob2_7a()
 
 
-# Main code. Functions and class methods are called from main.
+def test_ex6_1_hohmann():
+    """
+    Hohmann Transfer, Vallado, example 6-1, p326; uses p.325, algirithm 36.
+    Hohmann uses one central body for the transfer ellipse.
+    Interplanetary missions use the patched conic; 3 orbit types:
+    1) initial body - departure
+    2) transfer body - transfer
+    3) final body - arrival
+
+    Interplanetary missions with patched conic in chapter 12.
+    """
+    print(f"\nTest Hohmann Transfer, Vallado, example 6.1")
+    # define constants
+    au = 149597870.7  # [km/au] Vallado p.1042, tbl.D-5
+    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado p.1041, tbl.D-3
+    r_earth = 6378.1363  # [km] earth radius; Vallado p.1041, tbl.D-3
+
+    # define inputs for hohmann transfer
+    r1 = r_earth + 191.34411  # [km]
+    r2 = r_earth + 35781.34857  # [km]
+
+    # vallado hohmann transfer
+    tof_hoh, ecc_trans, dv_total = vfunc.val_hohmann(
+        r_init=r1, r_final=r2, mu_trans=mu_earth_km
+    )
+    print(f"Hohmann transfer time: {(tof_hoh/2):0.8g} [s], {tof_hoh/(2*60):0.8g} [m]")
+    print(f"Transfer eccentricity, ecc_trans= {ecc_trans}")
+    print(f"Total transfer delta-v, dv_total= {dv_total}")
+
+
+def test_ex6_2_bielliptic():
+    """
+    Bi-Elliptic Transfer, Vallado, example 6-2, p327.
+    Bi-Elliptic uses one central body for the transfer ellipse.
+    Two transfer ellipses; one at periapsis, the other at apoapsis.
+    1) initial body - departure
+    2) transfer body - transfer
+    3) final body - arrival
+
+    Notes:
+    ----------
+        Note, interplanetary missions use the patched conic; 3 orbit types:
+        For interplanetary missions with patched conic see chapter 12.
+    """
+    print("\nTest Vallado Bi-Elliptic Transfer, example 6-2")  # temporary print
+    # define constants
+    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado p.1041, tbl.D-3
+    r_earth = 6378.1363  # [km] earth radius; Vallado p.1041, tbl.D-3
+
+    # define inputs; bi-elliptic transfer
+    r_1 = r_earth + 191.34411  # [km]
+    r_b = r_earth + 503873  # [km] point b, beyond r2
+    r_2 = r_earth + 376310  # [km]
+
+    # vallado bi-elliptic transfer
+    # val_bielliptic(r_init: float, r_b: float, r_final: float, mu_trans: float):
+    a_trans1, a_trans2, t_trans1, t_trans2, dv_total = vfunc.val_bielliptic(
+        r_init=r_1, r_b=r_b, r_final=r_2, mu_trans=mu_earth_km
+    )
+    # extra: eccentricity not part of Vallado example:
+    #   calculate eccentricity of the two transfer ellipses
+    ecc_1 = abs(r_b - r_1) / (r_1 + r_b)  # elliptical orbits only
+    ecc_2 = abs(r_b - r_2) / (r_2 + r_b)  # elliptical orbits only
+
+    print(f"Ellipse1 transfer; semi-major axis, a_trans1= {a_trans1:.8g} [km]")
+    print(f"Ellipse1 eccentricity, ecc_1= {ecc_1:.6g}")
+    print(f"Ellipse2 transfer; semi-major axis, a_trans2= {a_trans2:.8g} [km]")
+    print(f"Ellipse2 eccentricity, ecc_2= {ecc_2:.6g}")
+
+    tof_total = t_trans1 + t_trans2  # tof=time of flight
+    print(
+        f"Bi-Elliptic tof: {tof_total:0.8g} [s], "
+        f"{tof_total/(60):.8g} [min], "
+        f"{tof_total/(3600):0.8g} [hr]"
+    )
+
+
+def test_ex6_3_one_tan_burn():
+    """
+    Test Vallado One-Tangent Burn Transfer, example 6-3, p334.
+
+    Input Parameters:
+    ----------
+        None
+    Returns:
+    -------
+        None
+    Notes:
+    -------
+        One-Tangent Burn uses one central body for the transfer ellipse.
+        Interplanetary missions with patched conic in chapter 12.
+
+        References: see list at file beginning.
+    """
+    print(f"\nTest one-tangent burn, Vallado example 6-3:")
+    # constants
+    au = 149597870.7  # [km/au] Vallado p.1043, tbl.D-5
+    mu_sun_km = 1.32712428e11  # [km^3/s^2], Vallado p.1043, tbl.D-5
+    mu_sun_au = mu_sun_km / (au**3)  # unit conversion
+    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado p.1041, tbl.D-3
+    r_earth = 6378.1363  # [km] earth radius; Vallado p.1041, tbl.D-3
+
+    # define inputs; one-tangent transfer (two burns/impulses)
+    r0_mag = r_earth + 191.34411  # [km], example 6-3
+    r1_mag = r_earth + 35781.34857  # [km], example 6-3, geosynchronous
+    nu_trans_b = 160  # [deg], example 6-3
+    # uncomment below to test moon trajectory
+    # r1_mag = r_earth + 376310  # [km], vallado p.336, tbl 6-1, moon
+    # nu_trans_b = 175  # [deg], vallado p.336, tbl 6-1, moon
+
+    ecc_tx, sma_tx, tof_tx, dv_0, dv_1 = vfunc.val_one_tan_burn(
+        r_init=r0_mag, r_final=r1_mag, nu_trans_b=nu_trans_b, mu_trans=mu_earth_km
+    )
+    print(f"transfer eccentricity, ecc_tx= {ecc_tx:.6g}")
+    print(f"transfer semi-major axis, sma_tx= {sma_tx:.6g}")
+    print(f"delta velocity at v0, dv_0= {dv_0:.6g}")
+    print(f"delta velocity at v1, dv_1= {dv_1:.6g}")
+    print(f"one-tangent, total delta velocity, {dv_0+dv_1:.6g}")
+    print(
+        f"tof_trans= {tof_tx:0.8g} [sec], {tof_tx/60:0.8g} [min], {(tof_tx/(60*60)):0.8g} [hr]"
+    )
+    return None  # one_tan_burn_ex6_3()
+
+
+# Test functions and class methods are called here.
 if __name__ == "__main__":
-    # hohmann_ex6_1()  # test hohmann transfer, example 6-1
-    # bielliptic_ex6_2()  # test bi-elliptic transfer, example 6-2
-    one_tan_burn_ex6_3()  # test one-tangent transfer, example 6-3
-    # test_tof_prob2_7()  # test tof, problem 2-7
-    # test_tof_prob2_7a(plot_sp=False)  # test tof; plot sma vs. sp
+    # test_prb2_7_tof()  # test tof, problem 2-7
+    # test_prb2_7a_tof(plot_sp=False)  # test tof; plot sma vs. sp
+    # test_ex6_1_hohmann()  # test hohmann transfer, example 6-1
+    test_ex6_2_bielliptic()  # test bi-elliptic transfer, example 6-2
+    # test_ex6_3_one_tan_burn()  # test one-tangent transfer, example 6-3
