@@ -33,7 +33,8 @@ from solarsys import *
 
 
 def find_c2c3(psi: float):
-    """c(:math:`psi`) functions for the universal formulation (Algorithm 1)
+    """
+    c(:math:`psi`) functions for the universal formulation (Algorithm 1)
 
     Trigonometric implementation of the :math:`c(psi)` functions needed in
     the universal formulation of Kepler's Equation.  Reference Vallado [2],
@@ -109,7 +110,8 @@ def kep_eqtnE(M, e, tol=1e-8):
 
 
 def kep_eqtnP(del_t, p, mu=Earth.mu):
-    """Parabolic solution to Kepler's Equation (Algorithm 3)
+    """
+    Parabolic solution to Kepler's Equation (Algorithm 3)
 
     A trigonometric approach to solving Kepler's Equation for
     parabolic orbits. Reference Vallado [2], section 2.2, p.69, algorithm 3.
@@ -285,12 +287,13 @@ def hyperbolic_to_true(H, e):
 
 
 def rv2coe(r, v, mu=Earth.mu):
-    """Converts position/velocity to Keplerian orbital elements (Algorithm 9)
+    """
+    Converts position/velocity to Keplerian orbital elements (Algorithm 9)
 
     Converts position and velocity vectors in the IJK frame to Keplerian
     orbital elements.  Reference Vallado [2], section 2.5, p.113, algorithm 9.
 
-    Parameters
+    Input Parameters:
     ----------
     r: numpy.matrix (3x1)
         Position vector (km)
@@ -299,7 +302,7 @@ def rv2coe(r, v, mu=Earth.mu):
     mu: double, optional, default=3.986004415E5 (Earth.mu in solarsys.py)
         Gravitational parameter (km^3/s^2)
 
-    Returns
+    Returns:
     -------
     p: double
         Semi-parameter (km)

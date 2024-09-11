@@ -426,3 +426,141 @@ def k_l_m_sp(k, l, m, sp):
     # BMWS [2], p.204, eqn 5-42
     sma = (m * k * sp) / ((2 * m - l**2) * sp**2 + (2 * k * l * sp - k**2))
     return sma
+
+
+def planet_elements(planet_id: int, eph_data=0, au_units=True, rad_units=False):
+    """
+    Planet orbital elements; may include Pluto.
+
+    Input Parameters:
+    ----------
+        planet_id : int,
+            JPL Horizons eph_data=0, 1->8 Mercury->Neptune
+            Standish eph_data=1, 1->8 Mercury->Neptune
+        eph_data  : int, 0 or 1:
+            0 = JPL horizons data set, Table 1
+            1 = Standish 1992 data
+        au_units  : boolean; output true=distance units in au
+        rad_units  : boolean; output true=angular units in radians
+
+    Returns (for planet_id input):
+    -------
+        J2000_coe   : numpy.array, J2000 clasic orbital elements (Kepler).
+        J2000_rates : numpy.array, coe rate change (x/century) from 2000-01-01.
+    Notes:
+    ----------
+        Element list output:
+            sma   = semi-major axis (aka a) [km]
+            ecc   = eccentricity
+            incl  = inclination angle; to the ecliptic [deg]
+            RAAN  = right ascension of ascending node (aka capital W) [deg]
+                    longitude node
+            w_bar = longitude of periapsis [deg]
+            L     = mean longitude [deg]
+
+        References: see list at file beginning.
+    """
+    # Keplerian Elements and Rates, JPL Horizons, Table 1; EXCLUDING Pluto.
+    #   From JPL Horizons:
+    #   https://ssd.jpl.nasa.gov/planets/approx_pos.html
+    #   https://ssd.jpl.nasa.gov/tools/orbit_viewer.html
+    #   Mean ecliptic and equinox of J2000; time-interval 1800 AD - 2050 AD.
+
+    #   NOTICE !!
+    #   *** UNITS are different between the two data sets. ***
+    
+    if eph_data == 0:  # JPL horizons data set
+    # Horizons Table 1 data set COPIED DIRECTLY from the web-site noted above.
+    #   JPL Table 1 order of the elements is different then the other list below.
+    #   Also note, Table 1 list earth-moon barycenter, not just earth.
+    #           sma   |    ecc      |     inc     | long.node   | long.peri   |  mean.long (L)
+    #       au, au/cy | ecc, ecc/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy
+        J2000=np.array(
+            [
+            [0.38709927, 0.20563593,  7.00497902,  252.25032350, 77.45779628, 48.33076593],
+            [0.00000037,  0.00001906, -0.00594749, 149472.67411175, 0.16047689, -0.12534081],
+            [0.72333566,  0.00677672, 3.39467605,   181.97909950, 131.60246718, 76.67984255],
+            [0.00000390,  -0.00004107, -0.00078890, 58517.81538729, 0.00268329, -0.27769418],
+            [1.00000261,  0.01671123,  -0.00001531, 100.46457166,  102.93768193, 0.0],
+            [0.00000562,  -0.00004392, -0.01294668, 35999.37244981,  0.32327364, 0.0],
+            [1.52371034,  0.09339410,  1.84969142,  -4.55343205, -23.94362959, 49.55953891],
+            [0.00001847,  0.00007882,  -0.00813131, 19140.30268499, 0.44441088, -0.29257343],
+            [5.20288700,  0.04838624,  1.30439695,  34.39644051,  14.72847983, 100.47390909],
+            [-0.00011607, -0.00013253, -0.00183714, 3034.74612775,  0.21252668, 0.20469106],
+            [9.53667594,  0.05386179,  2.48599187,  49.95424423,  92.59887831, 113.66242448],
+            [-0.00125060, -0.00050991, 0.00193609,  1222.49362201, -0.41897216, -0.28867794],
+            [19.18916464, 0.04725744, 0.77263783, 313.23810451,  170.95427630, 74.01692503],
+            [-0.00196176, -0.00004397, -0.00242939, 428.48202785, 0.40805281, 0.04240589],
+            [30.06992276, 0.00859048, 1.77004347, -55.12002969,  44.96476227, 131.78422574],
+            [0.00026291,  0.00005105, 0.00035372, 218.45945325, -0.32241464, -0.00508664]
+            ]
+            )
+        J2000_elements=J2000[::2] # every other row, starting row 0
+        cent_rates=J2000[1::2] # every other row, starting row 1
+       
+
+    # # Data below, copied Curtis tbl 8.1, Standish et.al. 1992
+    # # Elements, numpy.array
+    # # (semi-major axis)|             |             |(RAAN, Omega)| (omega_bar) |
+    # #            sma   |    ecc      |     incl    | long.node   | long.peri   |  mean.long (L)
+    # #        au, au/cy | ecc, ecc/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy
+    if eph_data == 1:
+        J2000_elements = np.array([
+            [0.38709893, 0.20563069, 7.00487, 48.33167, 77.4545, 252.25084],
+            [0.72333199, 0.00677323, 3.39471, 76.68069, 131.53298, 181.97973],
+            [1.00000011, 0.01671022, 0.00005, -11.26064, 102.94719, 100.46435],
+            [1.52366231, 0.09341233, 1.845061, 49.57854, 336.04084, 355.45332],
+            [5.20336301, 0.04839266, 1.30530, 100.55615, 14.75385, 34.40438],
+            [9.53707032, 0.05415060, 2.48446, 113.71504, 92.43194, 49.94432],
+            [19.19126393, 0.04716771, 0.76986, 74.22988, 170.96424, 313.23218],
+            [30.06896348, 0.00858587, 1.76917, 131.72169, 44.97135, 304.88003],
+            [39.48168677, 0.24880766, 17.14175, 110.30347, 224.06676, 238.92881]
+        ])
+        # century [cy] rates, numpy.array
+        # Data below, copied Curtis tbl 8.1, Standish et.al. 1992
+        # Units of rates table:
+        # "au/cy", "1/cy", "arc-sec/cy", "arc-sec/cy", "arc-sec/cy", "arc-sec/cy"
+        cent_rates = np.array([
+            [0.00000066, 0.00002527, -23.51, -446.30, 573.57, 538101628.29],
+            [0.00000092, -0.00004938, -2.86, -996.89, -108.80, 210664136.06],
+            [-0.0000005, -0.00003804, -46.94, -18228.25, 1198.28, 129597740.63],
+            [-0.00007221, 0.00011902, -25.47, -1020.19, 1560.78, 68905103.78],
+            [0.00060737, -0.00012880, -4.15, 1217.17, 839.93, 10925078.35],
+            [-0.00301530, -0.00036762, 6.11, -1591.05, -1948.89, 4401052.95],
+            [0.00152025, -0.00019150, -2.09, -1681.4, 1312.56, 1542547.79],
+            [-0.00125196, 0.00002514, -3.64, -151.25, -844.43, 786449.21],
+            [-0.00076912, 0.00006465, 11.07, -37.33, -132.25, 522747.90]
+        ])
+        # convert arc-sec/cy to deg/cy
+        # I know there is a better way for this conversion; this gets the job done
+        cent_rates[:,2] /= 3600.0
+        cent_rates[:,3] /= 3600.0
+        cent_rates[:,4] /= 3600.0
+        cent_rates[:,5] /= 3600.0
+        
+        # elements & rates conversions
+        au = 149597870.7  # [km/au] Vallado [2] p.1043, tbl.D-5
+        deg2rad = math.pi/180
+        if au_units == False: # then convert units to km
+            J2000_elements[:,0] *= au  # [km] sma (semi-major axis, aka a) convert
+            cent_rates[:,0] *= au
+        if rad_units == True:
+            J2000_elements[:,2] *= deg2rad  # [rad]
+            cent_rates[:,2] *= deg2rad
+            J2000_elements[:,3] *= deg2rad  # [rad]
+            cent_rates[:,3] *= deg2rad
+            J2000_elements[:,4] *= deg2rad  # [rad]
+            cent_rates[:,4] *= deg2rad
+            J2000_elements[:,5] *= deg2rad  # [rad]
+            cent_rates[:,5] *= deg2rad
+    
+    # np.set_printoptions(precision=4)
+    # print(f"J2000_elements=\n{J2000_elements}")
+    # print(f"cent_rates=\n{cent_rates}")
+    
+    # extract user requested planet coe data & rates;
+    #   reminder, coe=classic orbital elements (Kepler)
+    J2000_coe = J2000_elements[planet_id - 1]
+    J2000_rates = cent_rates[planet_id - 1]
+
+    return J2000_coe, J2000_rates

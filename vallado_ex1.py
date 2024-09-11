@@ -35,6 +35,7 @@ import math
 
 import numpy as np
 
+import astro_time
 import vallado_func as vfunc  # Vallado functions
 from kepler import findTOF, findTOF_a
 
@@ -139,6 +140,69 @@ def test_prb2_7a_tof(plot_sp=False) -> None:
             r0_mag=r0_mag, r1_mag=r1_mag, delta_nu=delta_nu, sp=sp, clip1=True
         )
     return  # test_tof_prob2_7a()
+
+
+def test_ex5_5_planetLocation():
+    """
+    Find planet location. Vallado [2], pp.297, algorithm 33, pp.296.
+    TODO finish exercise
+    """
+    planet_id = 5  # jupiter
+    # eph_data=0, uses Horizons Table 1
+    # eph_data=1, uses Standish 1992 dataset from Curtis
+    J2000_coe, J2000_rates = vfunc.planet_elements(
+        planet_id=planet_id, eph_data=0, au_units=True, rad_units=False
+    )
+
+    # *****************************************************
+    # Vallado [2] equivilent of Curtis [3] p.276, eqn 5.48:
+    # parameters of julian_date(yr, mo, d, hr, minute, sec, leap_sec=False)
+    year, month, day, hour, minute, second = 1994, 5, 20, 20, 0, 0
+    jd = astro_time.julian_date(
+        yr=year, mo=month, d=day, hr=hour, minute=minute, sec=second
+    )
+
+    # centuries since J2000, Curtis p.471, eqn 8.93a
+    t0 = (jd - 2451545) / 36525
+    # Curtis p.471, eqn 8.93b
+    elements = J2000_coe + J2000_rates * t0
+
+    np.set_printoptions(precision=4)
+    print(f"J2000_coe= {J2000_coe}")
+    print(f"J2000_rates= {J2000_rates}")
+
+    # sma, ecc, incl, long.node, long.peri, mean.long (L)
+    sma, ecc, incl, L_n, L_peri, L_m = elements
+    print(
+        f"sma= {sma:.8g} [km], "
+        f"\necc= {ecc:.8g}, "
+        f"\nincl= {incl:.8g} [deg], "
+        f"\nL_n= {L_n:.6g} [deg], "
+        f"\nL_peri= {L_peri:.6g} [deg], "
+        f"\nL_m= {L_m:.6g} [deg]"
+    )
+
+    # Curtis p.89, eqn 2.71
+    # h = math.sqrt(mu * a * (1 - e**2))
+
+    # Reduce the angular elements to range 0 - 360 [deg]
+    # incl = elements[2]
+    # RA = elements[3]  # [deg]
+    # w_hat = elements[4]  # [deg]
+    # L = elements[5]  # [deg]
+    # w = w_hat - RA  # [deg]
+    # M = L - w_hat  # [deg]
+
+    # # Curtis, p.163, algorithm 3.1 (M [rad]) in example 3.1
+    # # E = kepler_E(e, M * deg)  # [rad]
+    # E = solve_for_E(ecc=e, Me=M * deg)  # [rad]
+
+    # # Curtis, p.160, eqn 3.13
+    # TA = 2 * math.atan(math.sqrt((1 + e) / (1 - e)) * math.tan(E / 2))  # [rad]
+
+    # coe = [h, e, RA * deg, incl * deg, w * deg, TA * deg]
+
+    # *****************************************************
 
 
 def test_ex6_1_hohmann():
@@ -269,6 +333,7 @@ def test_ex6_3_one_tan_burn():
 if __name__ == "__main__":
     # test_prb2_7_tof()  # test tof, problem 2-7
     # test_prb2_7a_tof(plot_sp=False)  # test tof; plot sma vs. sp
+    test_ex5_5_planetLocation()  # test planet location
     # test_ex6_1_hohmann()  # test hohmann transfer, example 6-1
-    test_ex6_2_bielliptic()  # test bi-elliptic transfer, example 6-2
+    # test_ex6_2_bielliptic()  # test bi-elliptic transfer, example 6-2
     # test_ex6_3_one_tan_burn()  # test one-tangent transfer, example 6-3
