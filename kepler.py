@@ -17,7 +17,7 @@ Notes:
         but, if you use the function as stand alone you will need to copy the
         imports...
 
-References
+References:
 ----------
     [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
         Fundamentals of Astrodynamics. Dover Publications Inc.
@@ -25,6 +25,54 @@ References
         Fundamentals of Astrodynamics and Applications. Microcosm Press.
     [3] Curtis, H.W. (2009 2nd ed.).
         Orbital Mechanics for Engineering Students. Elsevier Ltd.
+    [4] Vallado, David A., (2022, 5th ed.).
+        Fundamentals of Astrodynamics and Applications. Microcosm Press.
+
+Orbital Elements Naming Collection:
+
+Start with Kepler coe (classic orbital elements).
+    https://ssd.jpl.nasa.gov/planets/approx_pos.html
+    sma    : float [km or au] semi-major axis (aka a)
+    ecc    : float [--] eccentricity
+    incl   : float [rad] inclination
+    Lm     : float [rad] mean longitude (not mean anomaly)
+    w_p    : float [rad] longitude of periapsis (aka w_bar)
+    raan   : float [rad] longitude of the ascending node (aka capital w)
+                also right ascension of ascending node
+
+Other coe elements:    
+    sp     : float [km or au] semi-parameter (aka p)
+    w_     : float [rad] argument of periapsis (aka aop, or arg_p)
+                w_ = w_bar - raan
+    TA     : float [rad] true angle/anomaly (aka t_anom, or theta)
+    u_     : float [rad] argument of lattitude (aka )
+                for circular inclined orbits
+    Lt_0   : float [rad] true longitude at epoch
+                for circular equatorial orbits
+    t_peri : float [rad] time of periapsis passage
+    w_bar  : float [deg] longitude of periapsis (NOT argument of periapsis, w_)
+                Note, w_bar = w + RAAN
+    wt_bar : float [deg] true longitude of periapsis
+                measured in one plane
+    Lm_0   : float [deg] mean longitude at epoch (NOT mean anomaly, M_)
+                Note, Lm_0 = raan + w_p + M_; circular equatorial
+    M_     : float [deg] mean anomaly (often replaces TA)
+
+From JPL Horizizons, osculating elements:
+Symbol & meaning [1 au= 149597870.700 km, 1 day= 86400.0 s]:
+    JDTDB  Julian Day Number, Barycentric Dynamical Time
+    EC     Eccentricity, e
+    QR     Periapsis distance, q (au)
+    IN     Inclination w.r.t X-Y plane, i (degrees)
+    OM     Longitude of Ascending Node, OMEGA, (degrees)
+    W      Argument of Perifocus, w (degrees)
+    Tp     Time of periapsis (Julian Day Number)
+    N      Mean motion, n (degrees/day)
+    MA     Mean anomaly, M (degrees)
+    TA     True anomaly, nu (degrees)
+    A      Semi-major axis, a (au)
+    AD     Apoapsis distance (au)
+    PR     Sidereal orbit period (day)
 """
 
 import numpy as np
@@ -45,7 +93,6 @@ def find_c2c3(psi: float):
         psi: double
             :math:`psi = chi^2/a` where :math:`chi` is universal
             variable and a is the semi-major axis
-
     Returns:
     -------
         c2: double
@@ -77,34 +124,36 @@ def find_c2c3(psi: float):
 
 def kep_eqtnE(M, e, tol=1e-8):
     """
-    Elliptical solution to Kepler's Equation (Algorithm 2)
+    Elliptical solution to Kepler's Equation.
+    Vallado [2] or [4], section 2.2, algorithm 2, p.65.
 
     Newton-Raphson iterative approach solving Kepler's Equation for
-    elliptical orbits. Reference Vallado, section 2.2, p.65, algorithm 2.
+    elliptical orbits.
 
-    Parameters:
+    Input Parameters:
     ----------
-    M: double
-        Mean Anomaly (radians)
-    e: double
-        Eccentricity
-    tol: double, optional, default=1E-8
-        Convergence tolerance used in Newton-Raphson method
+    M   : float, [rad] mean anomaly
+    e   : float, [--] eccentricity
+    tol : float, optional, default=1E-8
+        Newton-Raphson convergence tolerance
 
     Returns:
     -------
-    E: double, [rad] Eccentric Anomaly
+    E   : float, [rad] eccentric anomaly
     """
-    if ((M > -np.pi) and (M < 0)) or M > np.pi:
-        E = M - e
-    else:
-        E = M + e
+    if e<1 and e>0: # make sure elliptical orbit
+        if ((M > -np.pi) and (M < 0)) or ((M > np.pi) and (M < 2 * np.pi)):
+            E = M - e
+        else:
+            E = M + e
 
-    diff = np.inf
-    while diff > tol:
-        E_new = E + ((M - E + e * np.sin(E)) / (1.0 - e * np.cos(E)))
-        diff = np.abs(E_new - E)
-        E = E_new
+        diff = np.inf
+        while diff > tol:
+            E_new = E + ((M - E + e * np.sin(E)) / (1.0 - e * np.cos(E)))
+            diff = np.abs(E_new - E)
+            E = E_new
+    else:
+        print(f"Ellipse test fails for function kep_eqtnE().")
 
     return E
 
@@ -130,7 +179,6 @@ def kep_eqtnP(del_t, p, mu=Earth.mu):
     B: double
         Parabolic Anomaly (radians)
     """
-
     p3 = p**3
     n_p = 2.0 * np.sqrt(mu / p3)
     s = 0.5 * np.arctan(2.0 / (3.0 * n_p * del_t))
@@ -140,7 +188,8 @@ def kep_eqtnP(del_t, p, mu=Earth.mu):
 
 
 def kep_eqtnH(M, ecc, tol=1e-8):
-    """Hyperbolic solution to Kepler's Equation (Algorithm 4)
+    """
+    Hyperbolic solution to Kepler's Equation (Algorithm 4)
 
     A Newton-Raphson iterative approach to solving Kepler's Equation for
     hyperbolic orbits. Reference Vallado [2], section 2.2, p.71, algorithm 4.
@@ -179,7 +228,8 @@ def kep_eqtnH(M, ecc, tol=1e-8):
 
 
 def true_to_anom(true_anom, e):
-    """Converts true anomaly to the proper orbit anomaly (Algorithm 5)
+    """
+    Converts true anomaly to the proper orbit anomaly (Algorithm 5)
 
     Converts true anomaly to eccentric (E) anomaly for elliptical orbits,
     parabolic (B) anomaly for parabolic orbits, or hyperbolic anomaly (H) for
@@ -213,31 +263,41 @@ def true_to_anom(true_anom, e):
 
 
 def eccentric_to_true(E, e):
-    """Converts Eccentric Anomaly (E) to true anomaly (Algorithm 6 (a))
-
-    Converts eccentric anomaly (E) to true anomaly for elliptical orbits.
-    Reference Vallado [2], section 2.2, p.77, algorithm 6.
-
-    Parameters
-    ----------
-    E: double
-        Eccentric anomaly (radians)
-    e: double
-        Eccentricity
-
-    Returns
-    -------
-    true_anom: double
-        True anomaly (radians)
     """
-    num = np.cos(E) - e
-    denom = 1 - e * np.cos(E)
-    true_anom = np.arccos(num / denom)
-    return true_anom
+    Convert eccentric angle/anomaly (E) to true anomaly (TA) for elliptical orbits.
+    Vallado [2], section 2.2, p.77, algorithm 6; quadrant checks, see Notes below.
+
+    Input Parameters:
+    ----------
+        E  : float, [rad] eccentric angle/anomaly
+        e  : float, [--] eccentricity
+    Returns:
+    -------
+        TA : float, [rad] true angle/anomaly
+    Notes:
+    ----------
+        2024-09-16, JBelue edits to account for quadrant checks; using arctan().
+            https://en.wikipedia.org/wiki/True_anomaly
+            Avoid numerical issues when the arguments are near ± pi, as the tangents
+            become infinite. Also, E and TA are always in the same quadrant, so 
+            quadrant checks are not needed.  I did not verify the calculation claim;
+            my basis for the calculation is on paper by Broucke, R. and Cefola, P.
+            (1973); "A Note on the Relations between True and Eccentric Anomalies in
+            the Two-Body Problem".
+    """
+    # num = np.cos(E) - e
+    # denom = 1 - e * np.cos(E)
+    # TA = np.arccos(num / denom)
+
+    beta = e / (1 + np.sqrt(1 - e**2))
+    TA = E + 2 * np.arctan((beta * np.sin(E)) / (1 - beta * np.cos(E)))
+
+    return TA
 
 
 def parabolic_to_true(B):  # , p, r):
-    """Converts parabolic anomaly (B) to true anomaly (Algorithm 6 (b))
+    """
+    Converts parabolic anomaly (B) to true anomaly (Algorithm 6 (b))
 
     Converts parabolic anomaly (B) to true anomaly for parabolic orbits.
     Reference Vallado [2], section 2.2, p.77, algorithm 6.
@@ -262,7 +322,8 @@ def parabolic_to_true(B):  # , p, r):
 
 
 def hyperbolic_to_true(H, e):
-    """Converts hyperbolic anomaly (H) to true anomaly (Algorithm 6 (c))
+    """
+    Converts hyperbolic anomaly (H) to true anomaly (Algorithm 6 (c))
 
     Converts hyperbolic anomaly (H) to true anomaly for hyperbolic orbits.
     Reference Vallado [2], section 2.2, p.77, algorithm 6.
@@ -391,19 +452,18 @@ def rv2coe(r, v, mu=Earth.mu):
 
 def coe2rv(p, ecc, inc, raan, aop, anom, mu=Earth.mu):
     """
-    Convert Keplerian orbital elements to pos/vel vectors.
-
-    Converts Keplerian orbital elements to position/velocity vectors (km, km/s)
-    in the IJK frame.  Reference Vallado, section 2.6, p.118, algorithm 10.
+    Convert Keplerian orbital elements to pos/vel vectors in IJK frame.
+    Vallado [2], section 2.6, algorithm 10, pp.118
+    Vallado [4], section 2.6, algorithm 10, pp.120
 
     Input Parameters:
     ----------
-        p    : double, [km] Semi-parameter
-        ecc  : double, [--] Eccentricity
-        inc  : double, [rad] Inclination
-        raan : double, [rad] Right Ascension of the Ascending Node
-        aop  : double, [rad]Argument of perigee
-        anom : double, [rad] True angle/anomaly
+        p    : double, [km] semi-parameter
+        ecc  : double, [--] eccentricity
+        inc  : double, [rad] inclination
+        raan : double, [rad] right ascension of the ascending node
+        aop  : double, [rad] argument of perigee
+        anom : double, [rad] true angle/anomaly (aka TA)
         mu   : double, [km^3/s^2] optional, Gravitational parameter
                 default=3.986004415E5 (Earth.mu in solarsys.py)
     Returns:
@@ -412,14 +472,13 @@ def coe2rv(p, ecc, inc, raan, aop, anom, mu=Earth.mu):
                 Position vector in the IJK frame (km)
         v_ijk : numpy.matrix (3x1)
                 Velocity vector in the IJK frame (km/s)
-
-    Note
+    Notes:
     ----
-        Algorithm assumes that raan, aop, and anom have been set to account for
+        Algorithm assumes raan, aop, and anom have been set to account for
         special cases (circular, equatorial, etc.) as in rv2coe (Algorithm 9)
         Also see Curtis, p.473 example 8.7.
     """
-    # Stored trig comps
+    # saved trig computations save computing time
     cosv = np.cos(anom)
     sinv = np.sin(anom)
     cosi = np.cos(inc)
@@ -433,6 +492,7 @@ def coe2rv(p, ecc, inc, raan, aop, anom, mu=Earth.mu):
         [p * cosv / (1.0 + ecc * cosv), p * sinv / (1.0 + ecc * cosv), 0.0]
     )
     r_pqw = r_pqw.T  # Make column vector
+
     v_pqw = np.matrix([-np.sqrt(mu / p) * sinv, np.sqrt(mu / p) * (ecc + cosv), 0.0])
     v_pqw = v_pqw.T  # Make column vector
 
@@ -610,7 +670,8 @@ def findTOF_a(r0, r1, p, mu=Earth.mu):
 
 
 def keplerCOE(r0, v0, dt, mu=Earth.mu):
-    """Two body orbit propagation using classical orbital elements (Algorithm 7)
+    """
+    Two body orbit propagation using classical orbital elements (Algorithm 7)
 
     Two body orbit propagation that uses a change to classical orbital elements
     and an update to true anomaly to find the new position and velocity
@@ -665,11 +726,12 @@ def keplerCOE(r0, v0, dt, mu=Earth.mu):
 
 
 def kepler(r0, v0, dt, mu=Earth.mu, tol=1e-6):
-    """Two body orbit propagation using universal variables (Algorithm 8)
+    """
+    Two body orbit propagation using universal variables (Algorithm 8)
 
-    Two body orbit propagation that uses the universal formulation to find the
+    Two body orbit propagation uses the universal formulation to find the
     new position and velocity vectors. For reference, see Algorithm 8 in
-    Vallado Section 2.3.1 (pg 93).
+    Vallado [2] Section 2.3.1 (pg 93).
 
     Parameters
     ----------

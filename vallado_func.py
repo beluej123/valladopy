@@ -13,8 +13,11 @@ Notes:
     
     Test for the functions below may be found in other files, for example,
         astro_time.py, kepler.py, test_kepler, vallado_ex1.py etc...
+    
+    2024-09-14:
+    For functions ccheck out https://github.com/cosinekitty/astronomy/tree/master/source
 
-References
+References:
 ----------
     [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
         Fundamentals of Astrodynamics. Dover Publications Inc.
@@ -22,6 +25,8 @@ References
         Fundamentals of Astrodynamics and Applications. Microcosm Press.
     [3] Curtis, H.W. (2009 2nd ed.).
         Orbital Mechanics for Engineering Students. Elsevier Ltd.
+    [4] Vallado, David A., (2022, 5th ed.).
+        Fundamentals of Astrodynamics and Applications. Microcosm Press.
 """
 
 import math
@@ -428,19 +433,19 @@ def k_l_m_sp(k, l, m, sp):
     return sma
 
 
-def planet_elements(planet_id: int, eph_data=0, au_units=True, rad_units=False):
+def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
     """
-    Planet orbital elements; may include Pluto.
+    Planet orbital elements from user chosen data set.
 
     Input Parameters:
     ----------
-        planet_id : int,
+        planet_id  : int,
             JPL Horizons eph_data=0, 1->8 Mercury->Neptune
             Standish eph_data=1, 1->8 Mercury->Neptune
-        eph_data  : int, 0 or 1:
+        eph_data   : int, 0 or 1:
             0 = JPL horizons data set, Table 1
             1 = Standish 1992 data
-        au_units  : boolean; output true=distance units in au
+        au_units   : boolean; output true=distance units in au
         rad_units  : boolean; output true=angular units in radians
 
     Returns (for planet_id input):
@@ -449,14 +454,17 @@ def planet_elements(planet_id: int, eph_data=0, au_units=True, rad_units=False):
         J2000_rates : numpy.array, coe rate change (x/century) from 2000-01-01.
     Notes:
     ----------
+        Note, I want to prevent array auto formatting (with vscode black), so you
+            will see various schemes; mostly they do not work - frustraiting.
+        Orbital element naming amongst many authors is still challenging...
         Element list output:
-            sma   = semi-major axis (aka a) [km]
-            ecc   = eccentricity
-            incl  = inclination angle; to the ecliptic [deg]
-            RAAN  = right ascension of ascending node (aka capital W) [deg]
+            sma   = [km] semi-major axis (aka a)
+            ecc   = [--] eccentricity
+            incl  = [deg] inclination angle; to the ecliptic
+            RAAN  = [deg] right ascension of ascending node (aka capital W)
                     longitude node
-            w_bar = longitude of periapsis [deg]
-            L     = mean longitude [deg]
+            w_bar = [deg] longitude of periapsis
+            L     = [deg] mean longitude
 
         References: see list at file beginning.
     """
@@ -471,13 +479,14 @@ def planet_elements(planet_id: int, eph_data=0, au_units=True, rad_units=False):
     
     if eph_data == 0:  # JPL horizons data set
     # Horizons Table 1 data set COPIED DIRECTLY from the web-site noted above.
+    
     #   JPL Table 1 order of the elements is different then the other list below.
     #   Also note, Table 1 list earth-moon barycenter, not just earth.
-    #           sma   |    ecc      |     inc     | long.node   | long.peri   |  mean.long (L)
+    #           sma   |    ecc      |     incl    | long.node   | long.peri   | mean.long
     #       au, au/cy | ecc, ecc/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy
         J2000=np.array(
             [
-            [0.38709927, 0.20563593,  7.00497902,  252.25032350, 77.45779628, 48.33076593],
+            [0.38709927, 0.20563593,  7.00497902,  252.25032350, 77.45779628, 48.33076593],#xxx
             [0.00000037,  0.00001906, -0.00594749, 149472.67411175, 0.16047689, -0.12534081],
             [0.72333566,  0.00677672, 3.39467605,   181.97909950, 131.60246718, 76.67984255],
             [0.00000390,  -0.00004107, -0.00078890, 58517.81538729, 0.00268329, -0.27769418],
@@ -497,16 +506,15 @@ def planet_elements(planet_id: int, eph_data=0, au_units=True, rad_units=False):
             )
         J2000_elements=J2000[::2] # every other row, starting row 0
         cent_rates=J2000[1::2] # every other row, starting row 1
-       
-
-    # # Data below, copied Curtis tbl 8.1, Standish et.al. 1992
-    # # Elements, numpy.array
-    # # (semi-major axis)|             |             |(RAAN, Omega)| (omega_bar) |
-    # #            sma   |    ecc      |     incl    | long.node   | long.peri   |  mean.long (L)
-    # #        au, au/cy | ecc, ecc/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy
-    if eph_data == 1:
+        
+    # Data below, copied Curtis tbl 8.1, Standish et.al. 1992
+    # Elements, numpy.array
+    # (semi-major axis)|             |             |(RAAN, Omega)| (omega_bar) |
+    #            sma   |    ecc      |     incl    | long.node   | long.peri   |  mean.long (L)
+    #        au, au/cy | ecc, ecc/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy
+    elif eph_data == 1:
         J2000_elements = np.array([
-            [0.38709893, 0.20563069, 7.00487, 48.33167, 77.4545, 252.25084],
+            [0.38709893, 0.20563069, 7.00487, 48.33167, 77.4545, 252.25084],#xxx
             [0.72333199, 0.00677323, 3.39471, 76.68069, 131.53298, 181.97973],
             [1.00000011, 0.01671022, 0.00005, -11.26064, 102.94719, 100.46435],
             [1.52366231, 0.09341233, 1.845061, 49.57854, 336.04084, 355.45332],
@@ -521,7 +529,7 @@ def planet_elements(planet_id: int, eph_data=0, au_units=True, rad_units=False):
         # Units of rates table:
         # "au/cy", "1/cy", "arc-sec/cy", "arc-sec/cy", "arc-sec/cy", "arc-sec/cy"
         cent_rates = np.array([
-            [0.00000066, 0.00002527, -23.51, -446.30, 573.57, 538101628.29],
+            [0.00000066, 0.00002527, -23.51, -446.30, 573.57, 538101628.29],#xxx
             [0.00000092, -0.00004938, -2.86, -996.89, -108.80, 210664136.06],
             [-0.0000005, -0.00003804, -46.94, -18228.25, 1198.28, 129597740.63],
             [-0.00007221, 0.00011902, -25.47, -1020.19, 1560.78, 68905103.78],
@@ -532,7 +540,7 @@ def planet_elements(planet_id: int, eph_data=0, au_units=True, rad_units=False):
             [-0.00076912, 0.00006465, 11.07, -37.33, -132.25, 522747.90]
         ])
         # convert arc-sec/cy to deg/cy
-        # I know there is a better way for this conversion; this gets the job done
+        # There must be a better way for this conversion; this gets the job done
         cent_rates[:,2] /= 3600.0
         cent_rates[:,3] /= 3600.0
         cent_rates[:,4] /= 3600.0
@@ -554,13 +562,55 @@ def planet_elements(planet_id: int, eph_data=0, au_units=True, rad_units=False):
             J2000_elements[:,5] *= deg2rad  # [rad]
             cent_rates[:,5] *= deg2rad
     
-    # np.set_printoptions(precision=4)
-    # print(f"J2000_elements=\n{J2000_elements}")
-    # print(f"cent_rates=\n{cent_rates}")
-    
+        # np.set_printoptions(precision=4)
+        # print(f"J2000_elements=\n{J2000_elements}")
+        # print(f"cent_rates=\n{cent_rates}")
+        
     # extract user requested planet coe data & rates;
     #   reminder, coe=classic orbital elements (Kepler)
     J2000_coe = J2000_elements[planet_id - 1]
     J2000_rates = cent_rates[planet_id - 1]
-
     return J2000_coe, J2000_rates
+    
+def planet_ele_1(planet_id=4, au_units=True, rad_units=False):
+    """ 
+    Planet elements coefficients table, heliocentric; polynomial in t_TDB.
+        t_TDB = julian centuries of tdb (barycentric dynamic time).
+        Format: x0*t_TDB^0 + x1*t_TDB^1 + x2*t_TDB^2 + ...
+    
+    Notes:
+    ----------
+    Data below, Vallado [4], appendix D.4, Planetary Ephemerides, pp.1062
+        Ecliptic coordinates, mean equator, mean equinox of IAU-76/FK5.
+    """
+    
+    if planet_id ==0: # mercury
+        print(f"mercury not yet copied, 2024-09-15")
+    if planet_id ==1: # venus
+        print(f"venus not yet copied, 2024-09-15")
+    if planet_id ==2: # earth
+        print(f"earth not yet copied, 2024-09-15")
+    if planet_id ==3: # mars
+        print(f"mars not yet copied, 2024-09-15")
+        
+    if planet_id == 4: # jupiter
+        J2000_coefs = np.array([
+                [5.202603191, 0.0000001913, 0, 0, 0],# [au] sma
+                [0.048494850, 0.0001632440, -0.0000004719, -0.00000000197, 0],# [--] ecc
+                [1.303270000, -0.001987200, 0.0000331800, 0.00000009200, 0],# [deg] incl
+                [100.4644410, 0.1766828000, 0.0009038700, -0.0000070320, 0],# [deg] raan
+                [14.33130900, 0.2155525000, 0.0007225200, -0.0000045900, 0],# [deg] w_bar
+                [34.35148400, 3034.9056746, -0.000085010, 0.00000000400, 0]# [deg] Lm
+            ])
+    elif planet_id == 5: # saturn
+        print(f"saturn not yet copied, 2024-09-15")
+    elif planet_id == 6: # uranus
+        print(f"uranus not yet copied, 2024-09-15")
+    elif planet_id == 7: # neptune
+        print(f"neptune not yet copied, 2024-09-15")
+    elif planet_id == 8: # pluto
+        print(f"pluto not yet copied, 2024-09-15")
+    else:
+        print(f"Not a valid planet id.")
+    
+    return J2000_coefs

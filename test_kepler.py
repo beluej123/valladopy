@@ -17,7 +17,7 @@ Notes:
         but, if you use the function as stand alone you will need to copy the
         imports...
 
-References
+References:
 ----------
     [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
         Fundamentals of Astrodynamics. Dover Publications Inc.
@@ -25,6 +25,8 @@ References
         Fundamentals of Astrodynamics and Applications. Microcosm Press.
     [3] Curtis, H.W. (2009 2nd ed.).
         Orbital Mechanics for Engineering Students. Elsevier Ltd.
+    [4] Vallado, David A., (2022, 5th ed.).
+        Fundamentals of Astrodynamics and Applications. Microcosm Press.
 """
 import math
 import unittest
@@ -115,8 +117,8 @@ def test_coe2rv():
 
     Notes:
     ----------
-        Implements Vallado pp.118, coe2rv(), algorithm 10.
-        Note Vallado functions: pp. 296, planetRV(), algotithm 33,
+        Implements Vallado [2] pp.118, coe2rv(), algorithm 10.
+        Note Vallado [2] functions: pp. 296, planetRV(), algotithm 33,
 
         For my code generally, angles in [rad], distances in [km]..
 

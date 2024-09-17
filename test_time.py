@@ -9,7 +9,7 @@ Notes:
     Generally, units shown in brackets [km, rad, deg, etc.].
     Generally, angles are saved in [rad], distance [km].
 
-References
+References:
 ----------
     [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
         Fundamentals of Astrodynamics. Dover Publications Inc.
@@ -17,6 +17,8 @@ References
         Fundamentals of Astrodynamics and Applications. Microcosm Press.
     [3] Curtis, H.W. (2009 2nd ed.).
         Orbital Mechanics for Engineering Students. Elsevier Ltd.
+    [4] Vallado, David A., (2022, 5th ed.).
+        Fundamentals of Astrodynamics and Applications. Microcosm Press.
 """
 
 import math
