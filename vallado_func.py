@@ -78,9 +78,11 @@ def calc_ecc(r_peri: float, r_apo: float) -> float:
 
 def val_hohmann(r_init: float, r_final: float, mu_trans: float):
     """
-    Vallado Hohmann Transfer, p.325, algorithm 36.
+    Hohmann Transfer, calculate tof, eccentricity, delta-v; Vallado [4] example 6-1, pp.330.
+        Vallado [2] p.325, algorithm 36.
+        Vallado [4] p.329, algorithm 36.
     Assume one central body; inner and outer circular orbits.
-    See Vallado fig 6-4, p323.
+    See Vallado [4] fig 6-4, p327.
 
     Input Parameters:
     ----------
@@ -574,14 +576,15 @@ def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
     
 def planet_ele_1(planet_id=4, au_units=True, rad_units=False):
     """ 
-    Planet elements coefficients table, heliocentric; polynomial in t_TDB.
+    Planet elements coefficients table, heliocentric, equatorial.
+        Table are polynomial coefficients in t_TDB.
         t_TDB = julian centuries of tdb (barycentric dynamic time).
         Format: x0*t_TDB^0 + x1*t_TDB^1 + x2*t_TDB^2 + ...
     
     Notes:
     ----------
     Data below, Vallado [4], appendix D.4, Planetary Ephemerides, pp.1062
-        Ecliptic coordinates, mean equator, mean equinox of IAU-76/FK5.
+        Heliocentric, equatorial (not ecliptic), mean equator, mean equinox of IAU-76/FK5.
     """
     
     if planet_id ==0: # mercury
@@ -614,3 +617,64 @@ def planet_ele_1(planet_id=4, au_units=True, rad_units=False):
         print(f"Not a valid planet id.")
     
     return J2000_coefs
+
+def rot_matrix(angle, axis:int):
+    """
+    Returns rotation matrix based on user axis choice.
+        Function from github, lamberthub, utilities->elements.py
+
+    Input Parameters:
+    ----------
+        angle      : [rad]
+        axis       : axis=0 rotate x-axis;
+                    axis=1 rotate y-axis
+                    axis=2 rotate z-axis
+    Returns:
+    -------
+        np.array   : rotation matrix, 3x3
+
+    Raises:
+    ------
+        ValueError : if invalid axis
+    Notes:
+    -----------
+    
+    """
+    c = math.cos(angle)
+    s = math.sin(angle)
+    if axis == 0:
+        return np.array([[1.0, 0.0, 0.0], [0.0, c, -s], [0.0, s, c]])
+    elif axis == 1:
+        return np.array([[c, 0.0, s], [0.0, 1.0, 0.0], [s, 0.0, c]])
+    elif axis == 2:
+        return np.array([[c, -s, 0.0], [s, c, 0.0], [0.0, 0.0, 1.0]])
+    else:
+        raise ValueError("Invalid axis: axis=0, x; axis=1, y; axis=2, z")
+
+def ecliptic_angle(jd_cJ2000):
+    """
+    Calculate mean angle/obliquity of the ecliptic from polynomial.
+    Vallado [4], section 3.7, "classical equinox based transformation with
+        IAU-2006/2000A", p.217, equation 3-69. 2nd eqn.
+
+    Input Parameters:
+    ----------
+        time : float [sec] julian centuries from J2000.00 (TT)
+    Returns:
+    -------
+        e_angle : float [deg]
+    Notes:
+        Vallado [4] notes the data comes from Kaplan, 2005:44.
+        coefs format; coef0*jd_cJ2000^0 + coef1*jd_cJ2000^1 + coef2*jd_cJ2000^2 + ...
+    """
+    ecliptic_coefs=np.array(
+        [23.439279, -0.0130102, -5.086e-8, 5.565e-7, -1.6e-10, -1.21e-11]
+        )
+    # coeffs format; coef0*jd_cJ2000^0 + coef1*jd_cJ2000^1 + coef2*jd_cJ2000^2 + ...
+    #   jd_cJ2000 = julian centuries since J2000.0
+    x1 = np.arange(6)  # exponent values; power series
+    x2 = np.full(6, jd_cJ2000)  # base time value
+    x3 = x2**x1  # time multiplier series
+    # print(f"{ecliptic_coefs[:] * x3}") # troubleshooting
+    e_angle = np.sum(ecliptic_coefs[:] * x3)  # [deg]
+    return e_angle

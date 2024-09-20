@@ -1,9 +1,9 @@
 """
-Collection of Vallado solutions to examples and problems.
+Collection of Vallado python solutions to examples and problems; called as test_...
 
 Notes:
 ----------
-    This file is organized with each example as a function; i.e. function name:
+    This file is organized with each example as a test_xxx() function; i.e. function name:
         test_ex6_3_one_tan_burn().
     
     Supporting functions for the test functions below, may be found in other
@@ -15,7 +15,7 @@ Notes:
         imports...
 
     Reminder to me; cannot get black formatter to work within VSCode,
-        so in terminal type; black *.py.
+        so in VSCode terminal type; "black *.py" or "black filename.py"
     Reminder to me; VSCode DocString, Keyboard shortcut: ctrl+shift+2.
     
     Generally, units shown in brackets [km, rad, deg, etc.].
@@ -39,7 +39,32 @@ import numpy as np
 
 import astro_time
 import vallado_func as vfunc  # Vallado functions
-from kepler import coe2rv, eccentric_to_true, findTOF, findTOF_a, kep_eqtnE
+from kepler import coe2rv, eccentric_to_true, findTOF, findTOF_a, kep_eqtnE, keplerUni
+from vallado_func import ecliptic_angle, plot_sp_vs_sma
+
+
+def test_ex2_4_kepler():
+    """
+    Given initial r_vec, v_vec, and delta time, find new planet location.
+    Vallado [4], example 2-4, p.96, from algorithm 8, pp.94.
+    
+    Notes:
+    ----------
+    """
+    np.set_printoptions(precision=6)  # numpy, set vector printing size
+    
+    # given
+    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado [2] p.1041, tbl.D-3
+    r0_vec = np.array([1131.340, -2282.343, 6672.423])  # [km]
+    v0_vec = np.array([-5.64305, 4.30333, 2.42879])  # [km/s]
+    delta_t = 40 * 60 # [s]
+    # kepler universal formulation
+    # function parameters, keplerUni(r0, v0, dt, mu=Earth.mu, tol=1e-6):
+    r1_vec, v1_vec=keplerUni(r0_vec, v0_vec, dt=delta_t, mu=mu_earth_km, tol=1e-6)
+    print(f"r1_vec= {r1_vec} [km]")
+    print(f"v1_vec= {v1_vec} [km]")
+    
+    return 
 
 
 def test_prb2_7_tof() -> None:
@@ -54,20 +79,20 @@ def test_prb2_7_tof() -> None:
         None
     Notes:
     -------
-        Interplanetary missions with patched conic in Vallado [2] chapter 12.
+        Interplanetary missions with patched conic in Vallado [2], chapter 12.
         Note Vallado [2], tof, section 2.8, p.126, algorithm 11.
         It is useful to understand the limits on orbit definition; see
             test_tof_prob2_7a.
 
         Reference Details: see list at file beginning.
     """
-    print(f"\nVallado time-of-flight, prob 2.7:")
-    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado p.1041, tbl.D-3
-    au = 149597870.7  # [km/au] Vallado p.1043, tbl.D-5
-    r_earth = 6378.1363  # [km] earth radius; Vallado p.1041, tbl.D-3
+    print(f"\nVallado [2] time-of-flight, prob 2.7:")
+    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado [2] p.1041, tbl.D-3
+    au = 149597870.7  # [km/au] Vallado [2] p.1043, tbl.D-5
+    r_earth = 6378.1363  # [km] earth radius; Vallado [2] p.1041, tbl.D-3
 
     r0_vec = np.array([-2574.9533, 4267.0671, 4431.5026])  # [km]
-    r1_vec = np.array([2700.6738, -4303.5378, -4358.2499])  # [km/s]
+    r1_vec = np.array([2700.6738, -4303.5378, -4358.2499])  # [km]
     sp = 6681.571  # [km] semi-parameter (aka p, also, aka semi-latus rectum)
     r0_mag = np.linalg.norm(r0_vec)
     r1_mag = np.linalg.norm(r1_vec)
@@ -97,12 +122,12 @@ def test_prb2_7a_tof(plot_sp=False) -> None:
     Assume r0 in the vicinity of earth; thus assume
     Choose v0
     """
-    from vallado_func import plot_sp_vs_sma
+    
 
-    print(f"\nVallado time-of-flight, prob 2.7a:")
-    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado p.1041, tbl.D-3
-    au = 149597870.7  # [km/au] Vallado p.1042, tbl.D-5
-    r_earth = 6378.1363  # [km] earth radius; Vallado p.1041, tbl.D-3
+    print(f"\nVallado [2] time-of-flight, prob 2.7a:")
+    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado [2] p.1041, tbl.D-3
+    au = 149597870.7  # [km/au] Vallado [2] p.1042, tbl.D-5
+    r_earth = 6378.1363  # [km] earth radius; Vallado [2] p.1041, tbl.D-3
 
     r0_vec = np.array([-2574.9533, 4267.0671, 4431.5026])  # [km]
     r1_vec = np.array([2700.6738, -4303.5378, -4358.2499])  # [km/s]
@@ -146,21 +171,23 @@ def test_prb2_7a_tof(plot_sp=False) -> None:
 
 def test_ex5_5_planetLocation():
     """
-    Find planet location. Vallado [2], example 5-5, pp.297, algorithm 33, pp.296.
-    Find planet location. Vallado [4], example 5-5, pp.304, algorithm 33, pp.303.
-    TODO finish exercise
+    Find planet location.
+    Vallado [2], example 5-5, pp.297, algorithm 33, pp.296.
+    Vallado [4], example 5-5, pp.304, algorithm 33, pp.303.
     Notes:
     ----------
     See kepler.py Notes for list of orbital element nameing definitions.
     https://ssd.jpl.nasa.gov/planets/approx_pos.html
     Horizons on-line look-up https://ssd.jpl.nasa.gov/horizons/app.html#/
     From Horizons on-line:
+    Jupiter:
     2449493.333333333 = A.D. 1994-May-20 20:00:00.0000 TDB
     EC= 4.831844662701981E-02 QR= 4.951499586021582E+00 IN= 1.304648490975239E+00
     OM= 1.004706325510906E+02 W = 2.751997729775426E+02 Tp=  2451319.928584063426
     N = 8.308901661461704E-02 MA= 2.082299968639316E+02 TA= 2.057443313085129E+02
     A = 5.202895410205566E+00 AD= 5.454291234389550E+00 PR= 4.332702620248230E+03
     """
+    np.set_printoptions(precision=6)  # numpy, set vector printing size
     deg2rad = math.pi / 180  # used multiple times
     rad2deg = 180 / math.pi  # used multiple times
 
@@ -170,23 +197,20 @@ def test_ex5_5_planetLocation():
     # print(f"mu_sun_au= {mu_sun_au}")
 
     # Vallado [2] equivilent of Curtis [3] p.276, eqn 5.48:
-    # parameters of julian_date(yr, mo, d, hr, minute, sec, leap_sec=False)
+    # convTime() convert time; always calculates julian date, but also
+    #   calculates other time conversions; i.e. julian centuries since J2000.0.
+    #   In this example the julian date is not used in calculations; just to print.
+    #   Centuries since J2000, Curtis p.471, eqn 8.93a.
     year, month, day, hour, minute, second = 1994, 5, 20, 20, 0, 0
-    jd = astro_time.julian_date(
-        yr=year, mo=month, d=day, hr=hour, minute=minute, sec=second
-    )
-
-    # centuries since J2000, Curtis p.471, eqn 8.93a
-    # julian centuries of tdb (barycentric dynamic time)
-    jd_tdb = (jd - 2451545) / 36525
-    # print(f"jd= {jd}, jd_cent={jd_tbd}")
+    jd, jd_cJ2000=astro_time.convTime(year, month, day, hour, minute, second, c_type=0)
+    print(f"jd= {jd:.10g}, jd_cent={jd_cJ2000:.10g}")
 
     # 2024-09-15, only jupiter (planet_id=4) in coefficients table so far
     J2000_coefs = vfunc.planet_ele_1(planet_id=4, au_units=True, rad_units=False)
     # coeffs format; x0*t_TDB^0 + x1*t_TDB^1 + x2*t_TDB^2 + ...
     #   time, t_tdb = julian centuries of barycentric dynamical time
     x1 = np.arange(5)  # exponent values; power series
-    x2 = np.full(5, jd_tdb)  # base time value
+    x2 = np.full(5, jd_cJ2000)  # base time value
     x3 = x2**x1  # time multiplier series
 
     sma = np.sum(J2000_coefs[0, :] * x3)  # [au]
@@ -201,32 +225,33 @@ def test_ex5_5_planetLocation():
     w_bar_rad = w_bar_deg * deg2rad
     L_bar_rad = L_bar_deg * deg2rad
 
-    print(f"sma= {sma} [au]")
-    print(f"ecc= {ecc}")
-    print(f"incl= {incl_deg} [deg]")
-    print(f"raan= {raan_deg} [deg]")
-    print(f"w_bar= {w_bar_deg} [deg]")  # longitude of periapsis
-    print(f"L_bar= {L_bar_deg} [deg]")
+    print(f"sma= {sma:.8g} [au]")
+    print(f"ecc= {ecc:.8g}")
+    print(f"incl= {incl_deg:.8g} [deg]")
+    print(f"raan= {raan_deg:.8g} [deg]")
+    print(f"w_bar= {w_bar_deg:.8g} [deg]")  # longitude of periapsis
+    print(f"L_bar= {L_bar_deg:.8g} [deg]")
 
     M_deg = L_bar_deg - w_bar_deg  # [deg] mean angle/anomaly
     M_rad = M_deg * deg2rad
     w_deg = w_bar_deg - raan_deg  # [deg] argument of periapsis (aka aop, or arg_p)
     w_rad = w_deg * deg2rad
-    print(f"\nM_deg= {M_deg} [deg]")
-    print(f"w_deg= {w_deg} [deg]")
+    print(f"\nM_deg= {M_deg:.8g} [deg]")
+    print(f"w_deg= {w_deg:.8g} [deg]")
 
     E_rad = kep_eqtnE(M=M_rad, e=ecc)
     E_deg = E_rad * rad2deg
-    TA_rad = eccentric_to_true(E=E_rad, e=ecc) # no quadrent ambiguity
-    # below, Curtis [3], p.160, eqn 3.13b.
+    # TA_rad below, no quadrent ambiguity; addresses near pi values
+    TA_rad = eccentric_to_true(E=E_rad, e=ecc) 
+    # below, commented out, is Curtis [3], p.160, eqn 3.13b.
     # TA_rad = 2 * math.atan(math.sqrt((1 + ecc) / (1 - ecc)) * math.tan(E_rad / 2))
     TA_deg = TA_rad * rad2deg
     
-    print(f"E_deg= {E_deg} [deg]")
-    print(f"TA_deg= {TA_deg} [deg]")
+    print(f"E_deg= {E_deg:.8g} [deg]")
+    print(f"TA_deg= {TA_deg:.8g} [deg]")
 
     sp = sma * (1 - ecc**2)
-    print(f"sp= {sp} [au]")
+    print(f"sp= {sp:.8g} [au]")
 
     # function inputs, coe2rv(p, ecc, inc, raan, aop, anom, mu=Earth.mu)
     r_vec, v_vec = coe2rv(
@@ -239,27 +264,39 @@ def test_ex5_5_planetLocation():
         mu=mu_sun_au,
     )
     r_vec = np.ravel(r_vec)  # convert column array to row vector
-    v_vec = np.ravel(v_vec)  # convert column array to row vector
+    v_vec = np.ravel(v_vec)*86400  # convert, seconds to days
+    print(f"\nEquatorial, Heliocentric, XYZ")
     print(f"r_vec= {r_vec} [au]")
-    print(f"v_vec= {v_vec*86400} [au/day]")
+    print(f"v_vec= {v_vec} [au/day]")
+
+    # rotate r_vec and v_vec from equatorial to ecliptic; heliocentric    
+    e_angle=vfunc.ecliptic_angle(jd_cJ2000) # ecliptic angle
+    r1_vec = r_vec @ vfunc.rot_matrix(angle=-e_angle*deg2rad, axis=0)
+    v1_vec = v_vec @ vfunc.rot_matrix(angle=-e_angle*deg2rad, axis=0)
+    print(f"ecliptic angle, e_angle= {e_angle:.8g} [deg]")
+    print(f"\nEcliptic, Heliocentric, XYZ")
+    print(f"r1_vec= {r1_vec} [au]")
+    print(f"v1_vec= {v1_vec} [au/day]")
 
 
 def test_ex6_1_hohmann():
     """
-    Hohmann Transfer, Vallado, example 6-1, p326; uses p.325, algirithm 36.
-    Hohmann uses one central body for the transfer ellipse.
-    Interplanetary missions use the patched conic; 3 orbit types:
-    1) initial body - departure
-    2) transfer body - transfer
-    3) final body - arrival
-
-    Interplanetary missions with patched conic in chapter 12.
+    Hohmann Transfer, Vallado [2], example 6-1, p.326; uses p.325, algirithm 36.
+    Hohmann, one central body for the transfer ellipse.
+    
+    Notes:
+    ----------
+        Note, interplanetary patched conic missions in Vallado [4] chapter 12, pp.959.
+        Interplanetary missions use the patched conic; 3 orbit types:
+            1) initial body - departure
+            2) transfer body - transfer
+            3) final body - arrival
     """
-    print(f"\nTest Hohmann Transfer, Vallado, example 6.1")
+    print(f"\nTest Hohmann Transfer, Vallado [2], example 6.1")
     # define constants
-    au = 149597870.7  # [km/au] Vallado p.1042, tbl.D-5
-    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado p.1041, tbl.D-3
-    r_earth = 6378.1363  # [km] earth radius; Vallado p.1041, tbl.D-3
+    au = 149597870.7  # [km/au] Vallado[2] p.1042, tbl.D-5
+    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado [2] p.1041, tbl.D-3
+    r_earth = 6378.1363  # [km] earth radius; Vallado [2] p.1041, tbl.D-3
 
     # define inputs for hohmann transfer
     r1 = r_earth + 191.34411  # [km]
@@ -269,29 +306,32 @@ def test_ex6_1_hohmann():
     tof_hoh, ecc_trans, dv_total = vfunc.val_hohmann(
         r_init=r1, r_final=r2, mu_trans=mu_earth_km
     )
-    print(f"Hohmann transfer time: {(tof_hoh/2):0.8g} [s], {tof_hoh/(2*60):0.8g} [m]")
-    print(f"Transfer eccentricity, ecc_trans= {ecc_trans}")
-    print(f"Total transfer delta-v, dv_total= {dv_total}")
+    print(f"Hohmann transfer time: {(tof_hoh/2):0.8g} [s], {tof_hoh/(2*60):0.8g} [min]")
+    print(f"Transfer eccentricity, ecc_trans= {ecc_trans:.6g}")
+    print(f"Total transfer delta-v, dv_total= {dv_total:.6g} [km/s]")
 
 
 def test_ex6_2_bielliptic():
     """
-    Bi-Elliptic Transfer, Vallado, example 6-2, p327.
+    Bi-Elliptic Transfer, Vallado [2], example 6-2, p327.
     Bi-Elliptic uses one central body for the transfer ellipse.
     Two transfer ellipses; one at periapsis, the other at apoapsis.
-    1) initial body - departure
-    2) transfer body - transfer
-    3) final body - arrival
+        1) initial body - departure
+        2) transfer body - transfer
+        3) final body - arrival
 
     Notes:
     ----------
-        Note, interplanetary missions use the patched conic; 3 orbit types:
-        For interplanetary missions with patched conic see chapter 12.
+        Note, interplanetary patched conic missions in Vallado [4] chapter 12, pp.959.
+        Interplanetary missions use the patched conic; 3 orbit types:
+            1) initial body - departure
+            2) transfer body - transfer
+            3) final body - arrival
     """
-    print("\nTest Vallado Bi-Elliptic Transfer, example 6-2")  # temporary print
+    print("\nTest Vallado [2] Bi-Elliptic Transfer, example 6-2")  # temporary print
     # define constants
-    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado p.1041, tbl.D-3
-    r_earth = 6378.1363  # [km] earth radius; Vallado p.1041, tbl.D-3
+    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado [2] p.1041, tbl.D-3
+    r_earth = 6378.1363  # [km] earth radius; Vallado [2] p.1041, tbl.D-3
 
     # define inputs; bi-elliptic transfer
     r_1 = r_earth + 191.34411  # [km]
@@ -323,7 +363,7 @@ def test_ex6_2_bielliptic():
 
 def test_ex6_3_one_tan_burn():
     """
-    Test Vallado One-Tangent Burn Transfer, example 6-3, p334.
+    Test Vallado [2] One-Tangent Burn Transfer, example 6-3, p334.
 
     Input Parameters:
     ----------
@@ -338,21 +378,21 @@ def test_ex6_3_one_tan_burn():
 
         References: see list at file beginning.
     """
-    print(f"\nTest one-tangent burn, Vallado example 6-3:")
+    print(f"\nTest one-tangent burn, Vallado [2] example 6-3:")
     # constants
-    au = 149597870.7  # [km/au] Vallado p.1043, tbl.D-5
-    mu_sun_km = 1.32712428e11  # [km^3/s^2], Vallado p.1043, tbl.D-5
+    au = 149597870.7  # [km/au] Vallado [2] p.1043, tbl.D-5
+    mu_sun_km = 1.32712428e11  # [km^3/s^2], Vallado [2] p.1043, tbl.D-5
     mu_sun_au = mu_sun_km / (au**3)  # unit conversion
-    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado p.1041, tbl.D-3
-    r_earth = 6378.1363  # [km] earth radius; Vallado p.1041, tbl.D-3
+    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado [2] p.1041, tbl.D-3
+    r_earth = 6378.1363  # [km] earth radius; Vallado [2] p.1041, tbl.D-3
 
     # define inputs; one-tangent transfer (two burns/impulses)
     r0_mag = r_earth + 191.34411  # [km], example 6-3
     r1_mag = r_earth + 35781.34857  # [km], example 6-3, geosynchronous
     nu_trans_b = 160  # [deg], example 6-3
     # uncomment below to test moon trajectory
-    # r1_mag = r_earth + 376310  # [km], vallado p.336, tbl 6-1, moon
-    # nu_trans_b = 175  # [deg], vallado p.336, tbl 6-1, moon
+    # r1_mag = r_earth + 376310  # [km], Vallado [2] p.336, tbl 6-1, moon
+    # nu_trans_b = 175  # [deg], Vallado [2] p.336, tbl 6-1, moon
 
     ecc_tx, sma_tx, tof_tx, dv_0, dv_1 = vfunc.val_one_tan_burn(
         r_init=r0_mag, r_final=r1_mag, nu_trans_b=nu_trans_b, mu_trans=mu_earth_km
@@ -370,9 +410,10 @@ def test_ex6_3_one_tan_burn():
 
 # Test functions and class methods are called here.
 if __name__ == "__main__":
+    test_ex2_4_kepler()  # test planet location
     # test_prb2_7_tof()  # test tof, problem 2-7
     # test_prb2_7a_tof(plot_sp=False)  # test tof; plot sma vs. sp
-    test_ex5_5_planetLocation()  # test planet location
+    # test_ex5_5_planetLocation()  # test planet location
     # test_ex6_1_hohmann()  # test hohmann transfer, example 6-1
     # test_ex6_2_bielliptic()  # test bi-elliptic transfer, example 6-2
     # test_ex6_3_one_tan_burn()  # test one-tangent transfer, example 6-3

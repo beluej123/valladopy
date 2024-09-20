@@ -2,19 +2,7 @@
 """
 Created on Sat Aug 20 17:34:45 2016, @author: Alex
 Edits 2024-August +, by Jeff Belue.
-Notes:
-----------
-    TODO, This file is organized ...
-    Generally, units shown in brackets [km, rad, deg, etc.].
-    Generally, angles are saved in [rad], distance [km].
-    
-    Supporting functions for the test functions below, may be found in other
-        files, for example vallad_func.py, astro_time.py, kepler.py etc...
-        Also note, the test examples are collected right after this document
-        block.  However, the example test functions are defined/enabled at the
-        end of this file.  Each example function is designed to be stand-alone,
-        but, if you use the function as stand alone you will need to copy the
-        imports...
+TODO, Describe how this file is organized ...
 
 References:
 ----------
@@ -26,6 +14,18 @@ References:
         Orbital Mechanics for Engineering Students. Elsevier Ltd.
     [4] Vallado, David A., (2022, 5th ed.).
         Fundamentals of Astrodynamics and Applications. Microcosm Press.
+Notes:
+----------
+    Generally, units shown in brackets [km, rad, deg, etc.].
+    Generally, angles are saved in [rad], distance [km].
+    
+    Supporting functions for the test functions below, may be found in other
+        files, for example vallad_func.py, astro_time.py, kepler.py etc...
+        Also note, the test examples are collected right after this document
+        block.  However, the example test functions are defined/enabled at the
+        end of this file.  Each example function is designed to be stand-alone,
+        but, if you use the function as stand alone you will need to copy the
+        imports...
 """
 
 import math
@@ -35,34 +35,22 @@ import numpy as np
 
 def julian_date(yr, mo, d, hr, minute, sec, leap_sec=False):
     """
-    Converts a date & time to Julian Date
-
-    Converts a date & time (yr, month, day, hour, second) to a Julian Date.
+    Converts date & time (yr, month, day, hour, second) to julian date.
     Valid for any time system (UT1, UTC, AT, etc.) but should be identified to
-    avoid confusion. For reference, see Algorithm 14 in Vallado (Fourth
-    Edition), Section 3.5 pg 185.
-
-    Parameters
+        avoid confusion.  Vallado [4], section 3.5, p.185, algorithm 14.
+    Input Parameters:
     ----------
-    yr: int
-        Four digit year
-    mo: int
-        Month
-    d:  int
-        Day (of month)
-    hr: int
-        Hour (24-hr based)
-    minute: int
-        Minute
-    sec: double
-        Seconds
-    leap_sec: boolean, optional, default = False
-        Flag if time is during leap second
-
-    Returns
+        yr       : int, four digit year
+        mo       : int, month
+        d        :  int, day of month
+        hr       : int, hour (24-hr based)
+        minute   : int, minute
+        sec      : float, seconds
+        leap_sec : boolean, optional, default = False
+                   Flag if time is during leap second
+    Returns:
     -------
-    jd: double
-        Date/Time as a Julian Date
+        jd          : float date/time as julian date
     """
 
     x = (7 * (yr + np.trunc((mo + 9) / 12))) / 4.0
@@ -75,11 +63,40 @@ def julian_date(yr, mo, d, hr, minute, sec, leap_sec=False):
     jd = 367 * yr - np.trunc(x) + np.trunc(y) + d + 1721013.5 + z / 24.0
     return jd
 
+def convTime(yr, mo, d, hr=0, minute=0, sec=0, c_type=0):
+    """
+    (1) Converts date & time (yr, month, day, hour, second) to julian date (jd).
+    (2) From jd, if c_type=0, find julian centuries from J2000.0 TT.
+    Easily add other conversion types, as needed.  Vallado [4], section 3.5,
+        p.196, algorithm 16.
+    Valid for any time system (UT1, UTC, AT, etc.) but should be identified to
+        avoid confusion.
+    Input Parameters:
+    ----------
+        yr     : int, four digit year
+        mo     : int, month
+        d      : int, day of month
+        hr     : int, hour (24-hr based)
+        minute : int, minute
+        sec    : float, seconds
+        c_type : int, conversion type
+                c_type=0, julian centuries from J2000.0 TT
+    Returns:
+    -------
+        jd        : float, date/time as julian date
+        jd_cJ2000 : float, julian centuries from J2000.0 TT
+    """
+    jd = julian_date(yr, mo, d, hr, minute, sec)
+    if c_type==0:
+        jd_cJ2000=(jd-2451545.0)/36525.0
+    else:
+        print(f"Unknown time conversion type; function convTime().")
+    return jd, jd_cJ2000
+
 
 def find_gmst(jd_ut1):
-    """Finds Greenwich Mean Sidereal Time given UT1
-
-    Finds the Greenwich Mean Sidereal Time (GMST) for a supplied UT1 Julian
+    """
+    Find the Greenwich Mean Sidereal Time (GMST) for a supplied UT1 Julian
     Date. For reference, see Algorithm 15 in Vallado (Fourth Edition),
     Section 3.5 pg 188.
 
@@ -108,10 +125,9 @@ def find_gmst(jd_ut1):
 
 
 def find_lst(theta_gmst, lon):
-    """Finds the Local Sidereal Time given GMST and longitude
-
-    Finds the Local Sidereal Time (LST) for a supplied GMST and Longitude. For
-    reference, see Algorithm 15 in Vallado (Fourth Edition), Section 3.5 pg 188
+    """
+    Find the Local Sidereal Time (LST) for a supplied GMST and Longitude.
+    Vallado [2], algorithm 15, section 3.5 pg 188
 
     Parameters
     ----------
@@ -131,7 +147,8 @@ def find_lst(theta_gmst, lon):
 
 
 def dms2rad(degrees, minutes, seconds):
-    """Converts degrees, minutes, seconds to radians.
+    """
+    Converts degrees, minutes, seconds to radians.
 
     Converts degrees, minutes, seconds to radians. For reference, see Algorithm
     17 in Vallado (Fourth Edition), Section 3.5 pg 197
