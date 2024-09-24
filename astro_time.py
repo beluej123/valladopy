@@ -63,11 +63,12 @@ def julian_date(yr, mo, d, hr, minute, sec, leap_sec=False):
     jd = 367 * yr - np.trunc(x) + np.trunc(y) + d + 1721013.5 + z / 24.0
     return jd
 
-def convTime(yr, mo, d, hr=0, minute=0, sec=0, c_type=0):
+def jd_convTime(yr, mo, d, hr=0, minute=0, sec=0, c_type=0):
     """
-    (1) Converts date & time (yr, month, day, hour, second) to julian date (jd).
-    (2) From jd, if c_type=0, find julian centuries from J2000.0 TT.
-    Easily add other conversion types, as needed.  Vallado [4], section 3.5,
+    (1) Calculate julian date (jd) from date & time (yr, month, day, hour, second).
+    (2) Converts jd to other time fromats:
+        if c_type=0, find julian centuries from J2000.0 TT.
+    Easy to add other conversion types, as needed.  Vallado [4], section 3.5,
         p.196, algorithm 16.
     Valid for any time system (UT1, UTC, AT, etc.) but should be identified to
         avoid confusion.
@@ -90,7 +91,7 @@ def convTime(yr, mo, d, hr=0, minute=0, sec=0, c_type=0):
     if c_type==0:
         jd_cJ2000=(jd-2451545.0)/36525.0
     else:
-        print(f"Unknown time conversion type; function convTime().")
+        print(f"Unknown time conversion type; function jd_convTime().")
     return jd, jd_cJ2000
 
 
@@ -219,7 +220,8 @@ def hms2rad(hours, minutes, seconds):
 
 
 def rad2hms(rad):
-    """Converts an angle (in radians) to a time (in hours, minutes, seconds)
+    """
+    Converts an angle (in radians) to a time (in hours, minutes, seconds)
 
     Converts an angle (radians) to a time (hours, minutes, seconds). For
     refrence, see Algorithm 20 in Vallado (Fourth Edition), Section 3.5 pg 198
@@ -242,7 +244,8 @@ def rad2hms(rad):
 
 
 def is_leap_year(yr):
-    """Determines if the year is a leap year
+    """
+    Determines if the year is a leap year
 
     Determines if the year is a leap year. For reference, see Section 3.6.4 of
     Vallado (Fourth Edition), pg 200
@@ -270,7 +273,8 @@ def is_leap_year(yr):
 
 
 def time2hms(time_in_seconds):
-    """Computes the time in Hours, Minutes, Seconds from seconds into a day
+    """
+    Computes the time in Hours, Minutes, Seconds from seconds into a day
 
     Computes the time in Hours, Minutes, and Seconds from the time expressed
     as seconds into a day.  For reference, see Algorithm 21 in Vallado
@@ -295,7 +299,8 @@ def time2hms(time_in_seconds):
 
 
 def hms2time(hours, minutes, seconds):
-    """Computes the time in seconds into the day from hours, minutes, seconds
+    """
+    Computes the time in seconds into the day from hours, minutes, seconds
 
     Computes the time in seconds into the day from the time expressed as
     hours, minutes, seconds. For reference, see Section 3.6.3 in Vallado
@@ -320,7 +325,8 @@ def hms2time(hours, minutes, seconds):
 
 
 def ymd2doy(year, month, day):
-    """Computes the day of the year from the year, month, and day
+    """
+    Computes the day of the year from the year, month, and day
 
     Computes the day of the year from the year, month, and day of a date. For
     reference, see Section 3.6.4 of Vallado (Fourth Edition) pg 200
@@ -350,7 +356,8 @@ def ymd2doy(year, month, day):
 
 
 def doy2ymd(day_of_year, year):
-    """Computes the month and day, given the year and day of the year
+    """
+    Computes the month and day, given the year and day of the year
 
     Computes the month and day, given the year and day of the year. For
     reference, see Section 3.6.4 in Vallado (Fourth Edition), pg 200
@@ -388,7 +395,8 @@ def doy2ymd(day_of_year, year):
 
 
 def ymdhms2days(year, month, day, hour, minutes, seconds):
-    """Computes the decimal day for a give date (y, m, d) and time (h, m, s)
+    """
+    Computes the decimal day for a give date (y, m, d) and time (h, m, s)
 
     Computes the decimal day for a given date (years, months, days) and time
     (hours, minutes, seconds). For reference, see Section 3.6.5 in Vallado
@@ -420,7 +428,8 @@ def ymdhms2days(year, month, day, hour, minutes, seconds):
 
 
 def days2ymdhms(days, year):
-    """Computes the month, day, hrs, mins, and secs from the year and decimal day
+    """
+    Computes the month, day, hrs, mins, and secs from the year and decimal day
 
     Computes the month, day, hours, minutes, and seconds from the year and
     decimal day of the year (including partial day). For reference, see
@@ -448,7 +457,8 @@ def days2ymdhms(days, year):
 
 
 def jd2gregorian(jd):
-    """Computes the components of the Gregorian Date (y, mo, d, h, m, s) from
+    """
+    Computes the components of the Gregorian Date (y, mo, d, h, m, s) from
     a Julian Date
 
     Computes the components of the Gregorian Date (years, months, days, hours

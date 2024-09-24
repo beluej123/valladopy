@@ -33,6 +33,9 @@ import math
 
 import numpy as np
 
+import astro_time
+from kepler import coe2rv, eccentric_to_true, kep_eqtnE
+
 
 def cal_a(r1: float, r2: float):
     """Calculate semi-major axis, a
@@ -574,10 +577,10 @@ def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
     J2000_rates = cent_rates[planet_id - 1]
     return J2000_coe, J2000_rates
     
-def planet_ele_1(planet_id=4, au_units=True, rad_units=False):
+def planet_ele_1(planet_id, au_units=True, rad_units=False):
     """ 
-    Planet elements coefficients table, heliocentric, equatorial.
-        Table are polynomial coefficients in t_TDB.
+    Planet elements coefficients table, heliocentric/equatorial.
+        Table of polynomial coefficients in t_TDB.
         t_TDB = julian centuries of tdb (barycentric dynamic time).
         Format: x0*t_TDB^0 + x1*t_TDB^1 + x2*t_TDB^2 + ...
     
@@ -587,16 +590,37 @@ def planet_ele_1(planet_id=4, au_units=True, rad_units=False):
         Heliocentric, equatorial (not ecliptic), mean equator, mean equinox of IAU-76/FK5.
     """
     
-    if planet_id ==0: # mercury
+    if planet_id == 0: # mercury
         print(f"mercury not yet copied, 2024-09-15")
-    if planet_id ==1: # venus
-        print(f"venus not yet copied, 2024-09-15")
-    if planet_id ==2: # earth
-        print(f"earth not yet copied, 2024-09-15")
-    if planet_id ==3: # mars
-        print(f"mars not yet copied, 2024-09-15")
+    elif planet_id == 1: # venus
+        J2000_coefs = np.array([
+                [0.723329820, 0.0,           0.0,          0.0,          0],# [au] sma
+                [0.006771880, -0.000047766, 0.0000000975, 0.00000000044, 0],# [--] ecc
+                [3.394662000, -0.000856800, -0.000032440, 0.00000001000, 0],# [deg] incl
+                [76.67992000, -0.278008000, -0.000142560, -0.0000001980, 0],# [deg] raan
+                [131.5637070, 0.0048646000, -0.001382320, -0.0000053320, 0],# [deg] w_bar
+                [181.9798010, 58517.815676, 0.0000016500, -0.0000000020, 0]# [deg] Lm
+            ])
+    elif planet_id == 2: # earth
+        J2000_coefs = np.array([
+                [1.000001018, 0.0,           0.0,          0.0,          0],# [au] sma
+                [0.016708620, -0.000042037, -0.0000001236, 0.00000000004,0],# [--] ecc
+                [0.000000000, 0.0130546000, -0.000009310, -0.0000000340, 0],# [deg] incl
+                [174.8731740, -0.241090800, 0.0000406700, -0.0000013270, 0],# [deg] raan
+                [102.9373480, 0.3225550000, 0.0001502600, 0.00000047800, 0],# [deg] w_bar
+                [100.4664490, 35999.372851, -0.000005680, 0.00000000000, 0]# [deg] Lm
+            ])
+    elif planet_id == 3: # mars
+        J2000_coefs = np.array([
+                [1.523679342, 0.0,           0.0,          0.0,          0],# [au] sma
+                [0.093400620, 0.0000904830, -0.0000000806, -0.00000000035,0],# [--] ecc
+                [1.849726000, -0.008147900, -0.0000225500, -0.00000002700,0],# [deg] incl
+                [49.55809300, -0.294984600, -0.0006399300, -0.00000214300,0],# [deg] raan
+                [336.0602340, 0.4438898000, -0.0001732100, 0.000000300000,0],# [deg] w_bar
+                [355.4332750, 19140.2993313, 0.0000026100, -0.00000000300,0]# [deg] Lm
+            ])
         
-    if planet_id == 4: # jupiter
+    elif planet_id == 4: # jupiter
         J2000_coefs = np.array([
                 [5.202603191, 0.0000001913, 0, 0, 0],# [au] sma
                 [0.048494850, 0.0001632440, -0.0000004719, -0.00000000197, 0],# [--] ecc
@@ -606,7 +630,14 @@ def planet_ele_1(planet_id=4, au_units=True, rad_units=False):
                 [34.35148400, 3034.9056746, -0.000085010, 0.00000000400, 0]# [deg] Lm
             ])
     elif planet_id == 5: # saturn
-        print(f"saturn not yet copied, 2024-09-15")
+        J2000_coefs = np.array([
+                [9.554909596, -0.000002138, 0, 0],# [au] sma
+                [0.055508620, -0.000346818, -0.0000006456, 0.00000000338, 0],# [--] ecc
+                [2.488878000, 0.0025510000, -0.000049030, 0.00000001800, 0],# [deg] incl
+                [113.6655240, -0.256664900, -0.000183450, 0.00000035700, 0],# [deg] raan
+                [93.05678700, 0.5665496000, 0.0005280900, 0.00000488200, 0],# [deg] w_bar
+                [50.07747100, 1222.1137943, 0.0002100400, -0.0000000190, 0]# [deg] Lm
+            ])
     elif planet_id == 6: # uranus
         print(f"uranus not yet copied, 2024-09-15")
     elif planet_id == 7: # neptune
@@ -614,9 +645,147 @@ def planet_ele_1(planet_id=4, au_units=True, rad_units=False):
     elif planet_id == 8: # pluto
         print(f"pluto not yet copied, 2024-09-15")
     else:
-        print(f"Not a valid planet id.")
+        raise NameError(f"Not a valid planet id, {planet_id}")
     
     return J2000_coefs
+
+
+def planet_rv(planet_id, date_, au_units=True):
+    """ 
+    Find planet position, r_vec and v_vec; given planet_id, and date.
+    From Vallado [4], example 5-5, pp.304; called algorithm 33, pp.303.
+    
+    Input Parameters:
+    ----------
+        planet_id : int, 0=mercury, 1=venus. 2=earth, 3=mars, 4=jupiter
+                            5=saturn, 6=uranus, 7=neptune, 8=pluto
+        date_     : python date object
+        au_units  :
+    
+    Notes:
+    ----------
+    Planet elements coefficients table, heliocentric/equatorial.
+        Table of polynomial coefficients in t_TDB.
+        t_TDB = julian centuries of tdb (barycentric dynamic time).
+        Format: x0*t_TDB^0 + x1*t_TDB^1 + x2*t_TDB^2 + ...
+    """
+    np.set_printoptions(precision=6)  # numpy, set vector printing size
+    deg2rad = math.pi / 180  # used multiple times
+    rad2deg = 180 / math.pi  # used multiple times
+    pi_2 = 2*math.pi # used for modulus
+
+    au = 149597870.7  # [km/au] Vallado [2] p.1043, tbl.D-5
+    mu_sun_km = 1.32712428e11  # [km^3/s^2], Vallado [2] p.1043, tbl.D-5
+    mu_sun_au = mu_sun_km / (au**3)  # [au^3/s^2], unit conversion
+    # print(f"mu_sun_au= {mu_sun_au}")
+    
+    year, month, day, hour, minute, second = (
+        date_.year,
+        date_.month,
+        date_.day,
+        date_.hour,
+        date_.minute,
+        date_.second,
+    )
+
+    # jd_convTime(), always calculates julian date, but also calculates other
+    #   time conversions; i.e. c_type=0, julian centuries from J2000.0 TT.
+    jd, jd_cJ2000 = astro_time.jd_convTime(
+        year, month, day, hour, minute, second, c_type=0
+    )
+    # print(f"jd= {jd:.10g}, jd_cent={jd_cJ2000:.10g}")
+    # 2024-09-21, all planets are in coefficients table so far
+    J2000_coefs = planet_ele_1(planet_id, au_units=True, rad_units=False)
+    # coeffs format; x0*t_TDB^0 + x1*t_TDB^1 + x2*t_TDB^2 + ...
+    #   time, t_tdb = julian centuries of barycentric dynamical time
+    x1 = np.arange(5)  # number of exponent values; power series
+    x2 = np.full(5, jd_cJ2000)  # base time value
+    x3 = x2**x1  # time multiplier series
+
+    sma = np.sum(J2000_coefs[0, :] * x3)  # [au]
+    if au_units == False:
+        sma *= au # convert [au] to [km]
+    
+    # make sure angles, modulo +- 2*pi; phi%(2*math.pi) # %=modulo
+    ecc = np.sum(J2000_coefs[1, :] * x3)  # [--]
+    incl_deg = np.sum(J2000_coefs[2, :] * x3)  # [deg]
+    raan_deg = np.sum(J2000_coefs[3, :] * x3)  # [deg]
+    w_bar_deg = np.sum(J2000_coefs[4, :] * x3)  # [deg]
+    L_bar_deg = np.sum(J2000_coefs[5, :] * x3)  # [deg]
+
+    incl_rad = incl_deg * deg2rad
+    raan_rad = raan_deg * deg2rad
+    w_bar_rad = w_bar_deg * deg2rad
+    L_bar_rad = L_bar_deg * deg2rad
+
+    # print(f"sma= {sma:.8g} [au]")
+    # print(f"ecc= {ecc:.8g}")
+    # print(f"incl= {incl_deg:.8g} [deg]")
+    # print(f"raan= {raan_deg:.8g} [deg]")
+    # print(f"w_bar= {w_bar_deg:.8g} [deg]")  # longitude of periapsis
+    # print(f"L_bar= {L_bar_deg:.8g} [deg]")
+
+    M_deg = L_bar_deg - w_bar_deg  # [deg] mean angle/anomaly
+    M_rad = M_deg * deg2rad
+    w_deg = w_bar_deg - raan_deg  # [deg] argument of periapsis (aka aop, or arg_p)
+    w_rad = w_deg * deg2rad
+    print(f"\nM_deg= {M_deg:.8g} [deg], {M_rad:.8g} [rad]")
+    # print(f"w_deg= {w_deg:.8g} [deg]")
+
+    E_rad = kep_eqtnE(M=M_rad, e=ecc)
+    E_deg = E_rad * rad2deg
+    # TA_rad below, no quadrent ambiguity; addresses near pi values
+    TA_rad = eccentric_to_true(E=E_rad, e=ecc)
+    # below, commented out, is Curtis [3], p.160, eqn 3.13b.
+    # TA_rad = 2 * math.atan(math.sqrt((1 + ecc) / (1 - ecc)) * math.tan(E_rad / 2))
+    TA_deg = TA_rad * rad2deg
+
+    print(f"E_deg= {E_deg:.8g} [deg]")
+    print(f"TA_deg= {TA_deg:.8g} [deg]")
+
+    sp = sma * (1 - ecc**2)
+    if au_units == True:
+        print(f"sp= {sp:.8g} [au]")
+    else:
+        print(f"sp= {sp:.8g} [km]")
+
+    # function inputs, coe2rv(p, ecc, inc, raan, aop, anom, mu=Earth.mu)
+    r_vec, v_vec = coe2rv(
+        p=sp,
+        ecc=ecc,
+        inc=incl_rad,
+        raan=raan_rad,
+        aop=w_rad,
+        anom=TA_rad,
+        mu=mu_sun_au,
+    )
+    r_vec = np.ravel(r_vec)  # convert column array to row vector
+    v_vec = np.ravel(v_vec)
+    print(f"\nEquatorial/Heliocentric, XYZ")
+    if au_units == True:
+        print(f"r_vec= {r_vec} [au]")
+        print(f"v_vec= {v_vec*86400} [au/day]") # convert, seconds to days
+    else: # units [km] and [km/s]
+        print(f"r_vec= {r_vec} [km]")
+        print(f"v_vec= {v_vec} [km/s]")
+
+    # rotate r_vec and v_vec from equatorial to ecliptic/heliocentric
+    e_angle = ecliptic_angle(jd_cJ2000)  # ecliptic angle
+    print(f"ecliptic angle, e_angle= {e_angle:.8g} [deg]")
+    
+    r1_vec = r_vec @ rot_matrix(angle=-e_angle * deg2rad, axis=0)
+    v1_vec = v_vec @ rot_matrix(angle=-e_angle * deg2rad, axis=0)
+    print(f"\nEcliptic/Heliocentric, XYZ")
+    if au_units == True:
+        print(f"r1_vec= {r1_vec} [au]")
+        v1_vec *=86400 # convert seconds to days
+        print(f"v1_vec= {v1_vec} [au/day]")
+    else:
+        print(f"r1_vec= {r1_vec} [km]")
+        print(f"v1_vec= {v1_vec} [km/s]") # convert seconds to days
+    
+    return r1_vec, v1_vec
+
 
 def rot_matrix(angle, axis:int):
     """
@@ -678,3 +847,16 @@ def ecliptic_angle(jd_cJ2000):
     # print(f"{ecliptic_coefs[:] * x3}") # troubleshooting
     e_angle = np.sum(ecliptic_coefs[:] * x3)  # [deg]
     return e_angle
+
+
+def sunRiseSet():
+    """
+    Input Parameters:
+    ----------
+
+    Returns:
+    ----------
+        _type_
+            _description_
+    """
+    return None # sunRiseSet()

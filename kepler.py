@@ -133,7 +133,7 @@ def kep_eqtnE(M, e, tol=1e-8):
 
     Input Parameters:
     ----------
-    M   : float, [rad] mean anomaly
+    M   : float, [rad] mean anomaly; must, -2*pi <= M <= +2*pi
     e   : float, [--] eccentricity
     tol : float, optional, default=1E-8
         Newton-Raphson convergence tolerance
@@ -142,6 +142,8 @@ def kep_eqtnE(M, e, tol=1e-8):
     -------
     E   : float, [rad] eccentric anomaly
     """
+    if M > (2*math.pi) or M < (-2*math.pi):
+        raise NameError(f"kep_eqtnE(), mean anomaly out of bounds, M={M}")
     if e < 1 and e > 0:  # make sure elliptical orbit
         if ((M > -np.pi) and (M < 0)) or ((M > np.pi) and (M < 2 * np.pi)):
             E = M - e
