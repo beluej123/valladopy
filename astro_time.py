@@ -73,6 +73,7 @@ def julian_date(yr, mo, d, hr=0, minute=0, sec=0.0, leap_sec=False):
     jd = 367 * yr - np.trunc(x) + np.trunc(y) + d + 1721013.5 + z / 24.0
     return jd
 
+
 def jd_convTime(yr, mo, d, hr=0, min=0, sec=0.0, c_type=0):
     """
     (1) Calculate julian date (jd) from date & time (yr, month, day, hour, second).
@@ -98,8 +99,8 @@ def jd_convTime(yr, mo, d, hr=0, min=0, sec=0.0, c_type=0):
         jd_cJ2000 : float, julian centuries from J2000.0 TT
     """
     jd = julian_date(yr, mo, d, hr=hr, minute=min, sec=sec)
-    if c_type==0:
-        jd_cJ2000=(jd-2451545.0)/36525.0
+    if c_type == 0:
+        jd_cJ2000 = (jd - 2451545.0) / 36525.0
     else:
         print(f"Unknown time conversion type; function jd_convTime().")
     return jd, jd_cJ2000
@@ -266,7 +267,6 @@ def dec_deg2hms(dec_deg):
     minutes = int((dec_deg % 15) * 4)
     seconds = ((dec_deg % 15) * 4 - minutes) * 60
     return (hours, minutes, seconds)
-    
 
 
 def is_leap_year(yr):

@@ -5,6 +5,8 @@ Edits 2024-08-21 +, Jeff Belue.
 Notes:
 ----------
     TODO, This file is organized ...
+    Note, some lines have AUTO-formatting instructions for "black" formatter!
+        Generally, donot format numeric arrays (tables); use # fmt: off/on
     Generally, units shown in brackets [km, rad, deg, etc.].
     Generally, angles are saved in [rad], distance [km].
     Reminder to me; cannot get black formatter to work within VSCode,
@@ -481,17 +483,18 @@ def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
 
     #   NOTICE !!
     #   *** UNITS are different between the two data sets. ***
-    
+
     if eph_data == 0:  # JPL horizons data set
-    # Horizons Table 1 data set COPIED DIRECTLY from the web-site noted above.
-    
-    #   JPL Table 1 order of the elements is different then the other list below.
-    #   Also note, Table 1 list earth-moon barycenter, not just earth.
-    #           sma   |    ecc      |     incl    | long.node   | long.peri   | mean.long
-    #       au, au/cy | ecc, ecc/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy
+        # Horizons Table 1 data set COPIED DIRECTLY from the web-site noted above.
+
+        #   JPL Table 1 order of the elements is different then the other list below.
+        #   Also note, Table 1 list earth-moon barycenter, not just earth.
+        #           sma   |    ecc      |     incl    | long.node   | long.peri   | mean.long
+        #       au, au/cy | ecc, ecc/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy
+        # fmt: off
         J2000=np.array(
             [
-            [0.38709927, 0.20563593,  7.00497902,  252.25032350, 77.45779628, 48.33076593],#xxx
+            [0.38709927, 0.20563593,  7.00497902,  252.25032350, 77.45779628, 48.33076593],
             [0.00000037,  0.00001906, -0.00594749, 149472.67411175, 0.16047689, -0.12534081],
             [0.72333566,  0.00677672, 3.39467605,   181.97909950, 131.60246718, 76.67984255],
             [0.00000390,  -0.00004107, -0.00078890, 58517.81538729, 0.00268329, -0.27769418],
@@ -506,162 +509,192 @@ def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
             [19.18916464, 0.04725744, 0.77263783, 313.23810451,  170.95427630, 74.01692503],
             [-0.00196176, -0.00004397, -0.00242939, 428.48202785, 0.40805281, 0.04240589],
             [30.06992276, 0.00859048, 1.77004347, -55.12002969,  44.96476227, 131.78422574],
-            [0.00026291,  0.00005105, 0.00035372, 218.45945325, -0.32241464, -0.00508664]
+            [0.00026291,  0.00005105, 0.00035372, 218.45945325, -0.32241464, -0.00508664],
             ]
             )
-        J2000_elements=J2000[::2] # every other row, starting row 0
-        cent_rates=J2000[1::2] # every other row, starting row 1
-        
+        # fmt: on
+        J2000_elements = J2000[::2]  # every other row, starting row 0
+        cent_rates = J2000[1::2]  # every other row, starting row 1
+
     # Data below, copied Curtis tbl 8.1, Standish et.al. 1992
     # Elements, numpy.array
     # (semi-major axis)|             |             |(RAAN, Omega)| (omega_bar) |
     #            sma   |    ecc      |     incl    | long.node   | long.peri   |  mean.long (L)
     #        au, au/cy | ecc, ecc/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy
     elif eph_data == 1:
-        J2000_elements = np.array([
-            [0.38709893, 0.20563069, 7.00487, 48.33167, 77.4545, 252.25084],#xxx
-            [0.72333199, 0.00677323, 3.39471, 76.68069, 131.53298, 181.97973],
-            [1.00000011, 0.01671022, 0.00005, -11.26064, 102.94719, 100.46435],
-            [1.52366231, 0.09341233, 1.845061, 49.57854, 336.04084, 355.45332],
-            [5.20336301, 0.04839266, 1.30530, 100.55615, 14.75385, 34.40438],
-            [9.53707032, 0.05415060, 2.48446, 113.71504, 92.43194, 49.94432],
-            [19.19126393, 0.04716771, 0.76986, 74.22988, 170.96424, 313.23218],
-            [30.06896348, 0.00858587, 1.76917, 131.72169, 44.97135, 304.88003],
-            [39.48168677, 0.24880766, 17.14175, 110.30347, 224.06676, 238.92881]
-        ])
+        # fmt: off
+        J2000_elements = np.array(
+            [
+                [0.38709893, 0.20563069, 7.00487, 48.33167, 77.4545, 252.25084],
+                [0.72333199, 0.00677323, 3.39471, 76.68069, 131.53298, 181.97973],
+                [1.00000011, 0.01671022, 0.00005, -11.26064, 102.94719, 100.46435],
+                [1.52366231, 0.09341233, 1.845061, 49.57854, 336.04084, 355.45332],
+                [5.20336301, 0.04839266, 1.30530, 100.55615, 14.75385, 34.40438],
+                [9.53707032, 0.05415060, 2.48446, 113.71504, 92.43194, 49.94432],
+                [19.19126393, 0.04716771, 0.76986, 74.22988, 170.96424, 313.23218],
+                [30.06896348, 0.00858587, 1.76917, 131.72169, 44.97135, 304.88003],
+                [39.48168677, 0.24880766, 17.14175, 110.30347, 224.06676, 238.92881],
+            ]
+        )
+        # fmt: on
         # century [cy] rates, numpy.array
         # Data below, copied Curtis tbl 8.1, Standish et.al. 1992
         # Units of rates table:
         # "au/cy", "1/cy", "arc-sec/cy", "arc-sec/cy", "arc-sec/cy", "arc-sec/cy"
-        cent_rates = np.array([
-            [0.00000066, 0.00002527, -23.51, -446.30, 573.57, 538101628.29],#xxx
-            [0.00000092, -0.00004938, -2.86, -996.89, -108.80, 210664136.06],
-            [-0.0000005, -0.00003804, -46.94, -18228.25, 1198.28, 129597740.63],
-            [-0.00007221, 0.00011902, -25.47, -1020.19, 1560.78, 68905103.78],
-            [0.00060737, -0.00012880, -4.15, 1217.17, 839.93, 10925078.35],
-            [-0.00301530, -0.00036762, 6.11, -1591.05, -1948.89, 4401052.95],
-            [0.00152025, -0.00019150, -2.09, -1681.4, 1312.56, 1542547.79],
-            [-0.00125196, 0.00002514, -3.64, -151.25, -844.43, 786449.21],
-            [-0.00076912, 0.00006465, 11.07, -37.33, -132.25, 522747.90]
-        ])
+        # fmt: off
+        cent_rates = np.array(
+            [
+                [0.00000066, 0.00002527, -23.51, -446.30, 573.57, 538101628.29],  # xxx
+                [0.00000092, -0.00004938, -2.86, -996.89, -108.80, 210664136.06],
+                [-0.0000005, -0.00003804, -46.94, -18228.25, 1198.28, 129597740.63],
+                [-0.00007221, 0.00011902, -25.47, -1020.19, 1560.78, 68905103.78],
+                [0.00060737, -0.00012880, -4.15, 1217.17, 839.93, 10925078.35],
+                [-0.00301530, -0.00036762, 6.11, -1591.05, -1948.89, 4401052.95],
+                [0.00152025, -0.00019150, -2.09, -1681.4, 1312.56, 1542547.79],
+                [-0.00125196, 0.00002514, -3.64, -151.25, -844.43, 786449.21],
+                [-0.00076912, 0.00006465, 11.07, -37.33, -132.25, 522747.90],
+            ]
+        )
+        # fmt: on
         # convert arc-sec/cy to deg/cy
         # There must be a better way for this conversion; this gets the job done
-        cent_rates[:,2] /= 3600.0
-        cent_rates[:,3] /= 3600.0
-        cent_rates[:,4] /= 3600.0
-        cent_rates[:,5] /= 3600.0
-        
+        cent_rates[:, 2] /= 3600.0
+        cent_rates[:, 3] /= 3600.0
+        cent_rates[:, 4] /= 3600.0
+        cent_rates[:, 5] /= 3600.0
+
         # elements & rates conversions
         au = 149597870.7  # [km/au] Vallado [2] p.1043, tbl.D-5
-        deg2rad = math.pi/180
-        if au_units == False: # then convert units to km
-            J2000_elements[:,0] *= au  # [km] sma (semi-major axis, aka a) convert
-            cent_rates[:,0] *= au
+        deg2rad = math.pi / 180
+        if au_units == False:  # then convert units to km
+            J2000_elements[:, 0] *= au  # [km] sma (semi-major axis, aka a) convert
+            cent_rates[:, 0] *= au
         if rad_units == True:
-            J2000_elements[:,2] *= deg2rad  # [rad]
-            cent_rates[:,2] *= deg2rad
-            J2000_elements[:,3] *= deg2rad  # [rad]
-            cent_rates[:,3] *= deg2rad
-            J2000_elements[:,4] *= deg2rad  # [rad]
-            cent_rates[:,4] *= deg2rad
-            J2000_elements[:,5] *= deg2rad  # [rad]
-            cent_rates[:,5] *= deg2rad
-    
+            J2000_elements[:, 2] *= deg2rad  # [rad]
+            cent_rates[:, 2] *= deg2rad
+            J2000_elements[:, 3] *= deg2rad  # [rad]
+            cent_rates[:, 3] *= deg2rad
+            J2000_elements[:, 4] *= deg2rad  # [rad]
+            cent_rates[:, 4] *= deg2rad
+            J2000_elements[:, 5] *= deg2rad  # [rad]
+            cent_rates[:, 5] *= deg2rad
+
         # np.set_printoptions(precision=4)
         # print(f"J2000_elements=\n{J2000_elements}")
         # print(f"cent_rates=\n{cent_rates}")
-        
+
     # extract user requested planet coe data & rates;
     #   reminder, coe=classic orbital elements (Kepler)
     J2000_coe = J2000_elements[planet_id - 1]
     J2000_rates = cent_rates[planet_id - 1]
     return J2000_coe, J2000_rates
-    
+
+
 def planet_ele_1(planet_id, au_units=True, rad_units=False):
-    """ 
+    """
     Planet elements coefficients table, heliocentric/equatorial.
         Table of polynomial coefficients in t_TDB.
         t_TDB = julian centuries of tdb (barycentric dynamic time).
         Format: x0*t_TDB^0 + x1*t_TDB^1 + x2*t_TDB^2 + ...
-    
+
     Notes:
     ----------
     Data below, Vallado [4], appendix D.4, Planetary Ephemerides, pp.1062
         Heliocentric, equatorial (not ecliptic), mean equator, mean equinox of IAU-76/FK5.
     """
-    
-    if planet_id == 0: # mercury
+
+    if planet_id == 0:  # mercury
         print(f"mercury not yet copied, 2024-09-15")
-    elif planet_id == 1: # venus
-        J2000_coefs = np.array([
-                [0.723329820, 0.0,           0.0,          0.0,          0],# [au] sma
-                [0.006771880, -0.000047766, 0.0000000975, 0.00000000044, 0],# [--] ecc
-                [3.394662000, -0.000856800, -0.000032440, 0.00000001000, 0],# [deg] incl
-                [76.67992000, -0.278008000, -0.000142560, -0.0000001980, 0],# [deg] raan
-                [131.5637070, 0.0048646000, -0.001382320, -0.0000053320, 0],# [deg] w_bar
-                [181.9798010, 58517.815676, 0.0000016500, -0.0000000020, 0]# [deg] Lm
-            ])
-    elif planet_id == 2: # earth
-        J2000_coefs = np.array([
-                [1.000001018, 0.0,           0.0,          0.0,          0],# [au] sma
-                [0.016708620, -0.000042037, -0.0000001236, 0.00000000004,0],# [--] ecc
-                [0.000000000, 0.0130546000, -0.000009310, -0.0000000340, 0],# [deg] incl
-                [174.8731740, -0.241090800, 0.0000406700, -0.0000013270, 0],# [deg] raan
-                [102.9373480, 0.3225550000, 0.0001502600, 0.00000047800, 0],# [deg] w_bar
-                [100.4664490, 35999.372851, -0.000005680, 0.00000000000, 0]# [deg] Lm
-            ])
-    elif planet_id == 3: # mars
-        J2000_coefs = np.array([
-                [1.523679342, 0.0,           0.0,          0.0,          0],# [au] sma
-                [0.093400620, 0.0000904830, -0.0000000806, -0.00000000035,0],# [--] ecc
-                [1.849726000, -0.008147900, -0.0000225500, -0.00000002700,0],# [deg] incl
-                [49.55809300, -0.294984600, -0.0006399300, -0.00000214300,0],# [deg] raan
-                [336.0602340, 0.4438898000, -0.0001732100, 0.000000300000,0],# [deg] w_bar
-                [355.4332750, 19140.2993313, 0.0000026100, -0.00000000300,0]# [deg] Lm
-            ])
-        
-    elif planet_id == 4: # jupiter
-        J2000_coefs = np.array([
-                [5.202603191, 0.0000001913, 0, 0, 0],# [au] sma
-                [0.048494850, 0.0001632440, -0.0000004719, -0.00000000197, 0],# [--] ecc
-                [1.303270000, -0.001987200, 0.0000331800, 0.00000009200, 0],# [deg] incl
-                [100.4644410, 0.1766828000, 0.0009038700, -0.0000070320, 0],# [deg] raan
-                [14.33130900, 0.2155525000, 0.0007225200, -0.0000045900, 0],# [deg] w_bar
-                [34.35148400, 3034.9056746, -0.000085010, 0.00000000400, 0]# [deg] Lm
-            ])
-    elif planet_id == 5: # saturn
-        J2000_coefs = np.array([
-                [9.554909596, -0.000002138, 0, 0],# [au] sma
-                [0.055508620, -0.000346818, -0.0000006456, 0.00000000338, 0],# [--] ecc
-                [2.488878000, 0.0025510000, -0.000049030, 0.00000001800, 0],# [deg] incl
-                [113.6655240, -0.256664900, -0.000183450, 0.00000035700, 0],# [deg] raan
-                [93.05678700, 0.5665496000, 0.0005280900, 0.00000488200, 0],# [deg] w_bar
-                [50.07747100, 1222.1137943, 0.0002100400, -0.0000000190, 0]# [deg] Lm
-            ])
-    elif planet_id == 6: # uranus
+    elif planet_id == 1:  # venus
+        # fmt: off
+        J2000_coefs = np.array(
+            [
+                [ 0.723329820, 0.0, 0.0, 0.0, 0],  # [au] sma
+                [ 0.006771880, -0.000047766,  0.0000000975, 0.00000000044, 0],  # [--] ecc
+                [ 3.394662000, -0.000856800, -0.000032440,  0.00000001000, 0],  # [deg] incl
+                [ 76.67992000, -0.278008000, -0.000142560, -0.0000001980,  0],  # [deg] raan
+                [131.5637070,  0.0048646000, -0.001382320, -0.0000053320,  0],  # [deg] w_bar
+                [181.9798010,  58517.815676, 0.0000016500,  -0.0000000020, 0],  # [deg] Lm
+            ]
+        )
+        # fmt: on
+    elif planet_id == 2:  # earth
+        # fmt: off
+        J2000_coefs = np.array(
+            [
+                [1.000001018, 0.0, 0.0, 0.0, 0],  # [au] sma
+                [0.016708620, -0.000042037, -0.0000001236, 0.00000000004, 0],  # [--] ecc
+                [0.000000000, 0.0130546000, -0.000009310, -0.0000000340,  0],  # [deg] incl
+                [174.8731740, -0.241090800,  0.0000406700, -0.0000013270, 0],  # [deg] raan
+                [102.9373480, 0.3225550000,  0.0001502600, 0.00000047800, 0],  # [deg] w_bar
+                [100.4664490, 35999.372851, -0.000005680, 0.00000000000, 0]    # [deg] Lm
+            ]
+        )
+        # fmt: on
+    elif planet_id == 3:  # mars
+        # fmt: off
+        J2000_coefs = np.array(
+            [
+                [1.523679342, 0.0,          0.0, 0.0, 0],  # [au] sma
+                [0.093400620, 0.0000904830, -0.0000000806, -0.00000000035, 0],  # [--] ecc
+                [1.849726000, -0.008147900, -0.0000225500, -0.00000002700, 0],  # [deg] incl
+                [49.55809300, -0.294984600, -0.0006399300, -0.00000214300, 0],  # [deg] raan
+                [336.0602340, 0.4438898000, -0.0001732100,  0.00000030000, 0],  # [deg] w_bar
+                [355.4332750, 19140.2993313, 0.0000026100, -0.00000000300, 0]  # [deg] Lm
+            ]
+        )
+        # fmt: on
+    elif planet_id == 4:  # jupiter
+        # fmt: off
+        J2000_coefs = np.array(
+            [
+                [5.202603191, 0.0000001913,             0,              0, 0],  # [au] sma
+                [0.048494850, 0.0001632440, -0.0000004719, -0.00000000197, 0],  # [--] ecc
+                [1.303270000, -0.001987200, 0.00003318000, 0.0000000920, 0],  # [deg] incl
+                [100.4644410, 0.1766828000, 0.0009038700, -0.0000070320, 0],  # [deg] raan
+                [14.33130900, 0.2155525000, 0.0007225200, -0.0000045900, 0],  # [deg] w_bar
+                [34.35148400, 3034.9056746, -0.000085010, 0.00000000400, 0]  # [deg] Lm
+            ]
+        )
+        # fmt: on
+    elif planet_id == 5:  # saturn
+        # fmt: off
+        J2000_coefs = np.array(
+            [
+                [9.554909596, -0.000002138, 0, 0],  # [au] sma
+                [0.055508620, -0.000346818, -0.0000006456, 0.00000000338, 0],  # [--] ecc
+                [2.488878000, 0.0025510000, -0.000049030, 0.00000001800, 0],  # [deg] incl
+                [113.6655240, -0.256664900, -0.000183450, 0.00000035700, 0],  # [deg] raan
+                [93.05678700, 0.5665496000, 0.0005280900, 0.00000488200, 0],  # [deg] w_bar
+                [50.07747100, 1222.1137943, 0.0002100400, -0.0000000190, 0]  # [deg] Lm
+            ]
+        )
+        # fmt: on
+    elif planet_id == 6:  # uranus
+        # fmt: on
         print(f"uranus not yet copied, 2024-09-15")
-    elif planet_id == 7: # neptune
+    elif planet_id == 7:  # neptune
         print(f"neptune not yet copied, 2024-09-15")
-    elif planet_id == 8: # pluto
+    elif planet_id == 8:  # pluto
         print(f"pluto not yet copied, 2024-09-15")
     else:
         raise NameError(f"Not a valid planet id, {planet_id}")
-    
+
     return J2000_coefs
 
 
 def planet_rv(planet_id, date_, au_units=True):
-    """ 
+    """
     Find planet position, r_vec and v_vec; given planet_id, and date.
     From Vallado [4], example 5-5, pp.304; called algorithm 33, pp.303.
-    
+
     Input Parameters:
     ----------
         planet_id : int, 0=mercury, 1=venus. 2=earth, 3=mars, 4=jupiter
                             5=saturn, 6=uranus, 7=neptune, 8=pluto
         date_     : python date object
         au_units  :
-    
+
     Notes:
     ----------
     Planet elements coefficients table, heliocentric/equatorial.
@@ -669,16 +702,17 @@ def planet_rv(planet_id, date_, au_units=True):
         t_TDB = julian centuries of tdb (barycentric dynamic time).
         Format: x0*t_TDB^0 + x1*t_TDB^1 + x2*t_TDB^2 + ...
     """
+    # fmt: on
     np.set_printoptions(precision=6)  # numpy, set vector printing size
     deg2rad = math.pi / 180  # used multiple times
     rad2deg = 180 / math.pi  # used multiple times
-    pi_2 = 2*math.pi # used for modulus
+    pi_2 = 2 * math.pi  # used for modulus
 
     au = 149597870.7  # [km/au] Vallado [2] p.1043, tbl.D-5
     mu_sun_km = 1.32712428e11  # [km^3/s^2], Vallado [2] p.1043, tbl.D-5
     mu_sun_au = mu_sun_km / (au**3)  # [au^3/s^2], unit conversion
     # print(f"mu_sun_au= {mu_sun_au}")
-    
+
     year, month, day, hour, minute, second = (
         date_.year,
         date_.month,
@@ -704,8 +738,8 @@ def planet_rv(planet_id, date_, au_units=True):
 
     sma = np.sum(J2000_coefs[0, :] * x3)  # [au]
     if au_units == False:
-        sma *= au # convert [au] to [km]
-    
+        sma *= au  # convert [au] to [km]
+
     # make sure angles, modulo +- 2*pi; phi%(2*math.pi) # %=modulo
     ecc = np.sum(J2000_coefs[1, :] * x3)  # [--]
     incl_deg = np.sum(J2000_coefs[2, :] * x3)  # [deg]
@@ -764,30 +798,30 @@ def planet_rv(planet_id, date_, au_units=True):
     print(f"\nEquatorial/Heliocentric, XYZ")
     if au_units == True:
         print(f"r_vec= {r_vec} [au]")
-        print(f"v_vec= {v_vec*86400} [au/day]") # convert, seconds to days
-    else: # units [km] and [km/s]
+        print(f"v_vec= {v_vec*86400} [au/day]")  # convert, seconds to days
+    else:  # units [km] and [km/s]
         print(f"r_vec= {r_vec} [km]")
         print(f"v_vec= {v_vec} [km/s]")
 
     # rotate r_vec and v_vec from equatorial to ecliptic/heliocentric
     e_angle = ecliptic_angle(jd_cJ2000)  # ecliptic angle
     print(f"ecliptic angle, e_angle= {e_angle:.8g} [deg]")
-    
+
     r1_vec = r_vec @ rot_matrix(angle=-e_angle * deg2rad, axis=0)
     v1_vec = v_vec @ rot_matrix(angle=-e_angle * deg2rad, axis=0)
     print(f"\nEcliptic/Heliocentric, XYZ")
     if au_units == True:
         print(f"r1_vec= {r1_vec} [au]")
-        v1_vec *=86400 # convert seconds to days
+        v1_vec *= 86400  # convert seconds to days
         print(f"v1_vec= {v1_vec} [au/day]")
     else:
         print(f"r1_vec= {r1_vec} [km]")
-        print(f"v1_vec= {v1_vec} [km/s]") # convert seconds to days
-    
+        print(f"v1_vec= {v1_vec} [km/s]")  # convert seconds to days
+
     return r1_vec, v1_vec
 
 
-def rot_matrix(angle, axis:int):
+def rot_matrix(angle, axis: int):
     """
     Returns rotation matrix based on user axis choice.
         Function from github, lamberthub, utilities->elements.py
@@ -807,7 +841,7 @@ def rot_matrix(angle, axis:int):
         ValueError : if invalid axis
     Notes:
     -----------
-    
+
     """
     c = math.cos(angle)
     s = math.sin(angle)
@@ -819,6 +853,7 @@ def rot_matrix(angle, axis:int):
         return np.array([[c, -s, 0.0], [s, c, 0.0], [0.0, 0.0, 1.0]])
     else:
         raise ValueError("Invalid axis: axis=0, x; axis=1, y; axis=2, z")
+
 
 def ecliptic_angle(jd_cJ2000):
     """
@@ -836,9 +871,9 @@ def ecliptic_angle(jd_cJ2000):
         Vallado [4] notes the data comes from Kaplan, 2005:44.
         coefs format; coef0*jd_cJ2000^0 + coef1*jd_cJ2000^1 + coef2*jd_cJ2000^2 + ...
     """
-    ecliptic_coefs=np.array(
+    ecliptic_coefs = np.array(
         [23.439279, -0.0130102, -5.086e-8, 5.565e-7, -1.6e-10, -1.21e-11]
-        )
+    )
     # coeffs format; coef0*jd_cJ2000^0 + coef1*jd_cJ2000^1 + coef2*jd_cJ2000^2 + ...
     #   jd_cJ2000 = julian centuries since J2000.0
     x1 = np.arange(6)  # exponent values; power series
@@ -868,111 +903,121 @@ def sunPosition(yr, mo, day, hr=0, min=0, sec=0.0):
         L_ecl     : ecliptic longitude
         M_sun     : mean anomaly of sun
     """
-    deg2rad = math.pi/180
-    rad2deg = 180/math.pi
+    deg2rad = math.pi / 180
+    rad2deg = 180 / math.pi
     # au = 149597870.7  # [km/au] Vallado [2] p.1043, tbl.D-5
     # two choices for julian date; julian_date() and jd_convTime().
     #   julian_date() calculates only the julian date, while
     #   jd_convTime() calculates both julian date, julian centuries since J2000.0.
     #   if c_type=0, find julian centuries from J2000.0 TT.
-    
+
     jd, jd_cJ2000 = astro_time.jd_convTime(yr=yr, mo=mo, d=day, c_type=0)
-    print(f"jd= {jd:.10g}, jd_cent={jd_cJ2000:.10g}") # troubleshooting
+    print(f"jd= {jd:.10g}, jd_cent={jd_cJ2000:.10g}")  # troubleshooting
     # reminder, angle values are modulo 360.0 for degrees
-    L_bar_ecl_deg = math.fmod(280.460 + 36000.771285*jd_cJ2000, 360.0) # ecliptic
-    M_sun_deg = math.fmod(357.528 + 35999.050957*jd_cJ2000, 360.0)
-    M_sun_rad = M_sun_deg*deg2rad
-    L_ecl_deg = math.fmod(L_bar_ecl_deg + 1.915*math.sin(M_sun_rad) + 0.020*math.sin(2*M_sun_rad), 360.0)
-    L_ecl_rad = L_ecl_deg*deg2rad
+    L_bar_ecl_deg = math.fmod(280.460 + 36000.771285 * jd_cJ2000, 360.0)  # ecliptic
+    M_sun_deg = math.fmod(357.528 + 35999.050957 * jd_cJ2000, 360.0)
+    M_sun_rad = M_sun_deg * deg2rad
+    L_ecl_deg = math.fmod(
+        L_bar_ecl_deg + 1.915 * math.sin(M_sun_rad) + 0.020 * math.sin(2 * M_sun_rad),
+        360.0,
+    )
+    L_ecl_rad = L_ecl_deg * deg2rad
     phi_ecl = 0.0
     # obliquity of the ecliptic; meaning angle of ecliptic to equatorial
-    ob_ecl_deg = 23.439291-0.01461*jd_cJ2000
-    ob_ecl_rad = ob_ecl_deg*deg2rad
+    ob_ecl_deg = 23.439291 - 0.01461 * jd_cJ2000
+    ob_ecl_rad = ob_ecl_deg * deg2rad
     print(f"L_bar_ecl= {L_bar_ecl_deg} [deg]")
     print(f"M_sun= {M_sun_deg} [deg]")
     print(f"L_ecl= {L_ecl_deg} [deg]")
     print(f"ob_ecl= {ob_ecl_deg} [deg]")
-    
-    sun_mag = 1.00014 - 0.01671*math.cos(M_sun_rad) - 0.00014*math.cos(2*M_sun_rad)
+
+    sun_mag = (
+        1.00014 - 0.01671 * math.cos(M_sun_rad) - 0.00014 * math.cos(2 * M_sun_rad)
+    )
     print(f"sun_mag= {sun_mag} [au]")
     # sun_vec, below,  is column array
     sun_vec = np.array(
         [
-        [sun_mag*math.cos(L_ecl_rad)],
-        [sun_mag*math.cos(ob_ecl_rad)*math.sin(L_ecl_rad)],
-        [sun_mag*math.sin(ob_ecl_rad)*math.sin(L_ecl_rad)]
-        ])
+            [sun_mag * math.cos(L_ecl_rad)],
+            [sun_mag * math.cos(ob_ecl_rad) * math.sin(L_ecl_rad)],
+            [sun_mag * math.sin(ob_ecl_rad) * math.sin(L_ecl_rad)],
+        ]
+    )
     # print(f"sun_vec= {sun_vec}")
-    
+
     # find declination and right ascension; remember, manage quadrants with atan2()
     # assumes phi_ecl = 0 [deg]
-    decl_rad = math.asin(math.sin(ob_ecl_rad)*math.sin(L_ecl_rad))
-    sin_ra = math.cos(ob_ecl_rad)*math.sin(L_ecl_rad) / math.cos(decl_rad)
+    decl_rad = math.asin(math.sin(ob_ecl_rad) * math.sin(L_ecl_rad))
+    sin_ra = math.cos(ob_ecl_rad) * math.sin(L_ecl_rad) / math.cos(decl_rad)
     cos_ra = math.cos(L_ecl_rad) / math.cos(decl_rad)
     ra_rad = math.atan2(sin_ra, cos_ra)
     print(f"decl_deg, {decl_rad*rad2deg} [deg]")
     print(f"ra_deg, {ra_rad*rad2deg} [deg]")
-    
+
     # if u want to flatten the array (make a row vector)
     sun_vec = np.ravel(sun_vec)
-    
-    return sun_vec # sunPosition()
+
+    return sun_vec  # sunPosition()
 
 
 def sun_r_s(jd_, phi_gc_rad):
     """
     Interal calculations supporting sunRiseSet()
     Frees-up what would be redundant calculations related to the sun position.
-    
+
     Input Parameters:
     ----------
         jd_        : float [jd] julian date
         phi_gc_rad : float [rad] geocentric latitude, positive north
-    
+
     Returns:
     ----------
         decl_rad : float [rad] declination
         ra_rad   : float [rad] right ascension
     """
-    deg2rad = math.pi/180
-    rad2deg = 180/math.pi
-    
-    jd_cent = (jd_-2451545)/36525  # centuries since J2000
+    deg2rad = math.pi / 180
+    rad2deg = 180 / math.pi
+
+    jd_cent = (jd_ - 2451545) / 36525  # centuries since J2000
     print(f"jd_= {jd_}, jd_r_cent= {jd_cent}")
-    
+
     # reminder, angle values are modulo 360.0 for degrees; be careful of minus signs
     # L_bar_ecl_deg = math.fmod((280.4606184 + 36000.77005361*jd_cJ2000), 360.0) # ecliptic
-    L_bar_ecl_deg = (280.4606184 + 36000.77005361*jd_cent) % 360.0
-    M_sun_deg = (357.5291092 + 35999.05034*jd_cent) % 360.0
-    M_sun_rad = M_sun_deg*deg2rad
-    L_ecl_deg = (L_bar_ecl_deg +
-                    1.914666471*math.sin(M_sun_rad) +
-                    0.019994643*math.sin(2*M_sun_rad)) % 360.0
-    L_ecl_rad = L_ecl_deg*deg2rad
+    L_bar_ecl_deg = (280.4606184 + 36000.77005361 * jd_cent) % 360.0
+    M_sun_deg = (357.5291092 + 35999.05034 * jd_cent) % 360.0
+    M_sun_rad = M_sun_deg * deg2rad
+    L_ecl_deg = (
+        L_bar_ecl_deg
+        + 1.914666471 * math.sin(M_sun_rad)
+        + 0.019994643 * math.sin(2 * M_sun_rad)
+    ) % 360.0
+    L_ecl_rad = L_ecl_deg * deg2rad
     phi_ecl = 0.0
     # obliquity of the ecliptic; meaning angle of ecliptic to equatorial
-    ob_ecl_deg = 23.439291 - 0.0130042*jd_cent
-    ob_ecl_rad = ob_ecl_deg*deg2rad
+    ob_ecl_deg = 23.439291 - 0.0130042 * jd_cent
+    ob_ecl_rad = ob_ecl_deg * deg2rad
     print(f"L_bar_ecl= {L_bar_ecl_deg} [deg]")
     print(f"M_sun= {M_sun_deg} [deg]")
     print(f"L_ecl= {L_ecl_deg} [deg]")
     print(f"ob_ecl= {ob_ecl_deg} [deg]")
-    
+
     # find declination and right ascension; remember, manage quadrants with atan2()
     # assumes phi_ecl = 0 [deg]
-    decl_rad = math.asin(math.sin(ob_ecl_rad)*math.sin(L_ecl_rad))
-    sin_ra = math.cos(ob_ecl_rad)*math.sin(L_ecl_rad) / math.cos(decl_rad)
+    decl_rad = math.asin(math.sin(ob_ecl_rad) * math.sin(L_ecl_rad))
+    sin_ra = math.cos(ob_ecl_rad) * math.sin(L_ecl_rad) / math.cos(decl_rad)
     cos_ra = math.cos(L_ecl_rad) / math.cos(decl_rad)
     ra_rad = math.atan2(sin_ra, cos_ra)
     print(f"decl_deg, {decl_rad*rad2deg} [deg]")
     print(f"ra_deg, {ra_rad*rad2deg} [deg]")
-    
+
     # zeta=angle between sun and site; sunrise & sunset, plus any refractions...
-    zeta_rad = (90 + 50/60)*deg2rad # given in Vallado [4] ex-2, p.290
-    LHA_rad = math.acos((math.cos(zeta_rad) - math.sin(decl_rad)*math.sin(phi_gc_rad)) /
-                            (math.cos(decl_rad)*math.cos(phi_gc_rad)))
+    zeta_rad = (90 + 50 / 60) * deg2rad  # given in Vallado [4] ex-2, p.290
+    LHA_rad = math.acos(
+        (math.cos(zeta_rad) - math.sin(decl_rad) * math.sin(phi_gc_rad))
+        / (math.cos(decl_rad) * math.cos(phi_gc_rad))
+    )
     print(f"LHA_rad, {LHA_rad:.8g} [rad], {LHA_rad*rad2deg:.8g} [deg]")
-    
+
     # gmst_rise_deg = astro_time.find_gmst(jd_ut1=2448855.009722) # test case ok
     # gmst_rise_deg from Vallado [4] p.189, eqn3-46; modulo 360
     gmst_deg = (
@@ -982,7 +1027,7 @@ def sun_r_s(jd_, phi_gc_rad):
         - 6.2e-8 * jd_cent * jd_cent * jd_cent
     ) % 360
     print(f"gmst_deg= {gmst_deg} [deg]")
-    
+
     return decl_rad, ra_rad, gmst_deg, LHA_rad
 
 
@@ -990,7 +1035,7 @@ def sunRiseSet(yr, mo, day, lat, lon):
     """
     Find sun-rise and sun-set.
     Vallado [4] algorithm 30, pp.289. Associated example 5-2, pp.290.
-    
+
     Input Parameters:
     ----------
         yr  : int, year
@@ -1008,33 +1053,36 @@ def sunRiseSet(yr, mo, day, lat, lon):
         L_ecl     : ecliptic longitude
         M_sun     : mean anomaly of sun
     """
-    deg2rad = math.pi/180
-    rad2deg = 180/math.pi
+    deg2rad = math.pi / 180
+    rad2deg = 180 / math.pi
     # !! normally extract lattitude from site input that has lat & lon
     phi_gc_deg = lat
-    phi_gc_rad = phi_gc_deg*deg2rad
-    
+    phi_gc_rad = phi_gc_deg * deg2rad
+
     # two choices for julian date; julian_date() and jd_convTime().
     #   julian_date() calculates only the julian date, while
     #   jd_convTime() calculates both julian date, julian centuries since J2000.0.
     #      if c_type=0, find julian centuries from J2000.0 TT.
     jd = astro_time.julian_date(yr=yr, mo=mo, d=day)
     # print(f"jd= {jd:.10g}") # troubleshooting print
-    jd_rise = jd + 6/24 - lon/360.0
+    jd_rise = jd + 6 / 24 - lon / 360.0
 
     print(f"*** start sunrise ***")
-    decl_rise_rad, ra_rise_rad, gmst_rise_deg, LHA_rad = sun_r_s(jd_=jd_rise, phi_gc_rad=phi_gc_rad)
+    decl_rise_rad, ra_rise_rad, gmst_rise_deg, LHA_rad = sun_r_s(
+        jd_=jd_rise, phi_gc_rad=phi_gc_rad
+    )
     # return values: from sun_r_s(), decl_rad, ra_rad, gmst_deg, LHA_rad
-    LHA_rise_rad = 2*math.pi-LHA_rad
-    UT_sunRise = (LHA_rise_rad*rad2deg + ra_rise_rad*rad2deg - gmst_rise_deg) % 360
-    
+    LHA_rise_rad = 2 * math.pi - LHA_rad
+    UT_sunRise = (LHA_rise_rad * rad2deg + ra_rise_rad * rad2deg - gmst_rise_deg) % 360
+
     print(f"\n*** start sunset ****")
-    jd_set = jd + 18/24 - lon/360.0 # julian date for sunset
+    jd_set = jd + 18 / 24 - lon / 360.0  # julian date for sunset
     print(f"jd_set= {jd_set}")
-    
+
     # return values: from sun_r_s(), decl_rad, ra_rad, gmst_deg, LHA_rad
-    decl_set_rad, ra_set_rad, gmst_set_deg, LHA_set_rad = sun_r_s(jd_=jd_set, phi_gc_rad=phi_gc_rad)
-    UT_sunSet = (LHA_set_rad*rad2deg + ra_set_rad*rad2deg - gmst_set_deg) % 360
-    
-    return UT_sunRise, UT_sunSet # sunRiseSet()
-    
+    decl_set_rad, ra_set_rad, gmst_set_deg, LHA_set_rad = sun_r_s(
+        jd_=jd_set, phi_gc_rad=phi_gc_rad
+    )
+    UT_sunSet = (LHA_set_rad * rad2deg + ra_set_rad * rad2deg - gmst_set_deg) % 360
+
+    return UT_sunRise, UT_sunSet  # sunRiseSet()

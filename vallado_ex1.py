@@ -168,6 +168,7 @@ def test_prb2_7a_tof(plot_sp=False) -> None:
         )
     return  # test_tof_prob2_7a()
 
+
 def test_ex5_1_sunPosition():
     """
     Find geocentric position of sun vector.
@@ -186,8 +187,9 @@ def test_ex5_1_sunPosition():
     print(f"\nSun Position. Vallado example 5-1:")
     sun_vec = vfunc.sunPosition(yr=yr, mo=mo, day=day, hr=hr, min=min, sec=sec)
     print(f"sun_vec= {sun_vec} [au]")
-    
+
     return None
+
 
 def test_ex5_2_sunRiseSet():
     """
@@ -206,24 +208,25 @@ def test_ex5_2_sunRiseSet():
     np.set_printoptions(precision=6)  # numpy, set vector printing size
     deg2rad = math.pi / 180  # used multiple times
     rad2deg = 180 / math.pi  # used multiple times
-    
+
     # two choices for julian date; julian_date() and convTime().
     #   julian_date() calculates only the julian date, while
     #   convTime() calculates both julian date, julian centuries since J2000.0.
     yr, mo, day = 1996, 3, 23
-    lat = 40.0 # site lattitude
-    lon = 0.0 # site longitude
-    
+    lat = 40.0  # site lattitude
+    lon = 0.0  # site longitude
+
     UT_sunRise, UT_sunSet = vfunc.sunRiseSet(yr=yr, mo=mo, day=day, lat=lat, lon=lon)
     print(f"\nUT_sunRise= {UT_sunRise} [deg]")
     hour, min, sec = astro_time.dec_deg2hms(dec_deg=UT_sunRise)
     print(f"{hour}:{min}:{sec} [hr:min:sec]")
-    
+
     print(f"UT_sunSet= {UT_sunSet} [deg]")
     hour, min, sec = astro_time.dec_deg2hms(dec_deg=UT_sunSet)
     print(f"{hour}:{min}:{sec} [hr:min:sec]")
-    
+
     return None
+
 
 def test_ex5_5_planetLocation():
     """
@@ -519,7 +522,7 @@ def test_ex12_8_patchedConic():
         x[0].minute,
         x[0].second,
     )
-    date1=x[0]
+    date1 = x[0]
     print(f"date, x[0]= {x[0]}")
     r_vec, v_vec = planet_rv(planet_id=2, date_=date1, au_units=False)
     print(f"{r_vec}\n{v_vec}")
@@ -542,7 +545,7 @@ def test_planet_rv_all():  # test all planets
         None
     Notes:
     -------
-        
+
         Use date/time as object for ease of user reading string date/time.
         References: see list at file beginning.
     """
@@ -557,7 +560,7 @@ def test_planet_rv_all():  # test all planets
 
     # dates to retrieve planet positions
     date_list = [
-        "1994-5-20 20:0:0", # Jupiter, ex5-5
+        "1994-5-20 20:0:0",  # Jupiter, ex5-5
         "1977-09-08 09:08:17",  # earth, ex12-8
         "1979-03-05 12:05:26",  # jupiter, ex12-8
         "1980-11-12 23:46:30",  # saturn, ex12-8
@@ -577,13 +580,13 @@ def test_planet_rv_all():  # test all planets
         x[0].second,
     )
     # Jupiter
-    date1=x[0]
+    date1 = x[0]
     print(f"date, x[0]= {x[0]}")
     r_vec, v_vec = planet_rv(planet_id=4, date_=date1, au_units=True)
     print(f"Jupiter, r_vec= {r_vec}")
     print(f"Jupiter, v_vec= {v_vec}")
     # Earth
-    date1=x[1]
+    date1 = x[1]
     print(f"date, x[0]= {x[0]}")
     r_vec, v_vec = planet_rv(planet_id=2, date_=date1, au_units=True)
     print(f"Earth, r_vec= {r_vec}")
@@ -591,8 +594,9 @@ def test_planet_rv_all():  # test all planets
     return
 
 
-def Main(): # helps editor navigation :--)
+def Main():  # helps editor navigation :--)
     return
+
 
 # Test functions and class methods are called here.
 if __name__ == "__main__":
