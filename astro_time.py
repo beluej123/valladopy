@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """
+astro_time supports various time functions, but be mindful of the varous scales
+    to measure time; see comments in Notes: below.
 Created on Sat Aug 20 17:34:45 2016, @author: Alex
 Edits 2024-August +, by Jeff Belue.
 TODO, Describe how this file is organized ...
@@ -26,6 +28,14 @@ Notes:
         end of this file.  Each example function is designed to be stand-alone,
         but, if you use the function as stand alone you will need to copy the
         imports...
+    
+    For reference, some common timescales (from Vallado chap.3, & skyfield):
+        From skyfield, https://rhodesmill.org/skyfield/time.html):
+        UTC — Coordinated Universal Time (“Greenwich Time”)
+        UT1 — Universal Time, usually a Julian date
+        TAI — International Atomic Time
+        TT — Terrestrial Time
+        TDB — Barycentric Dynamical Time (JPL's T_eph)
 """
 
 import math
@@ -33,7 +43,7 @@ import math
 import numpy as np
 
 
-def julian_date(yr, mo, d, hr, minute, sec, leap_sec=False):
+def julian_date(yr, mo, d, hr=0, minute=0, sec=0.0, leap_sec=False):
     """
     Converts date & time (yr, month, day, hour, second) to julian date.
     Valid for any time system (UT1, UTC, AT, etc.) but should be identified to
@@ -63,7 +73,7 @@ def julian_date(yr, mo, d, hr, minute, sec, leap_sec=False):
     jd = 367 * yr - np.trunc(x) + np.trunc(y) + d + 1721013.5 + z / 24.0
     return jd
 
-def jd_convTime(yr, mo, d, hr=0, minute=0, sec=0, c_type=0):
+def jd_convTime(yr, mo, d, hr=0, min=0, sec=0.0, c_type=0):
     """
     (1) Calculate julian date (jd) from date & time (yr, month, day, hour, second).
     (2) Converts jd to other time fromats:
@@ -87,7 +97,7 @@ def jd_convTime(yr, mo, d, hr=0, minute=0, sec=0, c_type=0):
         jd        : float, date/time as julian date
         jd_cJ2000 : float, julian centuries from J2000.0 TT
     """
-    jd = julian_date(yr, mo, d, hr, minute, sec)
+    jd = julian_date(yr, mo, d, hr=hr, minute=min, sec=sec)
     if c_type==0:
         jd_cJ2000=(jd-2451545.0)/36525.0
     else:
@@ -97,21 +107,20 @@ def jd_convTime(yr, mo, d, hr=0, minute=0, sec=0, c_type=0):
 
 def find_gmst(jd_ut1):
     """
-    Find the Greenwich Mean Sidereal Time (GMST) for a supplied UT1 Julian
-    Date. For reference, see Algorithm 15 in Vallado (Fourth Edition),
-    Section 3.5 pg 188.
+    Find Greenwich Mean Sidereal Time (GMST), with supplied UT1 Julian date.
+        Method 1, uses Julian calculation; method 2 has limited use.
+        Vallado [4] algorithm 15, p.190. Associated example 3-5, pp.190.
 
-    Parameters
+    Input Parameters:
     ----------
-    jd_ut1: double
-        The UT1 Julian Date
+        jd_ut1     : float [day], UT1 julian date
 
     Returns
     -------
-    theta_gmst: double
-        The Greenwich Mean Sidereal Time, expressed as angle in degrees
+        theta_gmst : float [deg], Greenwich Mean Sidereal Time
     """
     t_ut1 = (jd_ut1 - 2451545.0) / 36525.0
+    # print(f"t_ut1=, {t_ut1}") # troubleshooting print()
     theta_gmst = (
         67310.54841
         + (876600 * 3600.0 + 8640184.812866) * t_ut1
@@ -128,19 +137,16 @@ def find_gmst(jd_ut1):
 def find_lst(theta_gmst, lon):
     """
     Find the Local Sidereal Time (LST) for a supplied GMST and Longitude.
-    Vallado [2], algorithm 15, section 3.5 pg 188
+    Vallado [4] algorithm 15, p.190. Associated example 3-5, pp.190.
 
-    Parameters
+    Input Parameters:
     ----------
-    theta_gmst: double
-        GMST as an angle in degrees
-    longitude: double
-        Longitude of the site of interest, in degrees
+        theta_gmst : float [deg] Greenwich Mean Sidereal Time (GMST)
+        longitude  : float [deg] Site longitude
 
     Returns
     -------
-    theta_lst: double
-        The Local Sidereal Time, expressed as an angle in degrees
+        theta_lst      : float [deg] local sidereal time (lst)
     """
 
     theta_lst = theta_gmst + lon

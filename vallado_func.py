@@ -849,14 +849,194 @@ def ecliptic_angle(jd_cJ2000):
     return e_angle
 
 
-def sunRiseSet():
+def sunPosition(yr, mo, day, hr=0, min=0, sec=0.0):
     """
+    Find geocentric position of sun vector.
+        Vallado [4] algorithm 29, pp.285. Associated example 5-1, pp.286.
     Input Parameters:
     ----------
-
+        yr   : int, year
+        mo   : int, month
+        day  : int, day
     Returns:
     ----------
-        _type_
-            _description_
+        sun_vec : np.array [au]
+    Notes:
+    ----------
+        This is a low precision solution; see Vallado [4] section 5.1.1, p283.
+        L_bar_ecl : ecliptic mean longitude in TOD frame, Vallado [4] p.283, eqn5-1
+        L_ecl     : ecliptic longitude
+        M_sun     : mean anomaly of sun
     """
-    return None # sunRiseSet()
+    deg2rad = math.pi/180
+    rad2deg = 180/math.pi
+    # au = 149597870.7  # [km/au] Vallado [2] p.1043, tbl.D-5
+    # two choices for julian date; julian_date() and jd_convTime().
+    #   julian_date() calculates only the julian date, while
+    #   jd_convTime() calculates both julian date, julian centuries since J2000.0.
+    #   if c_type=0, find julian centuries from J2000.0 TT.
+    
+    jd, jd_cJ2000 = astro_time.jd_convTime(yr=yr, mo=mo, d=day, c_type=0)
+    print(f"jd= {jd:.10g}, jd_cent={jd_cJ2000:.10g}") # troubleshooting
+    # reminder, angle values are modulo 360.0 for degrees
+    L_bar_ecl_deg = math.fmod(280.460 + 36000.771285*jd_cJ2000, 360.0) # ecliptic
+    M_sun_deg = math.fmod(357.528 + 35999.050957*jd_cJ2000, 360.0)
+    M_sun_rad = M_sun_deg*deg2rad
+    L_ecl_deg = math.fmod(L_bar_ecl_deg + 1.915*math.sin(M_sun_rad) + 0.020*math.sin(2*M_sun_rad), 360.0)
+    L_ecl_rad = L_ecl_deg*deg2rad
+    phi_ecl = 0.0
+    # obliquity of the ecliptic; meaning angle of ecliptic to equatorial
+    ob_ecl_deg = 23.439291-0.01461*jd_cJ2000
+    ob_ecl_rad = ob_ecl_deg*deg2rad
+    print(f"L_bar_ecl= {L_bar_ecl_deg} [deg]")
+    print(f"M_sun= {M_sun_deg} [deg]")
+    print(f"L_ecl= {L_ecl_deg} [deg]")
+    print(f"ob_ecl= {ob_ecl_deg} [deg]")
+    
+    sun_mag = 1.00014 - 0.01671*math.cos(M_sun_rad) - 0.00014*math.cos(2*M_sun_rad)
+    print(f"sun_mag= {sun_mag} [au]")
+    # sun_vec, below,  is column array
+    sun_vec = np.array(
+        [
+        [sun_mag*math.cos(L_ecl_rad)],
+        [sun_mag*math.cos(ob_ecl_rad)*math.sin(L_ecl_rad)],
+        [sun_mag*math.sin(ob_ecl_rad)*math.sin(L_ecl_rad)]
+        ])
+    # print(f"sun_vec= {sun_vec}")
+    
+    # find declination and right ascension; remember, manage quadrants with atan2()
+    # assumes phi_ecl = 0 [deg]
+    decl_rad = math.asin(math.sin(ob_ecl_rad)*math.sin(L_ecl_rad))
+    sin_ra = math.cos(ob_ecl_rad)*math.sin(L_ecl_rad) / math.cos(decl_rad)
+    cos_ra = math.cos(L_ecl_rad) / math.cos(decl_rad)
+    ra_rad = math.atan2(sin_ra, cos_ra)
+    print(f"decl_deg, {decl_rad*rad2deg} [deg]")
+    print(f"ra_deg, {ra_rad*rad2deg} [deg]")
+    
+    # if u want to flatten the array (make a row vector)
+    sun_vec = np.ravel(sun_vec)
+    
+    return sun_vec # sunPosition()
+
+
+def sun_r_s(jd_, phi_gc_rad):
+    """
+    Interal calculations supporting sunRiseSet()
+    Frees-up what would be redundant calculations related to the sun position.
+    
+    Input Parameters:
+    ----------
+        jd_        : float [jd] julian date
+        phi_gc_rad : float [rad] geocentric latitude, positive north
+    
+    Returns:
+    ----------
+        decl_rad : float [rad] declination
+        ra_rad   : float [rad] right ascension
+    """
+    deg2rad = math.pi/180
+    rad2deg = 180/math.pi
+    
+    jd_cent = (jd_-2451545)/36525  # centuries since J2000
+    print(f"jd_= {jd_}, jd_r_cent= {jd_cent}")
+    
+    # reminder, angle values are modulo 360.0 for degrees; be careful of minus signs
+    # L_bar_ecl_deg = math.fmod((280.4606184 + 36000.77005361*jd_cJ2000), 360.0) # ecliptic
+    L_bar_ecl_deg = (280.4606184 + 36000.77005361*jd_cent) % 360.0
+    M_sun_deg = (357.5291092 + 35999.05034*jd_cent) % 360.0
+    M_sun_rad = M_sun_deg*deg2rad
+    L_ecl_deg = (L_bar_ecl_deg +
+                    1.914666471*math.sin(M_sun_rad) +
+                    0.019994643*math.sin(2*M_sun_rad)) % 360.0
+    L_ecl_rad = L_ecl_deg*deg2rad
+    phi_ecl = 0.0
+    # obliquity of the ecliptic; meaning angle of ecliptic to equatorial
+    ob_ecl_deg = 23.439291 - 0.0130042*jd_cent
+    ob_ecl_rad = ob_ecl_deg*deg2rad
+    print(f"L_bar_ecl= {L_bar_ecl_deg} [deg]")
+    print(f"M_sun= {M_sun_deg} [deg]")
+    print(f"L_ecl= {L_ecl_deg} [deg]")
+    print(f"ob_ecl= {ob_ecl_deg} [deg]")
+    
+    # find declination and right ascension; remember, manage quadrants with atan2()
+    # assumes phi_ecl = 0 [deg]
+    decl_rad = math.asin(math.sin(ob_ecl_rad)*math.sin(L_ecl_rad))
+    sin_ra = math.cos(ob_ecl_rad)*math.sin(L_ecl_rad) / math.cos(decl_rad)
+    cos_ra = math.cos(L_ecl_rad) / math.cos(decl_rad)
+    ra_rad = math.atan2(sin_ra, cos_ra)
+    print(f"decl_deg, {decl_rad*rad2deg} [deg]")
+    print(f"ra_deg, {ra_rad*rad2deg} [deg]")
+    
+    # zeta=angle between sun and site; sunrise & sunset, plus any refractions...
+    zeta_rad = (90 + 50/60)*deg2rad # given in Vallado [4] ex-2, p.290
+    LHA_rad = math.acos((math.cos(zeta_rad) - math.sin(decl_rad)*math.sin(phi_gc_rad)) /
+                            (math.cos(decl_rad)*math.cos(phi_gc_rad)))
+    print(f"LHA_rad, {LHA_rad:.8g} [rad], {LHA_rad*rad2deg:.8g} [deg]")
+    
+    # gmst_rise_deg = astro_time.find_gmst(jd_ut1=2448855.009722) # test case ok
+    # gmst_rise_deg from Vallado [4] p.189, eqn3-46; modulo 360
+    gmst_deg = (
+        100.4606184
+        + (36000.77005361) * jd_cent
+        + 0.00038793 * jd_cent * jd_cent
+        - 6.2e-8 * jd_cent * jd_cent * jd_cent
+    ) % 360
+    print(f"gmst_deg= {gmst_deg} [deg]")
+    
+    return decl_rad, ra_rad, gmst_deg, LHA_rad
+
+
+def sunRiseSet(yr, mo, day, lat, lon):
+    """
+    Find sun-rise and sun-set.
+    Vallado [4] algorithm 30, pp.289. Associated example 5-2, pp.290.
+    
+    Input Parameters:
+    ----------
+        yr  : int, year
+        mo  : int, month
+        day : int, day
+        lat : site lattitude [deg] called phi_gc in function
+        lon : site longitude [deg], I believe; Vallado [4] is not clear
+    Returns:
+    ----------
+        sun_vec : np.array [au]
+    Notes:
+    ----------
+        This is a low precision solution; see Vallado [4] section 5.1.1, p283.
+        L_bar_ecl : ecliptic mean longitude in TOD frame, Vallado [4] p.283, eqn5-1
+        L_ecl     : ecliptic longitude
+        M_sun     : mean anomaly of sun
+    """
+    deg2rad = math.pi/180
+    rad2deg = 180/math.pi
+    # !! normally extract lattitude from site input that has lat & lon
+    phi_gc_deg = lat
+    phi_gc_rad = phi_gc_deg*deg2rad
+    
+    # two choices for julian date; julian_date() and jd_convTime().
+    #   julian_date() calculates only the julian date, while
+    #   jd_convTime() calculates both julian date, julian centuries since J2000.0.
+    #      if c_type=0, find julian centuries from J2000.0 TT.
+    jd = astro_time.julian_date(yr=yr, mo=mo, d=day)
+    # print(f"jd= {jd:.10g}") # troubleshooting print
+    jd_rise = jd + 6/24 - lon/360.0
+    
+    print(f"*** start sunrise ***")
+    
+    decl_rise_rad, ra_rise_rad, gmst_rise_deg, LHA_rad = sun_r_s(jd_=jd_rise, phi_gc_rad=phi_gc_rad)
+    # return values: from sun_r_s(), decl_rad, ra_rad, gmst_deg, LHA_rad
+    LHA_rise_rad = 2*math.pi-LHA_rad
+    UT_sunRise = (LHA_rise_rad*rad2deg + ra_rise_rad*rad2deg - gmst_rise_deg) % 360
+    
+    # ********** now the sunset *****************
+    jd_set = jd + 18/24 - lon/360.0 # julian date for sunset
+    print(f"\n*** start sunset ****")
+    print(f"jd_set= {jd_set}")
+    
+    # return values: from sun_r_s(), decl_rad, ra_rad, gmst_deg, LHA_rad
+    decl_set_rad, ra_set_rad, gmst_set_deg, LHA_set_rad = sun_r_s(jd_=jd_set, phi_gc_rad=phi_gc_rad)
+    UT_sunSet = (LHA_set_rad*rad2deg + ra_set_rad*rad2deg - gmst_set_deg) % 360
+    
+    return UT_sunRise, UT_sunSet # sunRiseSet()
+    

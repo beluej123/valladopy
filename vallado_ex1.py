@@ -168,21 +168,56 @@ def test_prb2_7a_tof(plot_sp=False) -> None:
         )
     return  # test_tof_prob2_7a()
 
-
-def test_ex5_2_sunRiseSet():
+def test_ex5_1_sunPosition():
     """
-    Find sunrise-sunset. Vallado's sunRiseSet(), algorithm 30, pp.289
-    Vallado [4], example 5-2, pp.290.
+    Find geocentric position of sun vector.
+    Vallado [4] sunPosition(), example 5-1, pp.286.
+    Vallado [4], algorithm 29, pp.285
 
     Notes:
     ----------
+        This is a low precision solution; see Vallado [4] section 5.1.1, p283.
+        This effort debugged the function sunPosition() saved in vallado_func.py.
+    """
+    # the following date is UTC, not inclusive of delta_UT1~0.265s, and delta_AT~33s
+    yr, mo, day, hr, min, sec = 2006, 4, 1, 23, 58, 54.816
+    # thus
+    yr, mo, day, hr, min, sec = 2006, 4, 2, 0, 0, 0
+    print(f"\nSun Position. Vallado example 5-1:")
+    sun_vec = vfunc.sunPosition(yr=yr, mo=mo, day=day, hr=hr, min=min, sec=sec)
+    print(f"sun_vec= {sun_vec} [au]")
+    
+    return None
+
+def test_ex5_2_sunRiseSet():
+    """
+    Find sunrise-sunset. Vallado [4] sunRiseSet(), example 5-2, pp.290.
+    Vallado [4], algorithm 30, pp.289
+
+    Notes:
+    ----------
+    This sunrise/sunset function is a low precision solution;
+        note Vallado [4] section 5.1.1, p283.
+    https://leancrew.com/all-this/2023/11/more-general-sunrise-sunset-plots/
+    https://www.sunrisesunset.com/USA/Texas/
     This effort debugged the function sunRiseSet() saved in vallado_func.py.
     """
+    print(f"\nVallado [4] sunrise-sunset, example 5-2:")
     np.set_printoptions(precision=6)  # numpy, set vector printing size
     deg2rad = math.pi / 180  # used multiple times
     rad2deg = 180 / math.pi  # used multiple times
     
-    vfunc.sunRiseSet()
+    # two choices for julian date; julian_date() and convTime().
+    #   julian_date() calculates only the julian date, while
+    #   convTime() calculates both julian date, julian centuries since J2000.0.
+    yr, mo, day = 1996, 3, 23
+    site = "40 N, 0 E"
+    lat = 40.0 # site lattitude
+    lon = 0.0 # site longitude
+    
+    UT_sunRise, UT_sunSet = vfunc.sunRiseSet(yr=yr, mo=mo, day=day, lat=lat, lon=lon)
+    print(f"\nUT_sunRise= {UT_sunRise} [deg]")
+    print(f"UT_sunSet= {UT_sunSet} [deg]")
     
     return None
 
@@ -549,6 +584,11 @@ def test_planet_rv_all():  # test all planets
     r_vec, v_vec = planet_rv(planet_id=2, date_=date1, au_units=True)
     print(f"Earth, r_vec= {r_vec}")
     print(f"Earth, v_vec= {v_vec}")
+    return
+
+
+def Main(): # helps editor navigation :--)
+    return
 
 # Test functions and class methods are called here.
 if __name__ == "__main__":
@@ -560,4 +600,6 @@ if __name__ == "__main__":
     # test_ex6_2_bielliptic()  # bi-elliptic transfer, example 6-2
     # test_ex6_3_one_tan_burn()  # one-tangent transfer, example 6-3
     # test_ex12_8_patchedConic()  # gravity assist, Jupiter fly-by
-    test_planet_rv_all()  # planet_rv, all planets
+    # test_planet_rv_all()  # planet_rv, all planets
+    # test_ex5_1_sunPosition()  # sun position
+    test_ex5_2_sunRiseSet()  # sunrise sunset
