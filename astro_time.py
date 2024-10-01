@@ -249,6 +249,26 @@ def rad2hms(rad):
     return (hours, minutes, seconds)
 
 
+def dec_deg2hms(dec_deg):
+    """
+    Convert decimal degrees to hours, minutes, seconds.
+
+    Input Parameters:
+    ----------
+    ddegrees: float [deg]
+
+    Returns:
+    -------
+        hours, minutes, seconds : tuple float
+            hours, minutes, seconds
+    """
+    hours = int(dec_deg / 15)
+    minutes = int((dec_deg % 15) * 4)
+    seconds = ((dec_deg % 15) * 4 - minutes) * 60
+    return (hours, minutes, seconds)
+    
+
+
 def is_leap_year(yr):
     """
     Determines if the year is a leap year

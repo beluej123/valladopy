@@ -211,13 +211,17 @@ def test_ex5_2_sunRiseSet():
     #   julian_date() calculates only the julian date, while
     #   convTime() calculates both julian date, julian centuries since J2000.0.
     yr, mo, day = 1996, 3, 23
-    site = "40 N, 0 E"
     lat = 40.0 # site lattitude
     lon = 0.0 # site longitude
     
     UT_sunRise, UT_sunSet = vfunc.sunRiseSet(yr=yr, mo=mo, day=day, lat=lat, lon=lon)
     print(f"\nUT_sunRise= {UT_sunRise} [deg]")
+    hour, min, sec = astro_time.dec_deg2hms(dec_deg=UT_sunRise)
+    print(f"{hour}:{min}:{sec} [hr:min:sec]")
+    
     print(f"UT_sunSet= {UT_sunSet} [deg]")
+    hour, min, sec = astro_time.dec_deg2hms(dec_deg=UT_sunSet)
+    print(f"{hour}:{min}:{sec} [hr:min:sec]")
     
     return None
 

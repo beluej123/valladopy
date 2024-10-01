@@ -1021,17 +1021,15 @@ def sunRiseSet(yr, mo, day, lat, lon):
     jd = astro_time.julian_date(yr=yr, mo=mo, d=day)
     # print(f"jd= {jd:.10g}") # troubleshooting print
     jd_rise = jd + 6/24 - lon/360.0
-    
+
     print(f"*** start sunrise ***")
-    
     decl_rise_rad, ra_rise_rad, gmst_rise_deg, LHA_rad = sun_r_s(jd_=jd_rise, phi_gc_rad=phi_gc_rad)
     # return values: from sun_r_s(), decl_rad, ra_rad, gmst_deg, LHA_rad
     LHA_rise_rad = 2*math.pi-LHA_rad
     UT_sunRise = (LHA_rise_rad*rad2deg + ra_rise_rad*rad2deg - gmst_rise_deg) % 360
     
-    # ********** now the sunset *****************
-    jd_set = jd + 18/24 - lon/360.0 # julian date for sunset
     print(f"\n*** start sunset ****")
+    jd_set = jd + 18/24 - lon/360.0 # julian date for sunset
     print(f"jd_set= {jd_set}")
     
     # return values: from sun_r_s(), decl_rad, ra_rad, gmst_deg, LHA_rad
