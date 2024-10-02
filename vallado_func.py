@@ -442,14 +442,14 @@ def k_l_m_sp(k, l, m, sp):
 
 def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
     """
-    Planet orbital elements from user chosen data set.
+    Planet orbital elements: ephemeris data, JPL Horizons or Standish.
 
     Input Parameters:
     ----------
         planet_id  : int,
             JPL Horizons eph_data=0, 1->8 Mercury->Neptune
             Standish eph_data=1, 1->8 Mercury->Neptune
-        eph_data   : int, 0 or 1:
+        eph_data   : int, 0 or 1: ephemeris data set
             0 = JPL horizons data set, Table 1
             1 = Standish 1992 data
         au_units   : boolean; output true=distance units in au
@@ -494,22 +494,22 @@ def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
         # fmt: off
         J2000=np.array(
             [
-            [0.38709927, 0.20563593,  7.00497902,  252.25032350, 77.45779628, 48.33076593],
-            [0.00000037,  0.00001906, -0.00594749, 149472.67411175, 0.16047689, -0.12534081],
-            [0.72333566,  0.00677672, 3.39467605,   181.97909950, 131.60246718, 76.67984255],
+            [0.38709927,   0.20563593,  7.00497902,  252.25032350, 77.45779628, 48.33076593],
+            [0.00000037,   0.00001906, -0.00594749, 149472.67411175, 0.16047689, -0.12534081],
+            [0.72333566,   0.00677672, 3.39467605,   181.97909950, 131.60246718, 76.67984255],
             [0.00000390,  -0.00004107, -0.00078890, 58517.81538729, 0.00268329, -0.27769418],
-            [1.00000261,  0.01671123,  -0.00001531, 100.46457166,  102.93768193, 0.0],
+            [1.00000261,   0.01671123,  -0.00001531, 100.46457166,  102.93768193, 0.0],
             [0.00000562,  -0.00004392, -0.01294668, 35999.37244981,  0.32327364, 0.0],
-            [1.52371034,  0.09339410,  1.84969142,  -4.55343205, -23.94362959, 49.55953891],
-            [0.00001847,  0.00007882,  -0.00813131, 19140.30268499, 0.44441088, -0.29257343],
-            [5.20288700,  0.04838624,  1.30439695,  34.39644051,  14.72847983, 100.47390909],
+            [1.52371034,   0.09339410,  1.84969142,  -4.55343205, -23.94362959, 49.55953891],
+            [0.00001847,   0.00007882,  -0.00813131, 19140.30268499, 0.44441088, -0.29257343],
+            [5.20288700,   0.04838624,  1.30439695,  34.39644051,  14.72847983, 100.47390909],
             [-0.00011607, -0.00013253, -0.00183714, 3034.74612775,  0.21252668, 0.20469106],
-            [9.53667594,  0.05386179,  2.48599187,  49.95424423,  92.59887831, 113.66242448],
+            [9.53667594,   0.05386179,  2.48599187,  49.95424423,  92.59887831, 113.66242448],
             [-0.00125060, -0.00050991, 0.00193609,  1222.49362201, -0.41897216, -0.28867794],
-            [19.18916464, 0.04725744, 0.77263783, 313.23810451,  170.95427630, 74.01692503],
+            [19.18916464,  0.04725744, 0.77263783, 313.23810451,  170.95427630, 74.01692503],
             [-0.00196176, -0.00004397, -0.00242939, 428.48202785, 0.40805281, 0.04240589],
-            [30.06992276, 0.00859048, 1.77004347, -55.12002969,  44.96476227, 131.78422574],
-            [0.00026291,  0.00005105, 0.00035372, 218.45945325, -0.32241464, -0.00508664],
+            [30.06992276,  0.00859048, 1.77004347, -55.12002969,  44.96476227, 131.78422574],
+            [0.00026291,   0.00005105, 0.00035372, 218.45945325, -0.32241464, -0.00508664],
             ]
             )
         # fmt: on
@@ -590,16 +590,27 @@ def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
     return J2000_coe, J2000_rates
 
 
-def planet_ele_1(planet_id, au_units=True, rad_units=False):
+def planet_ele_1(planet_id):
     """
     Planet elements coefficients table, heliocentric/equatorial.
         Table of polynomial coefficients in t_TDB.
         t_TDB = julian centuries of tdb (barycentric dynamic time).
         Format: x0*t_TDB^0 + x1*t_TDB^1 + x2*t_TDB^2 + ...
-
+    Input Parameters:
+    ----------
+        planet_id : int
+            0 = Mercury, not yet entered
+            1 = Venus
+            2 = Earth
+            3 = Mars
+            4 = Jupiter
+            5 = Saturn
+            6 = Urnaus, not yet entered
+            7 = Neptune, not yet entered
+            8 = Pluto, not yet entered
     Notes:
     ----------
-    Data below, Vallado [4], appendix D.4, Planetary Ephemerides, pp.1062
+    Data below, Vallado [4], appendix D.4, Planetary Ephemerides, pp.1062.
         Heliocentric, equatorial (not ecliptic), mean equator, mean equinox of IAU-76/FK5.
     """
 
@@ -622,7 +633,7 @@ def planet_ele_1(planet_id, au_units=True, rad_units=False):
         # fmt: off
         J2000_coefs = np.array(
             [
-                [1.000001018, 0.0, 0.0, 0.0, 0],  # [au] sma
+                [1.000001018,          0.0,           0.0,           0.0, 0],  # [au] sma
                 [0.016708620, -0.000042037, -0.0000001236, 0.00000000004, 0],  # [--] ecc
                 [0.000000000, 0.0130546000, -0.000009310, -0.0000000340,  0],  # [deg] incl
                 [174.8731740, -0.241090800,  0.0000406700, -0.0000013270, 0],  # [deg] raan
@@ -635,7 +646,7 @@ def planet_ele_1(planet_id, au_units=True, rad_units=False):
         # fmt: off
         J2000_coefs = np.array(
             [
-                [1.523679342, 0.0,          0.0, 0.0, 0],  # [au] sma
+                [1.523679342,          0.0,           0.0,            0.0, 0],  # [au] sma
                 [0.093400620, 0.0000904830, -0.0000000806, -0.00000000035, 0],  # [--] ecc
                 [1.849726000, -0.008147900, -0.0000225500, -0.00000002700, 0],  # [deg] incl
                 [49.55809300, -0.294984600, -0.0006399300, -0.00000214300, 0],  # [deg] raan
@@ -661,7 +672,7 @@ def planet_ele_1(planet_id, au_units=True, rad_units=False):
         # fmt: off
         J2000_coefs = np.array(
             [
-                [9.554909596, -0.000002138, 0, 0],  # [au] sma
+                [9.554909596, -0.000002138,             0,              0],  # [au] sma
                 [0.055508620, -0.000346818, -0.0000006456, 0.00000000338, 0],  # [--] ecc
                 [2.488878000, 0.0025510000, -0.000049030, 0.00000001800, 0],  # [deg] incl
                 [113.6655240, -0.256664900, -0.000183450, 0.00000035700, 0],  # [deg] raan
@@ -678,14 +689,16 @@ def planet_ele_1(planet_id, au_units=True, rad_units=False):
     elif planet_id == 8:  # pluto
         print(f"pluto not yet copied, 2024-09-15")
     else:
-        raise NameError(f"Not a valid planet id, {planet_id}")
+        print(f"Not a valid planet id, {planet_id}")
+        raise NameError("Not a valid planet id.")  # figure out print format
 
     return J2000_coefs
 
 
-def planet_rv(planet_id, date_, au_units=True):
+def planet_rv(planet_id, date_):
     """
     Find planet position, r_vec and v_vec; given planet_id, and date.
+        Outputs in both equatorial and ecliptic frames.
     From Vallado [4], example 5-5, pp.304; called algorithm 33, pp.303.
 
     Input Parameters:
@@ -693,20 +706,24 @@ def planet_rv(planet_id, date_, au_units=True):
         planet_id : int, 0=mercury, 1=venus. 2=earth, 3=mars, 4=jupiter
                             5=saturn, 6=uranus, 7=neptune, 8=pluto
         date_     : python date object
-        au_units  :
-
+    Returns:
+    ----------
+        r_vec     : np.array row [au] position; equatorial frame
+        v_vec     : np.array row [au/day] velocity; equatorial frame
+        r1_vec    : np.array row [au] position; ecliptic frame
+        v1_vec    : np.array row [au/day] velocity; ecliptic frame
     Notes:
     ----------
-    Planet elements coefficients table, heliocentric/equatorial.
-        Table of polynomial coefficients in t_TDB.
-        t_TDB = julian centuries of tdb (barycentric dynamic time).
+    Planet elements coefficients table, heliocentric/equatorial,
+        comes from planet_ele_1() function. Consists of polynomial coefficients
+        table, in powers of t_TDB.  t_TDB = julian centuries of tdb
+        (barycentric dynamic time).
         Format: x0*t_TDB^0 + x1*t_TDB^1 + x2*t_TDB^2 + ...
     """
     # fmt: on
     np.set_printoptions(precision=6)  # numpy, set vector printing size
     deg2rad = math.pi / 180  # used multiple times
     rad2deg = 180 / math.pi  # used multiple times
-    pi_2 = 2 * math.pi  # used for modulus
 
     au = 149597870.7  # [km/au] Vallado [2] p.1043, tbl.D-5
     mu_sun_km = 1.32712428e11  # [km^3/s^2], Vallado [2] p.1043, tbl.D-5
@@ -721,24 +738,23 @@ def planet_rv(planet_id, date_, au_units=True):
         date_.minute,
         date_.second,
     )
+    # print(f"Parameters Date: {year}-{month}-{day} {hour}:{minute}:{second}")
 
-    # jd_convTime(), always calculates julian date, but also calculates other
+    # jd_convTime(), calculates julian date, acd calculates other
     #   time conversions; i.e. c_type=0, julian centuries from J2000.0 TT.
     jd, jd_cJ2000 = astro_time.jd_convTime(
         year, month, day, hour, minute, second, c_type=0
     )
     # print(f"jd= {jd:.10g}, jd_cent={jd_cJ2000:.10g}")
-    # 2024-09-21, all planets are in coefficients table so far
-    J2000_coefs = planet_ele_1(planet_id, au_units=True, rad_units=False)
+
+    # 2024-09-21, not all planets are in coefficients table so far
+    J2000_coefs = planet_ele_1(planet_id)
     # coeffs format; x0*t_TDB^0 + x1*t_TDB^1 + x2*t_TDB^2 + ...
     #   time, t_tdb = julian centuries of barycentric dynamical time
     x1 = np.arange(5)  # number of exponent values; power series
     x2 = np.full(5, jd_cJ2000)  # base time value
     x3 = x2**x1  # time multiplier series
-
     sma = np.sum(J2000_coefs[0, :] * x3)  # [au]
-    if au_units == False:
-        sma *= au  # convert [au] to [km]
 
     # make sure angles, modulo +- 2*pi; phi%(2*math.pi) # %=modulo
     ecc = np.sum(J2000_coefs[1, :] * x3)  # [--]
@@ -763,7 +779,7 @@ def planet_rv(planet_id, date_, au_units=True):
     M_rad = M_deg * deg2rad
     w_deg = w_bar_deg - raan_deg  # [deg] argument of periapsis (aka aop, or arg_p)
     w_rad = w_deg * deg2rad
-    print(f"\nM_deg= {M_deg:.8g} [deg], {M_rad:.8g} [rad]")
+    # print(f"\nM_deg= {M_deg:.8g} [deg], {M_rad:.8g} [rad]")
     # print(f"w_deg= {w_deg:.8g} [deg]")
 
     E_rad = kep_eqtnE(M=M_rad, e=ecc)
@@ -777,12 +793,8 @@ def planet_rv(planet_id, date_, au_units=True):
     print(f"E_deg= {E_deg:.8g} [deg]")
     print(f"TA_deg= {TA_deg:.8g} [deg]")
 
+    # s=semi-parameter (aka p), sma=semi-major axis (aka a)
     sp = sma * (1 - ecc**2)
-    if au_units == True:
-        print(f"sp= {sp:.8g} [au]")
-    else:
-        print(f"sp= {sp:.8g} [km]")
-
     # function inputs, coe2rv(p, ecc, inc, raan, aop, anom, mu=Earth.mu)
     r_vec, v_vec = coe2rv(
         p=sp,
@@ -793,32 +805,26 @@ def planet_rv(planet_id, date_, au_units=True):
         anom=TA_rad,
         mu=mu_sun_au,
     )
-    r_vec = np.ravel(r_vec)  # convert column array to row vector
-    v_vec = np.ravel(v_vec)
+    r_vec = np.ravel(r_vec)  # [au] convert column array to row vector
+    v_vec = np.ravel(v_vec)  # [au/s]
+    v_vec *= 86400  # [au/day] convert seconds to days
     print(f"\nEquatorial/Heliocentric, XYZ")
-    if au_units == True:
-        print(f"r_vec= {r_vec} [au]")
-        print(f"v_vec= {v_vec*86400} [au/day]")  # convert, seconds to days
-    else:  # units [km] and [km/s]
-        print(f"r_vec= {r_vec} [km]")
-        print(f"v_vec= {v_vec} [km/s]")
+    print(f"r_vec= {r_vec} [au]")
+    print(f"v_vec= {v_vec} [au/day]")  # convert, seconds to days
 
     # rotate r_vec and v_vec from equatorial to ecliptic/heliocentric
-    e_angle = ecliptic_angle(jd_cJ2000)  # ecliptic angle
+    #   ecliptic angle, Vallado [4] p.217, eqn.3-69.
+    e_angle = ecliptic_angle(jd_cJ2000)
     print(f"ecliptic angle, e_angle= {e_angle:.8g} [deg]")
 
-    r1_vec = r_vec @ rot_matrix(angle=-e_angle * deg2rad, axis=0)
-    v1_vec = v_vec @ rot_matrix(angle=-e_angle * deg2rad, axis=0)
+    r1_vec = r_vec @ rot_matrix(angle=-e_angle * deg2rad, axis=0)  # [au]
+    v1_vec = v_vec @ rot_matrix(angle=-e_angle * deg2rad, axis=0)  # [au/s]
+    v1_vec *= 86400  # [au/day] convert seconds to days
     print(f"\nEcliptic/Heliocentric, XYZ")
-    if au_units == True:
-        print(f"r1_vec= {r1_vec} [au]")
-        v1_vec *= 86400  # convert seconds to days
-        print(f"v1_vec= {v1_vec} [au/day]")
-    else:
-        print(f"r1_vec= {r1_vec} [km]")
-        print(f"v1_vec= {v1_vec} [km/s]")  # convert seconds to days
+    print(f"r1_vec= {r1_vec} [au]")
+    print(f"v1_vec= {v1_vec} [au/day]")
 
-    return r1_vec, v1_vec
+    return r_vec, v_vec, r1_vec, v1_vec
 
 
 def rot_matrix(angle, axis: int):

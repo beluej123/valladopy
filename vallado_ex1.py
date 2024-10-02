@@ -39,19 +39,46 @@ from datetime import datetime as dt
 import numpy as np
 
 import astro_time
-import vallado_func as vfunc  # Vallado functions
+import vallado_func as vfunc  # Vallado functions collection.
 from kepler import coe2rv, eccentric_to_true, findTOF, findTOF_a, kep_eqtnE, keplerUni
 from vallado_func import ecliptic_angle, planet_rv, plot_sp_vs_sma
 
 
+def test_ex2_1KeplerE():
+    """
+    Kepler equation eclipse solution; mean anomaly, eccentricity -> E
+        Vallado [4], example 2-1, p.66, algorithm 2, pp.65.
+    Given:
+        M   : float, [rad] mean anomaly; must, -2*pi <= M <= +2*pi
+        e   : float, [--] eccentricity
+        default Newton-Raphson convergence tolerance
+
+    Returns:
+    -------
+    none
+    """
+    print(f"\nTest Kepler ellipse solution for E:")
+    # given
+    M_rad = 235.4 * (math.pi / 180)  # [rad]
+    ecc = 0.4
+    E_ = kep_eqtnE(M=M_rad, e=ecc)
+    print(f"Eccentric anomaly, E_= {E_:.6g} [rad], {E_*180/math.pi:.6g} [deg]")
+
+    return None
+
+
 def test_ex2_4_keplerUni():
     """
-    Kepler propagation, given initial r_vec, v_vec, and delta time, find new location.
-    Vallado [4], example 2-4, p.96, from algorithm 8, pp.94.
+    Kepler propagation, given  r0_vec, v0_vec, dt -> r1_vec, v1_vec.
+        Universal formulation.  Vallado [4], example 2-4, p.96,
+        from algorithm 8, pp.94.
 
     Notes:
     ----------
     """
+    print(
+        f"\nTest Kepler, universal formulation, Vallado [4] example 2-4; r0, v0, dt -> r1, v1:"
+    )
     np.set_printoptions(precision=6)  # numpy, set vector printing size
 
     # given
@@ -87,7 +114,7 @@ def test_prb2_7_tof() -> None:
 
         Reference Details: see list at file beginning.
     """
-    print(f"\nVallado [2] time-of-flight, prob 2.7:")
+    print(f"\nTest Vallado [2] time-of-flight, prob 2.7:")
     mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado [2] p.1041, tbl.D-3
     au = 149597870.7  # [km/au] Vallado [2] p.1043, tbl.D-5
     r_earth = 6378.1363  # [km] earth radius; Vallado [2] p.1041, tbl.D-3
@@ -101,18 +128,18 @@ def test_prb2_7_tof() -> None:
     cosdv = np.dot(r0_vec.T, r1_vec) / (
         r0_mag * r1_mag
     )  # note r0_vec.T = transpose of r0_vec
-    print(f"delta true anomaly's, {math.acos(cosdv)*180/math.pi:.6g} [deg]")
+    print(f"Delta true anomaly's, {math.acos(cosdv)*180/math.pi:.6g} [deg]")
 
     tof = findTOF(r0=r0_vec, r=r1_vec, p=sp, mu=mu_earth_km)
-    print(f"time of flight, tof= {tof:.8g} [s]")
+    print(f"Time of flight, tof= {tof:.8g} [s]")
     return
 
 
 def test_prb2_7a_tof(plot_sp=False) -> None:
     """
     Find time of flight (tof) and orbit parameter limits.
-    Note Vallado, problem 2.7, p.128; tof, section 2.8, p.126, algorithm 11.
-    Note BMWS, sma as a function of sp, section 5.4.2, p.204.
+        Note Vallado, problem 2.7, p.128; tof, section 2.8, p.126, algorithm 11.
+        Note BMWS, sma as a function of sp, section 5.4.2, p.204.
 
     Notes:
     ----------
@@ -124,7 +151,7 @@ def test_prb2_7a_tof(plot_sp=False) -> None:
     Choose v0
     """
 
-    print(f"\nVallado [2] time-of-flight, prob 2.7a:")
+    print(f"\nTest Vallado [2] time-of-flight, prob 2.7a:")
     mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado [2] p.1041, tbl.D-3
     au = 149597870.7  # [km/au] Vallado [2] p.1042, tbl.D-5
     r_earth = 6378.1363  # [km] earth radius; Vallado [2] p.1041, tbl.D-3
@@ -180,6 +207,7 @@ def test_ex5_1_sunPosition():
         This is a low precision solution; see Vallado [4] section 5.1.1, p283.
         This effort debugged the function sunPosition() saved in vallado_func.py.
     """
+    print(f"\nTest Vallado [4] example 5-1, sun position: ")
     # the following date is UTC, not inclusive of delta_UT1~0.265s, and delta_AT~33s
     yr, mo, day, hr, min, sec = 2006, 4, 1, 23, 58, 54.816
     # thus
@@ -204,7 +232,7 @@ def test_ex5_2_sunRiseSet():
     https://www.sunrisesunset.com/USA/Texas/
     This effort debugged the function sunRiseSet() saved in vallado_func.py.
     """
-    print(f"\nVallado [4] sunrise-sunset, example 5-2:")
+    print(f"\nTest Vallado [4] sunrise-sunset, example 5-2:")
     np.set_printoptions(precision=6)  # numpy, set vector printing size
     deg2rad = math.pi / 180  # used multiple times
     rad2deg = 180 / math.pi  # used multiple times
@@ -231,23 +259,41 @@ def test_ex5_2_sunRiseSet():
 def test_ex5_5_planetLocation():
     """
     Find planet location; essentially Vallado's PlanetRV(), algorithm 33.
-    Vallado [2], example 5-5, pp.297, algorithm 33, pp.296.
-    Vallado [4], example 5-5, pp.304, algorithm 33, pp.303.
+        Vallado [2], example 5-5, pp.297, algorithm 33, pp.296.
+        Vallado [4], example 5-5, pp.304, algorithm 33, pp.303.
 
     Notes:
     ----------
+    NOTE Vallado [2] and [4] appendix D.4 tables DONOT correlate well with
+        JPL Horizons outputs for Jupiter; well kind-da same ball park.
+            1994, 5, 20, 20, 0, 0 # ex.5-5, reviewed equatorial, not ecliptic
+            1979, 3, 5, 12, 5, 26 # ex.12-8, reviewed equatorial, not ecliptic
     This effort debugged the function planet_rv() saved in vallado_func.py.
     See kepler.py Notes for list of orbital element nameing definitions.
+
     https://ssd.jpl.nasa.gov/planets/approx_pos.html
     Horizons on-line look-up https://ssd.jpl.nasa.gov/horizons/app.html#/
     From Horizons on-line:
-    Jupiter:
+    Jupiter; heliocentric, equatorial, International Celestial Reference Frame (ICRF)
     2449493.333333333 = A.D. 1994-May-20 20:00:00.0000 TDB
-    EC= 4.831844662701981E-02 QR= 4.951499586021582E+00 IN= 1.304648490975239E+00
-    OM= 1.004706325510906E+02 W = 2.751997729775426E+02 Tp=  2451319.928584063426
-    N = 8.308901661461704E-02 MA= 2.082299968639316E+02 TA= 2.057443313085129E+02
-    A = 5.202895410205566E+00 AD= 5.454291234389550E+00 PR= 4.332702620248230E+03
+    units below: [deg], [au], [days]
+    EC= 4.831844662701981E-02, QR= 4.951499586021582E+00, IN= 1.304648490975239E+00
+    OM= 1.004706325510906E+02, W = 2.751997729775426E+02, Tp=  2451319.928584063426
+    N = 8.308901661461704E-02, MA= 2.082299968639316E+02, TA= 2.057443313085129E+02
+    A = 5.202895410205566E+00, AD= 5.454291234389550E+00, PR= 4.332702620248230E+03
+    EC=Eccentricity; QR=Periapsis distance (au); IN=Inclination w.r.t X-Y plane (deg);
+    OM=Longitude of Ascending Node (deg); W=Argument of Perifocus (deg);
+    Tp=Time of periapsis (Julian Day Number); N=Mean motion (deg/day);
+    MA=Mean anomaly (deg); TA=True anomaly (deg); A=Semi-major axis (au);
+    AD=Apoapsis distance (au); PR=Sidereal orbit period (day)
+
+    units below: x,y,z [au]; vx,vy,vz [au/day]
+    X= -4.064448682130308E+00, Y= -3.337082238471498E+00, Z=-1.331927194090224E+00
+    VX= 5.342571281658752E-03, VY= -3.857849397745642E-03, VZ=-1.791799534510893E-03
+    LT= 3.133179623650530E-02, RG= 5.424932350393856E+00, RR=-1.189710609786379E-03
     """
+    print(f"\nTest planet position, Vallado [4] example 5-5:")
+    print(f"  Jupiter:")
     np.set_printoptions(precision=6)  # numpy, set vector printing size
     deg2rad = math.pi / 180  # used multiple times
     rad2deg = 180 / math.pi  # used multiple times
@@ -262,14 +308,21 @@ def test_ex5_5_planetLocation():
     #   calculates other time conversions; i.e. julian centuries since J2000.0.
     #   In this example the julian date is not used in calculations; just to print.
     #   Centuries since J2000, Curtis p.471, eqn 8.93a.
-    year, month, day, hour, minute, second = 1994, 5, 20, 20, 0, 0
+    year, month, day, hour, minute, second = 1994, 5, 20, 20, 0, 0  # ex.5-5; Jupiter
+    # year, month, day, hour, minute, second = 1979, 3, 5, 12, 5, 26 # see ex.12-8; Jupiter
+    # year, month, day, hour, minute, second = 1977, 9, 8, 9, 8, 17 # see ex.12-8; Earth
     jd, jd_cJ2000 = astro_time.jd_convTime(
         year, month, day, hour, minute, second, c_type=0
     )
+    print(f"Ephemeris date, {year}-{month}-{day} {hour}:{minute}:{second}")
     print(f"jd= {jd:.10g}, jd_cent={jd_cJ2000:.10g}")
 
-    # 2024-09-20, not all planets in coefficients table so far
-    J2000_coefs = vfunc.planet_ele_1(planet_id=4, au_units=True, rad_units=False)
+    """
+    2024-09-20, not all planets in coefficients table so far
+    planet_id : int, 0=mercury, 1=venus. 2=earth, 3=mars, 4=jupiter
+                     5=saturn, 6=uranus, 7=neptune, 8=pluto
+    """
+    J2000_coefs = vfunc.planet_ele_1(planet_id=4)  # returns [deg] and [au]
     # coeffs format; x0*t_TDB^0 + x1*t_TDB^1 + x2*t_TDB^2 + ...
     #   time, t_tdb = julian centuries of barycentric dynamical time
     x1 = np.arange(5)  # exponent values; power series
@@ -306,7 +359,7 @@ def test_ex5_5_planetLocation():
     E_deg = E_rad * rad2deg
     # TA_rad below, no quadrent ambiguity; addresses near pi values
     TA_rad = eccentric_to_true(E=E_rad, e=ecc)
-    # below, commented out, is Curtis [3], p.160, eqn 3.13b.
+    # below, commented out, Curtis [3] solution, p.160, eqn 3.13b.
     # TA_rad = 2 * math.atan(math.sqrt((1 + ecc) / (1 - ecc)) * math.tan(E_rad / 2))
     TA_deg = TA_rad * rad2deg
 
@@ -331,6 +384,8 @@ def test_ex5_5_planetLocation():
     print(f"\nEquatorial, Heliocentric, XYZ")
     print(f"r_vec= {r_vec} [au]")
     print(f"v_vec= {v_vec} [au/day]")
+    print(f"r_vec= {r_vec*au} [km]")
+    print(f"v_vec= {v_vec*au/86400} [km/s]")
 
     # rotate r_vec and v_vec from equatorial to ecliptic/heliocentric
     e_angle = vfunc.ecliptic_angle(jd_cJ2000)  # ecliptic angle
@@ -471,9 +526,81 @@ def test_ex6_3_one_tan_burn():
     return None  # one_tan_burn_ex6_3()
 
 
+def test_planet_rv():  # test various dates & planets
+    """
+    Test Vallado [4], example 5-5, pp.304; using algorithm 33, pp.303.
+    Test Vallado [4], example 12-8, pp.978; using algorithm 33, pp.303.
+
+    Given:
+    ----------
+        Earth(1977-09-08 09:08:17), Vallado [4] ex 5-5, pp.304.
+        Jupiter(1977-09-08 09:08:17), Vallado [4], ex 12-8, pp.978
+    Find:
+    ----------
+        Equatorial & Ecliptic XYZ
+    Returns:
+    -------
+        None
+    Notes:
+    -------
+        Use date/time as object for ease of user reading string date/time.
+        References: see list at file beginning.
+    """
+    print(f"\nTest planet_rv(), various planets & dates:")
+    # constants
+    np.set_printoptions(precision=6)  # numpy, set vector printing size
+    deg2rad = math.pi / 180  # used multiple times
+    rad2deg = 180 / math.pi  # used multiple times
+
+    au = 149597870.7  # [km/au] Vallado [2] p.1043, tbl.D-5
+    mu_sun_km = 1.32712428e11  # [km^3/s^2], Vallado [2] p.1043, tbl.D-5
+
+    # dates to retrieve planet positions
+    date_list = [
+        "1994-5-20 20:0:0",  # Jupiter, ex5-5
+        "1977-09-08 09:08:17",  # earth, ex12-8
+        "1979-03-05 12:05:26",  # jupiter, ex12-8
+        "1980-11-12 23:46:30",  # saturn, ex12-8
+    ]
+    "1994-5-20 20:0:0"
+    # generate list of datetime objects
+    x = [dt.strptime(s, "%Y-%m-%d %H:%M:%S") for s in date_list]
+    # for i in range(len(x)):
+    #     print(f"{x[i]}")
+    # prepare variables for julian date calculation
+    year, month, day, hour, minute, second = (
+        x[2].year,
+        x[2].month,
+        x[2].day,
+        x[2].hour,
+        x[2].minute,
+        x[2].second,
+    )
+    # Jupiter; x[0], just test planet position
+    print(f"Ephemeris date, Jupiter, ex5-5, x[0]= {x[0]}")
+    r_vec, v_vec, r1_vec, v1_vec = planet_rv(planet_id=4, date_=x[0])
+    print(f"Equatorial frame:")
+    print(f"Earth, r_vec= {r_vec} [au]\nEarth, v_vec= {v_vec} [au/day]")
+    print(f"Ecliptic frame:")
+    print(f"Earth, r1_vec= {r1_vec} [au]\nEarth, v1_vec= {v1_vec} [au/day]")
+
+    # Earth; x[1], planet_id=2
+    print(f"Ephemeris date, Earth, ex12-8, x[1]= {x[1]}")
+    r_vec, v_vec, r1_vec, v1_vec = planet_rv(planet_id=2, date_=x[1])
+    print(f"\nEquatorial frame:")
+    print(f"Earth, r_vec= {r_vec*au} [km]\nEarth, v_vec= {v_vec*au/86400} [km/s]")
+
+    # Jupiter; x[2], planet_id=4
+    print(f"Ephemeris date, Jupiter, ex12-8, x[2]= {x[2]}")
+    r_vec, v_vec, r1_vec, v1_vec = planet_rv(planet_id=4, date_=x[2])
+    print(f"\nEquatorial frame:")
+    print(f"Jupiter, r_vec= {r_vec*au} [km]\nJupiter, v_vec= {v_vec*au/86400} [km/s]")
+    return
+
+
 def test_ex12_8_patchedConic():
     """
-    Test Vallado [4], Jupiter fly-by, example 12-8, p.978.
+    Test Jupiter fly-by. Vallado [4] example 12-8, p.978.
 
     Given:
     ----------
@@ -505,7 +632,7 @@ def test_ex12_8_patchedConic():
 
     # dates to retrieve planet positions
     date_list = [
-        "1977-09-08 09:08:17",  # depart earth
+        "1977-09-08 09:08:17",  # UTC, depart earth
         "1979-03-05 12:05:26",  # fly-by jupiter
         "1980-11-12 23:46:30",  # fly-by saturn
     ]
@@ -523,75 +650,12 @@ def test_ex12_8_patchedConic():
         x[0].second,
     )
     date1 = x[0]
-    print(f"date, x[0]= {x[0]}")
-    r_vec, v_vec = planet_rv(planet_id=2, date_=date1, au_units=False)
-    print(f"{r_vec}\n{v_vec}")
-
-
-def test_planet_rv_all():  # test all planets
-    """
-    Test Vallado [4], example 5-5, pp.304; using algorithm 33, pp.303.
-    Test Vallado [4], example 12-8, pp.978; using algorithm 33, pp.303.
-
-    Given:
-    ----------
-        Earth(1977-09-08 09:08:17), Vallado [4] ex 5-5, pp.304.
-        Jupiter(1977-09-08 09:08:17), Vallado [4], ex 12-8, pp.978
-    Find:
-    ----------
-        Equatorial & Ecliptic XYZ
-    Returns:
-    -------
-        None
-    Notes:
-    -------
-
-        Use date/time as object for ease of user reading string date/time.
-        References: see list at file beginning.
-    """
-    print(f"\nTest planet_rv(), various planets & dates:")
-    # constants
-    np.set_printoptions(precision=6)  # numpy, set vector printing size
-    deg2rad = math.pi / 180  # used multiple times
-    rad2deg = 180 / math.pi  # used multiple times
-
-    au = 149597870.7  # [km/au] Vallado [2] p.1043, tbl.D-5
-    mu_sun_km = 1.32712428e11  # [km^3/s^2], Vallado [2] p.1043, tbl.D-5
-
-    # dates to retrieve planet positions
-    date_list = [
-        "1994-5-20 20:0:0",  # Jupiter, ex5-5
-        "1977-09-08 09:08:17",  # earth, ex12-8
-        "1979-03-05 12:05:26",  # jupiter, ex12-8
-        "1980-11-12 23:46:30",  # saturn, ex12-8
-    ]
-    "1994-5-20 20:0:0"
-    # generate list of datetime objects
-    x = [dt.strptime(s, "%Y-%m-%d %H:%M:%S") for s in date_list]
-    # for i in range(len(x)):
-    #     print(f"{x[i]}")
-    # prepare variables for julian date calculation
-    year, month, day, hour, minute, second = (
-        x[0].year,
-        x[0].month,
-        x[0].day,
-        x[0].hour,
-        x[0].minute,
-        x[0].second,
-    )
-    # Jupiter
-    date1 = x[0]
-    print(f"date, x[0]= {x[0]}")
-    r_vec, v_vec = planet_rv(planet_id=4, date_=date1, au_units=True)
-    print(f"Jupiter, r_vec= {r_vec}")
-    print(f"Jupiter, v_vec= {v_vec}")
-    # Earth
-    date1 = x[1]
-    print(f"date, x[0]= {x[0]}")
-    r_vec, v_vec = planet_rv(planet_id=2, date_=date1, au_units=True)
-    print(f"Earth, r_vec= {r_vec}")
-    print(f"Earth, v_vec= {v_vec}")
-    return
+    print(f"Ephemeris date, x[0]= {x[0]}")
+    r_vec, v_vec, r1_vec, v1_vec = planet_rv(planet_id=2, date_=date1)
+    print(f"Equatorial frame:")
+    print(f"Earth, r_vec= {r_vec} [au]\nEarth, v_vec= {v_vec} [au/dau]")
+    print(f"Ecliptic frame:")
+    print(f"Earth, r1_vec= {r1_vec} [au]\nEarth, v1_vec= {v1_vec} [au/day]")
 
 
 def Main():  # helps editor navigation :--)
@@ -600,14 +664,15 @@ def Main():  # helps editor navigation :--)
 
 # Test functions and class methods are called here.
 if __name__ == "__main__":
+    # test_ex2_1KeplerE()  # kepler ellipse solve for eccentric anomaly
     # test_ex2_4_keplerUni()  # kepler propagation; Kepler universal variables
     # test_prb2_7_tof()  # time of flight, problem 2-7
     # test_prb2_7a_tof(plot_sp=False)  # time-of-flight; plot sma vs. sp
+    # test_ex5_1_sunPosition()  # sun position
+    # test_ex5_2_sunRiseSet()  # sunrise sunset
     # test_ex5_5_planetLocation()  # planet location
     # test_ex6_1_hohmann()  # hohmann transfer, example 6-1
     # test_ex6_2_bielliptic()  # bi-elliptic transfer, example 6-2
     # test_ex6_3_one_tan_burn()  # one-tangent transfer, example 6-3
-    # test_ex12_8_patchedConic()  # gravity assist, Jupiter fly-by
-    # test_planet_rv_all()  # planet_rv, all planets
-    # test_ex5_1_sunPosition()  # sun position
-    test_ex5_2_sunRiseSet()  # sunrise sunset
+    test_planet_rv()  # test various dates and planets for planet_rv()
+    # test_ex12_8_patchedConic()  # NOT Finished, gravity assist, Jupiter fly-by
