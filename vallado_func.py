@@ -4,7 +4,6 @@ Edits 2024-08-21 +, Jeff Belue.
 
 Notes:
 ----------
-    TODO, This file is organized ...
     Note, some lines have AUTO-formatting instructions for "black" formatter!
         Generally, donot format numeric arrays (tables); use # fmt: off/on
     Generally, units shown in brackets [km, rad, deg, etc.].

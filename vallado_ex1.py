@@ -577,7 +577,7 @@ def test_planet_rv():  # test various dates & planets
         x[2].second,
     )
     # Jupiter; x[0], just test planet position
-    print(f"Ephemeris date, Jupiter, ex5-5, x[0]= {x[0]}")
+    print(f"\nEphemeris date, Jupiter, ex5-5, x[0]= {x[0]}")
     r_vec, v_vec, r1_vec, v1_vec = planet_rv(planet_id=4, date_=x[0])
     print(f"Equatorial frame:")
     print(f"Earth, r_vec= {r_vec} [au]\nEarth, v_vec= {v_vec} [au/day]")
@@ -585,17 +585,131 @@ def test_planet_rv():  # test various dates & planets
     print(f"Earth, r1_vec= {r1_vec} [au]\nEarth, v1_vec= {v1_vec} [au/day]")
 
     # Earth; x[1], planet_id=2
-    print(f"Ephemeris date, Earth, ex12-8, x[1]= {x[1]}")
+    print(f"\nEphemeris date, Earth, ex12-8, x[1]= {x[1]}")
     r_vec, v_vec, r1_vec, v1_vec = planet_rv(planet_id=2, date_=x[1])
-    print(f"\nEquatorial frame:")
+    print(f"Equatorial frame:")
     print(f"Earth, r_vec= {r_vec*au} [km]\nEarth, v_vec= {v_vec*au/86400} [km/s]")
 
     # Jupiter; x[2], planet_id=4
-    print(f"Ephemeris date, Jupiter, ex12-8, x[2]= {x[2]}")
+    print(f"\nEphemeris date, Jupiter, ex12-8, x[2]= {x[2]}")
     r_vec, v_vec, r1_vec, v1_vec = planet_rv(planet_id=4, date_=x[2])
-    print(f"\nEquatorial frame:")
+    print(f"Equatorial frame:")
     print(f"Jupiter, r_vec= {r_vec*au} [km]\nJupiter, v_vec= {v_vec*au/86400} [km/s]")
     return
+
+
+def test_lambert_izzo():
+    """
+    Solve Lambert's problem with Izzo's devised algorithm; circa 2015.
+        Test successful against Braeuning problems 5.3, 5.4; Earth->Mars.
+        Test close enough Vallado [4] example 12-8; Earth->Jupiter:
+    Returns
+    -------
+        None
+    """
+    from izzo_1 import izzo2015
+
+    print(f"\nTest isso2015() LambertSolver:")
+    # Solar system constants
+    au = 149597870.7  # [km/au] Vallado [2] p.1043, tbl.D-5
+    GM_earth_km = 3.986004415e5  # [km^3/s^2], Vallado [2] p.1041, tbl.D-3
+    GM_sun_km = 1.32712428e11  # [km^3/s^2], Vallado [2] p.1043, tbl.D-5
+    GM_sun_au = GM_sun_km / (au**3)
+    mu = GM_sun_au
+    
+    # *********** Braeuning example 5.4 *********
+    print(f"** Test of Braeunig's examples, ex5.3, ex5.4; Earth->Mars: **")
+    tof = 207 * 24 * 60 * 60  # [s] given, time of flight; 207 days
+    # Ecliptic coordinates; Braeunig ex5.3, ex5.4
+    r1_vec = np.array([0.473265, -0.899215, 0])  # [au]
+    r1_mag = np.linalg.norm(r1_vec)
+    r2_vec = np.array([0.066842, 1.561256, 0.030948])  # [au]
+    r2_mag = np.linalg.norm(r2_vec)
+
+    v1_vec, v2_vec = izzo2015(
+        mu=mu,
+        r1=r1_vec,
+        r2=r2_vec,
+        tof=tof,
+        M=0,
+        prograde=True,
+        low_path=True,
+        maxiter=35,
+        atol=1e-5,
+        rtol=1e-7,
+    )
+    v1_mag, v2_mag = [np.linalg.norm(v) for v in [v1_vec, v2_vec]]
+
+    np.set_printoptions(precision=5)  # numpy has spectial print provisions
+    print(f"v1_vec= {v1_vec*au} [km/s]")  # note conversion au->km
+    print(f"v2_vec= {v2_vec*au} [km/s]")  # note conversion au->km
+    
+    orbit_energy = ((v1_mag**2) / 2) - (mu / r1_mag)
+    sma = -mu / (2 * orbit_energy)
+    print(f"transfer semimajor axis, sma= {sma*au:.8g} [km]")
+
+    h_vec = np.cross(r1_vec, v1_vec)
+    h_mag = np.linalg.norm(h_vec)
+    # print(f"h_vec= {h_vec} [au^2/s], h_mag= {h_mag:.6g} [au^2/s]")
+
+    p = (h_mag**2) / mu
+    print(
+        f"p= {p:.6g} [au], sma= {sma:.6g} [au], tof= {tof/(24*3600):.6g} [day]"
+    )
+
+    ecc_vec = ((np.cross(v1_vec, h_vec)) / mu) - (r1_vec / r1_mag)
+    ecc_mag = np.linalg.norm(ecc_vec)
+    print(f"ecc_mag= {ecc_mag:.6g}")
+    
+    # **************** Vallado 12-8 *************
+    print(f"\n** Test of Vallado [4] example 12-8; Earth->Jupiter: **")
+    tof = 1.487*365 * 24 * 60 * 60  # [s] given, time of flight; 1.487 years
+    # Ecliptic coordinates; Vallado [4], p.978, ex.12-8
+    # r1_vec = np.array([146169549, -36666991, -644])  # [km]
+    r1_vec = np.array([146169549, -36666991, -644])/au  # [au]; @ Earth
+    r1_mag = np.linalg.norm(r1_vec)
+    # r2_vec = np.array([-482178605, 627481965, 8221250])  # [km]
+    r2_vec = np.array([-482178605, 627481695, 8221250])/au  # [au]; @ Jupiter
+    r2_mag = np.linalg.norm(r2_vec)
+
+    v1_vec, v2_vec = izzo2015(
+        mu=mu,
+        r1=r1_vec,
+        r2=r2_vec,
+        tof=tof,
+        M=0,
+        prograde=True,
+        low_path=True,
+        maxiter=35,
+        atol=1e-5,
+        rtol=1e-7,
+    )
+    v1_mag, v2_mag = [np.linalg.norm(v) for v in [v1_vec, v2_vec]]
+
+    np.set_printoptions(precision=5)  # numpy has spectial print provisions
+    print(f"v1_vec= {v1_vec*au} [km/s]")  # note conversion au->km
+    print(f"v2_vec= {v2_vec*au} [km/s]")  # note conversion au->km
+    
+    # print(f"# of iterations {numiter}, time per iteration, tpi= {tpi:.6g} [s]")
+    
+    orbit_energy = ((v1_mag**2) / 2) - (mu / r1_mag)
+    sma = -mu / (2 * orbit_energy)
+    print(f"transfer semimajor axis, sma= {sma:.8g} [au]")
+
+    h_vec = np.cross(r1_vec, v1_vec)
+    h_mag = np.linalg.norm(h_vec)
+    # print(f"h_vec= {h_vec} [au^2/s], h_mag= {h_mag:.6g} [au^2/s]")
+
+    p = (h_mag**2) / mu
+    print(
+        f"p= {p:.6g} [au], sma= {sma:.6g} [au], tof= {tof/(24*3600):.6g} [day]"
+    )
+
+    ecc_vec = ((np.cross(v1_vec, h_vec)) / mu) - (r1_vec / r1_mag)
+    ecc_mag = np.linalg.norm(ecc_vec)
+    print(f"ecc_mag= {ecc_mag:.6g}")
+
+    return None  # test_lambert_izzo()
 
 
 def test_ex12_8_patchedConic():
@@ -674,5 +788,6 @@ if __name__ == "__main__":
     # test_ex6_1_hohmann()  # hohmann transfer, example 6-1
     # test_ex6_2_bielliptic()  # bi-elliptic transfer, example 6-2
     # test_ex6_3_one_tan_burn()  # one-tangent transfer, example 6-3
-    test_planet_rv()  # test various dates and planets for planet_rv()
+    # test_planet_rv()  # test various dates and planets for planet_rv()
+    test_lambert_izzo()  # lambert solver by izzo
     # test_ex12_8_patchedConic()  # NOT Finished, gravity assist, Jupiter fly-by

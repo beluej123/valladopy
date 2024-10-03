@@ -767,8 +767,9 @@ def keplerCOE(r0, v0, dt, mu=Earth.mu):
 
 def keplerUni(r0, v0, dt, mu=Earth.mu, tol=1e-6):
     """
-    Two body orbit propagation with universal formulation; find the
-        new position and velocity vectors.
+    Two body orbit propagation with universal formulation.
+        Kepler propagation, given  r0_vec, v0_vec, dt -> r1_vec, v1_vec.
+        Universal formulation.  Vallado [4], example 2-4, p.96, algorithm 8, pp.94.
 
     Input Parameters:
     ----------
