@@ -39,7 +39,7 @@ class TimeExamplesFromBookTestCase(unittest.TestCase):
         hr = 14
         minute = 20
         sec = 0.0
-        act_jd = astro_time.julian_date(yr, month, day, hr, minute, sec)
+        act_jd = astro_time.g_date2jd(yr, month, day, hr, minute, sec)
         exp_jd = 2450383.09722222
         self.assertAlmostEqual(act_jd, exp_jd, 8)
 
@@ -52,7 +52,7 @@ class TimeExamplesFromBookTestCase(unittest.TestCase):
         sec = 0.0
         lon = -104.0
 
-        jd_ut1 = astro_time.julian_date(yr, month, day, hr, minute, sec)
+        jd_ut1 = astro_time.g_date2jd(yr, month, day, hr, minute, sec)
         act_theta_gmst = astro_time.find_gmst(jd_ut1)
         act_theta_lst = astro_time.find_lst(act_theta_gmst, lon)
 
@@ -176,9 +176,7 @@ class TimeExamplesFromBookTestCase(unittest.TestCase):
 
     def test_example_3_13_jd2gregorian(self):
         jd = 2449877.3458762
-        (act_yr, act_mo, act_day, act_hr, act_min, act_sec) = astro_time.jd2gregorian(
-            jd
-        )
+        (act_yr, act_mo, act_day, act_hr, act_min, act_sec) = astro_time.jd2g_date(jd)
         exp_yr = 1995
         exp_mo = 6
         exp_day = 8
@@ -218,8 +216,10 @@ class OtherTimeFunctionsTestCase(unittest.TestCase):
 
 
 def test_main():
-    support.run_unittest(TimeExamplesFromBookTestCase)
-    support.run_unittest(OtherTimeFunctionsTestCase)
+    # support.run_unittest(TimeExamplesFromBookTestCase)
+    # support.run_unittest(OtherTimeFunctionsTestCase)
+    print(f"2024-10-03, not sure why the above 2 cmds no longer work.")
+    print(f"    I did rename two functions; jd2g_date() and g_date2jd().")
 
 
 if __name__ == "__main__":

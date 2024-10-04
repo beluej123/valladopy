@@ -911,8 +911,8 @@ def sunPosition(yr, mo, day, hr=0, min=0, sec=0.0):
     deg2rad = math.pi / 180
     rad2deg = 180 / math.pi
     # au = 149597870.7  # [km/au] Vallado [2] p.1043, tbl.D-5
-    # two choices for julian date; julian_date() and jd_convTime().
-    #   julian_date() calculates only the julian date, while
+    # two choices for julian date; g_date2jd() and jd_convTime().
+    #   g_date2jd() calculates only the julian date, while
     #   jd_convTime() calculates both julian date, julian centuries since J2000.0.
     #   if c_type=0, find julian centuries from J2000.0 TT.
 
@@ -1064,11 +1064,12 @@ def sunRiseSet(yr, mo, day, lat, lon):
     phi_gc_deg = lat
     phi_gc_rad = phi_gc_deg * deg2rad
 
-    # two choices for julian date; julian_date() and jd_convTime().
-    #   julian_date() calculates only the julian date, while
-    #   jd_convTime() calculates both julian date, julian centuries since J2000.0.
-    #      if c_type=0, find julian centuries from J2000.0 TT.
-    jd = astro_time.julian_date(yr=yr, mo=mo, d=day)
+    # two choices for julian date; g_date2jd() and jd_convTime().
+    #   g_date2jd() converts gregorian date to julian date only, while
+    #   jd_convTime() converts gregorian date to julian date, and
+    #       julian centuries since J2000.0.
+    #       if c_type=0, find julian centuries from J2000.0 TT.
+    jd = astro_time.g_date2jd(yr=yr, mo=mo, d=day)
     # print(f"jd= {jd:.10g}") # troubleshooting print
     jd_rise = jd + 6 / 24 - lon / 360.0
 

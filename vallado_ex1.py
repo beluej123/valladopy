@@ -237,8 +237,8 @@ def test_ex5_2_sunRiseSet():
     deg2rad = math.pi / 180  # used multiple times
     rad2deg = 180 / math.pi  # used multiple times
 
-    # two choices for julian date; julian_date() and convTime().
-    #   julian_date() calculates only the julian date, while
+    # two choices for julian date; g_date2jd() and convTime().
+    #   g_date2jd() calculates only the julian date, while
     #   convTime() calculates both julian date, julian centuries since J2000.0.
     yr, mo, day = 1996, 3, 23
     lat = 40.0  # site lattitude
@@ -616,7 +616,7 @@ def test_lambert_izzo():
     GM_sun_km = 1.32712428e11  # [km^3/s^2], Vallado [2] p.1043, tbl.D-5
     GM_sun_au = GM_sun_km / (au**3)
     mu = GM_sun_au
-    
+
     # *********** Braeuning example 5.4 *********
     print(f"** Test of Braeunig's examples, ex5.3, ex5.4; Earth->Mars: **")
     tof = 207 * 24 * 60 * 60  # [s] given, time of flight; 207 days
@@ -640,10 +640,10 @@ def test_lambert_izzo():
     )
     v1_mag, v2_mag = [np.linalg.norm(v) for v in [v1_vec, v2_vec]]
 
-    np.set_printoptions(precision=5)  # numpy has spectial print provisions
+    np.set_printoptions(precision=5)  # numpy has special print provisions
     print(f"v1_vec= {v1_vec*au} [km/s]")  # note conversion au->km
     print(f"v2_vec= {v2_vec*au} [km/s]")  # note conversion au->km
-    
+
     orbit_energy = ((v1_mag**2) / 2) - (mu / r1_mag)
     sma = -mu / (2 * orbit_energy)
     print(f"transfer semimajor axis, sma= {sma*au:.8g} [km]")
@@ -653,23 +653,21 @@ def test_lambert_izzo():
     # print(f"h_vec= {h_vec} [au^2/s], h_mag= {h_mag:.6g} [au^2/s]")
 
     p = (h_mag**2) / mu
-    print(
-        f"p= {p:.6g} [au], sma= {sma:.6g} [au], tof= {tof/(24*3600):.6g} [day]"
-    )
+    print(f"p= {p:.6g} [au], sma= {sma:.6g} [au], tof= {tof/(24*3600):.6g} [day]")
 
     ecc_vec = ((np.cross(v1_vec, h_vec)) / mu) - (r1_vec / r1_mag)
     ecc_mag = np.linalg.norm(ecc_vec)
     print(f"ecc_mag= {ecc_mag:.6g}")
-    
+
     # **************** Vallado 12-8 *************
     print(f"\n** Test of Vallado [4] example 12-8; Earth->Jupiter: **")
-    tof = 1.487*365 * 24 * 60 * 60  # [s] given, time of flight; 1.487 years
+    tof = 1.487 * 365 * 24 * 60 * 60  # [s] given, time of flight; 1.487 years
     # Ecliptic coordinates; Vallado [4], p.978, ex.12-8
     # r1_vec = np.array([146169549, -36666991, -644])  # [km]
-    r1_vec = np.array([146169549, -36666991, -644])/au  # [au]; @ Earth
+    r1_vec = np.array([146169549, -36666991, -644]) / au  # [au]; @ Earth
     r1_mag = np.linalg.norm(r1_vec)
     # r2_vec = np.array([-482178605, 627481965, 8221250])  # [km]
-    r2_vec = np.array([-482178605, 627481695, 8221250])/au  # [au]; @ Jupiter
+    r2_vec = np.array([-482178605, 627481695, 8221250]) / au  # [au]; @ Jupiter
     r2_mag = np.linalg.norm(r2_vec)
 
     v1_vec, v2_vec = izzo2015(
@@ -689,9 +687,9 @@ def test_lambert_izzo():
     np.set_printoptions(precision=5)  # numpy has spectial print provisions
     print(f"v1_vec= {v1_vec*au} [km/s]")  # note conversion au->km
     print(f"v2_vec= {v2_vec*au} [km/s]")  # note conversion au->km
-    
+
     # print(f"# of iterations {numiter}, time per iteration, tpi= {tpi:.6g} [s]")
-    
+
     orbit_energy = ((v1_mag**2) / 2) - (mu / r1_mag)
     sma = -mu / (2 * orbit_energy)
     print(f"transfer semimajor axis, sma= {sma:.8g} [au]")
@@ -701,9 +699,7 @@ def test_lambert_izzo():
     # print(f"h_vec= {h_vec} [au^2/s], h_mag= {h_mag:.6g} [au^2/s]")
 
     p = (h_mag**2) / mu
-    print(
-        f"p= {p:.6g} [au], sma= {sma:.6g} [au], tof= {tof/(24*3600):.6g} [day]"
-    )
+    print(f"p= {p:.6g} [au], sma= {sma:.6g} [au], tof= {tof/(24*3600):.6g} [day]")
 
     ecc_vec = ((np.cross(v1_vec, h_vec)) / mu) - (r1_vec / r1_mag)
     ecc_mag = np.linalg.norm(ecc_vec)

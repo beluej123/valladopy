@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-astro_time supports various time functions, but be mindful of the varous scales
+Support various time functions.  Be mindful of the various scales
     to measure time; see comments in Notes: below.
 Created on Sat Aug 20 17:34:45 2016, @author: Alex
 Edits 2024-August +, by Jeff Belue.
-TODO, Describe how this file is organized ...
 
 References:
 ----------
@@ -21,14 +20,6 @@ Notes:
     Generally, units shown in brackets [km, rad, deg, etc.].
     Generally, angles are saved in [rad], distance [km].
     
-    Supporting functions for the test functions below, may be found in other
-        files, for example vallad_func.py, astro_time.py, kepler.py etc...
-        Also note, the test examples are collected right after this document
-        block.  However, the example test functions are defined/enabled at the
-        end of this file.  Each example function is designed to be stand-alone,
-        but, if you use the function as stand alone you will need to copy the
-        imports...
-    
     For reference, some common timescales (from Vallado chap.3, & skyfield):
         From skyfield, https://rhodesmill.org/skyfield/time.html):
         UTC — Coordinated Universal Time (“Greenwich Time”)
@@ -43,9 +34,9 @@ import math
 import numpy as np
 
 
-def julian_date(yr, mo, d, hr=0, minute=0, sec=0.0, leap_sec=False):
+def g_date2jd(yr, mo, d, hr=0, minute=0, sec=0.0, leap_sec=False):
     """
-    Converts date & time (yr, month, day, hour, second) to julian date.
+    Convert gregorian date & time (yr, month, day, hour, second) to julian date.
     Valid for any time system (UT1, UTC, AT, etc.) but should be identified to
         avoid confusion.  Vallado [4], section 3.5, p.185, algorithm 14.
     Input Parameters:
@@ -60,7 +51,7 @@ def julian_date(yr, mo, d, hr=0, minute=0, sec=0.0, leap_sec=False):
                    Flag if time is during leap second
     Returns:
     -------
-        jd          : float date/time as julian date
+        jd       : float date/time as julian date
     """
 
     x = (7 * (yr + np.trunc((mo + 9) / 12))) / 4.0
@@ -98,12 +89,38 @@ def jd_convTime(yr, mo, d, hr=0, min=0, sec=0.0, c_type=0):
         jd        : float, date/time as julian date
         jd_cJ2000 : float, julian centuries from J2000.0 TT
     """
-    jd = julian_date(yr, mo, d, hr=hr, minute=min, sec=sec)
+    jd = g_date2jd(yr, mo, d, hr=hr, minute=min, sec=sec)
     if c_type == 0:
         jd_cJ2000 = (jd - 2451545.0) / 36525.0
     else:
         print(f"Unknown time conversion type; function jd_convTime().")
     return jd, jd_cJ2000
+
+
+def jd2g_date(jd):
+    """
+    Convert julian date to gregorian Date (y, mo, d, h, m, s).
+        Algorithm 22 in Vallado (Fourth Edition) Section 3.6.6, pg 202.
+
+    Input Parameters:
+    ----------
+        jd: float, Julian Date
+    Returns:
+    ----------
+        (year, month, day, hours, minutes, seconds): tuple
+    """
+    t1900 = (jd - 2415019.5) / 365.25
+    year = 1900 + np.trunc(t1900)
+    leap_years = np.trunc((year - 1900 - 1) * 0.25)
+    days = (jd - 2415019.5) - ((year - 1900) * 365.0 + leap_years)
+
+    if days < 1.0:
+        year = year - 1
+        leap_years = np.trunc((year - 1900 - 1) * 0.25)
+        days = (jd - 2415019.5) - ((year - 1900) * 365.0 + leap_years)
+
+    (month, day, hours, minutes, seconds) = days2ymdhms(days, year)
+    return (year, month, day, hours, minutes, seconds)
 
 
 def find_gmst(jd_ut1):
@@ -256,12 +273,11 @@ def dec_deg2hms(dec_deg):
 
     Input Parameters:
     ----------
-    ddegrees: float [deg]
+        dec_deg: float, decimal degrees
 
     Returns:
     -------
         hours, minutes, seconds : tuple float
-            hours, minutes, seconds
     """
     hours = int(dec_deg / 15)
     minutes = int((dec_deg % 15) * 4)
@@ -383,22 +399,18 @@ def ymd2doy(year, month, day):
 
 def doy2ymd(day_of_year, year):
     """
-    Computes the month and day, given the year and day of the year
+    NOT TESTED !! not sure about proper exit/break of while loop.
+    Computes the month and day, given the year and day of the year.
+    Vallado (Fourth Edition), section 3.6.4, pg 200.
 
-    Computes the month and day, given the year and day of the year. For
-    reference, see Section 3.6.4 in Vallado (Fourth Edition), pg 200
-
-    Parameters
+    Input Parameters:
     ----------
-    day_of_year: int
-        the day of the year
-    year: int
-        the year (needed for leap year test)
+        day_of_year: int, the day of the year
+        year: int, the year (needed for leap year test)
 
-    Returns
-    -------
-    (month, day): tuple
-        the month and day of the date
+    Returns:
+    ----------
+        (month, day): tuple, the month and day of the date
     """
     mos = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
     if is_leap_year(year):
@@ -415,9 +427,11 @@ def doy2ymd(day_of_year, year):
                 day = day_of_year
             else:
                 day = day_of_year - np.sum(mos[:idx])
-            return (month, day)
+            # return (month, day)
+            break
 
         idx += 1
+    return (month, day)
 
 
 def ymdhms2days(year, month, day, hour, minutes, seconds):
@@ -480,36 +494,3 @@ def days2ymdhms(days, year):
     (hours, minutes, seconds) = time2hms(tau)
 
     return (month, day, hours, minutes, seconds)
-
-
-def jd2gregorian(jd):
-    """
-    Computes the components of the Gregorian Date (y, mo, d, h, m, s) from
-    a Julian Date
-
-    Computes the components of the Gregorian Date (years, months, days, hours
-    minutes, seconds) from a Julian Date. For reference, see Algorithm 22 in
-    Vallado (Fourth Edition) Section 3.6.6 pg 202
-
-    Parameters
-    ----------
-    jd: double
-        the Julian Date
-
-    Returns
-    -------
-    (year, month, day, hours, minutes, seconds): tuple
-        the year, month, day, hours, minutes, seconds of the date/time
-    """
-    t1900 = (jd - 2415019.5) / 365.25
-    year = 1900 + np.trunc(t1900)
-    leap_years = np.trunc((year - 1900 - 1) * 0.25)
-    days = (jd - 2415019.5) - ((year - 1900) * 365.0 + leap_years)
-
-    if days < 1.0:
-        year = year - 1
-        leap_years = np.trunc((year - 1900 - 1) * 0.25)
-        days = (jd - 2415019.5) - ((year - 1900) * 365.0 + leap_years)
-
-    (month, day, hours, minutes, seconds) = days2ymdhms(days, year)
-    return (year, month, day, hours, minutes, seconds)
