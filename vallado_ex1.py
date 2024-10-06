@@ -722,11 +722,17 @@ def test_ex12_8_patchedConic():
         delta heliocentric velocity vector for Jupiter fly-by
         turning angle
         closest radius of Jupiter fly-by
+    Internal Parameters:
+    ----------
+        r_p1_vec, v_p1_vec : planet departure position/velocity
+        r_s1_vec, v_s1_vec : satellite departure position/velocity
+        r_t1_vec, v_t1_vec : transfer departure position/velocity (lambert)
+
     Returns:
-    -------
+    ----------
         None
     Notes:
-    -------
+    ----------
         Voyager Jupiter gravity assist/fly-by enroute to Saturn fly-by.
         Use date/time as object for ease of user reading string date/time.
         References: see list at file beginning.
@@ -759,13 +765,17 @@ def test_ex12_8_patchedConic():
         x[0].minute,
         x[0].second,
     )
-    date1 = x[0]
     print(f"Ephemeris date, x[0]= {x[0]}")
-    r_vec, v_vec, r1_vec, v1_vec = planet_rv(planet_id=2, date_=date1)
+
+    # equatorial & ecliptic: r_ and v_
+    # r_p1_vec, v_p1_vec; planet r/v at departure
+    r_vec, v_vec, r1_vec, v1_vec = planet_rv(planet_id=2, date_=x[0])
     print(f"Equatorial frame:")
     print(f"Earth, r_vec= {r_vec} [au]\nEarth, v_vec= {v_vec} [au/dau]")
     print(f"Ecliptic frame:")
     print(f"Earth, r1_vec= {r1_vec} [au]\nEarth, v1_vec= {v1_vec} [au/day]")
+
+    return  # test_ex12_8_patchedConic()
 
 
 def Main():  # helps editor navigation :--)
@@ -785,5 +795,5 @@ if __name__ == "__main__":
     # test_ex6_2_bielliptic()  # bi-elliptic transfer, example 6-2
     # test_ex6_3_one_tan_burn()  # one-tangent transfer, example 6-3
     # test_planet_rv()  # test various dates and planets for planet_rv()
-    test_lambert_izzo()  # lambert solver by izzo
-    # test_ex12_8_patchedConic()  # NOT Finished, gravity assist, Jupiter fly-by
+    # test_lambert_izzo()  # lambert solver by izzo
+    test_ex12_8_patchedConic()  # NOT Finished, gravity assist, Jupiter fly-by

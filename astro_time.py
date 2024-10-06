@@ -1,20 +1,11 @@
-# -*- coding: utf-8 -*-
 """
-Support various time functions.  Be mindful of the various scales
-    to measure time; see comments in Notes: below.
 Created on Sat Aug 20 17:34:45 2016, @author: Alex
 Edits 2024-August +, by Jeff Belue.
+Support various time functions.  Be mindful of the various scales
+    to measure time; see comments in Notes: below.
 
-References:
-----------
-    [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
-        Fundamentals of Astrodynamics. Dover Publications Inc.
-    [2] Vallado, David A., (2013, 4th ed.).
-        Fundamentals of Astrodynamics and Applications. Microcosm Press.
-    [3] Curtis, H.W. (2009 2nd ed.).
-        Orbital Mechanics for Engineering Students. Elsevier Ltd.
-    [4] Vallado, David A., (2022, 5th ed.).
-        Fundamentals of Astrodynamics and Applications. Microcosm Press.
+
+References: (see references.py for references list)
 Notes:
 ----------
     Generally, units shown in brackets [km, rad, deg, etc.].
@@ -34,16 +25,22 @@ import math
 import numpy as np
 
 
-def g_date2jd(yr, mo, d, hr=0, minute=0, sec=0.0, leap_sec=False):
+def g_date2jd(yr, mo, d, hr=0, minute=0, sec=0.0, leap_sec=False) -> float:
     """
-    Convert gregorian date & time (yr, month, day, hour, second) to julian date.
+    Convert gregorian/Julian date & time (yr, month, day, hour, second) to julian date.
+    This function is tricky if you need to go to negative years (BCE).  To me, the
+        computer implementation details in the literature need to be more specific.
+        Note, the Vallado [4] implementation does not cover BCE.
     Valid for any time system (UT1, UTC, AT, etc.) but should be identified to
-        avoid confusion.  Vallado [4], section 3.5, p.185, algorithm 14.
+        avoid confusion.  This routine superceeds Vallado [4], algorithm 14.
+    For details on addressing the full Julian date range note;
+        Wertz [5], https://en.wikipedia.org/wiki/Julian_day, Meeus [6], and
+        Duffett-Smith [7] for a good computer step-by-step implementation.
     Input Parameters:
     ----------
         yr       : int, four digit year
         mo       : int, month
-        d        :  int, day of month
+        d        : int, day of month
         hr       : int, hour (24-hr based)
         minute   : int, minute
         sec      : float, seconds
@@ -51,18 +48,56 @@ def g_date2jd(yr, mo, d, hr=0, minute=0, sec=0.0, leap_sec=False):
                    Flag if time is during leap second
     Returns:
     -------
-        jd       : float date/time as julian date
+        jd       : float, date/time as julian date
     """
+    # commented code, below, is superceeded.
+    #   the new code allows the "full" julian range; negative dates.
+    # x = (7 * (yr + np.trunc((mo + 9) / 12))) / 4.0
+    # y = (275 * mo) / 9.0
+    # if leap_sec:
+    #     t = 61.0
+    # else:
+    #     t = 60.0
+    # z = (sec / t + minute) / 60.0 + hr
+    # jd = 367 * yr - np.trunc(x) + np.trunc(y) + d + 1721013.5 + z / 24.0
 
-    x = (7 * (yr + np.trunc((mo + 9) / 12))) / 4.0
-    y = (275 * mo) / 9.0
-    if leap_sec:
-        t = 61.0
+    # verify year is > -4712
+    if yr <= (-4713):
+        print(f"** Year must be > -4712 for this algorithm; g_date2jd(). **")
+        raise ValueError("Year must be > -4712.")
+
+    # verify hr, minute, seconds are in bounds
+    if (hr >= 24) or (minute > 60) or (sec >= 60):
+        print(f"** Error in g_date2jd() function. **")
+        print(f"** hours, minutes, or seconds out of bounds. **")
+        raise ValueError("hours, minutes, or seconds out of bounds; g_date2jd().")
+
+    yr_d = yr
+    if mo < 3:
+        yr_d = yr - 1
+    mo_d = mo
+    if mo < 3:
+        mo_d = mo + 12
+
+    a_ = math.trunc(yr_d / 100)
+    b_ = 0.0  # in the Julian calendar, b=0
+    # check for gregorian calendar date
+    if (
+        (yr > 1582)
+        or ((yr == 1582) and (mo > 10))
+        or ((yr == 1582) and (mo == 10) and (d > 15))
+    ):
+        b_ = 2 - a_ + math.trunc(a_ / 4)
+    if yr_d < 0:
+        c_ = math.trunc((365.25 * yr_d) - 0.75)
     else:
-        t = 60.0
-    z = (sec / t + minute) / 60.0 + hr
-    jd = 367 * yr - np.trunc(x) + np.trunc(y) + d + 1721013.5 + z / 24.0
-    return jd
+        c_ = math.trunc(365.25 * yr_d)
+
+    d_ = math.trunc(30.6001 * (mo_d + 1))
+    d1 = d + (hr / 24) + (minute / 1440) + (sec / 86400)
+    jd = b_ + c_ + d_ + d1 + 1720994.5
+
+    return jd  # g_date2jd()
 
 
 def jd_convTime(yr, mo, d, hr=0, min=0, sec=0.0, c_type=0):
@@ -90,6 +125,7 @@ def jd_convTime(yr, mo, d, hr=0, min=0, sec=0.0, c_type=0):
         jd_cJ2000 : float, julian centuries from J2000.0 TT
     """
     jd = g_date2jd(yr, mo, d, hr=hr, minute=min, sec=sec)
+    jd_cJ2000 = 0.0  # make sure variable is assigned
     if c_type == 0:
         jd_cJ2000 = (jd - 2451545.0) / 36525.0
     else:
@@ -494,3 +530,72 @@ def days2ymdhms(days, year):
     (hours, minutes, seconds) = time2hms(tau)
 
     return (month, day, hours, minutes, seconds)
+
+
+def test_julian_date():
+    """
+    Test julian date function called for in Curtis [3] p.277, example 5.4.
+    The julian date is tricky if you need negative years (BCE).
+        Neither Curtis [3] nor Vallado [4] implementations cover BCE.
+        g_date2jd() superceeds Curtis [3] and Vallado [4], algorithm 14.
+    Given:
+        calendar date : 2004-05-12 14:45:30 UT
+    Find:
+        julian date
+    Notes:
+    ----------
+        References: (see references.py for references list)
+    Return:
+    -------
+        None
+    """
+    print(f"\nTest g_date2jd() function, Curtis example 5.4:")
+    date_UT = [2004, 5, 12, 14, 45, 30]  # [UT] date/time python list
+    date_UT1 = [1600, 12, 31, 0, 0, 0]  # [UT] date/time python list
+    date_UT2 = [837, 4, 10, 7, 12, 0]  # [UT] date/time python list
+    date_UT3 = [0, 1, 1, 0, 0, 0]  # [UT] date/time python list
+    date_UT4 = [-1001, 8, 17, 21, 36, 0]  # [UT] date/time python list
+    date_UT5 = [-4712, 1, 1, 12, 0, 0]  # [UT] date/time python list
+
+    yr, mo, d, hr, minute, sec = date_UT
+    JD = g_date2jd(yr=yr, mo=mo, d=d, hr=hr, minute=minute, sec=sec)
+    print(f"date_UT= {date_UT}")
+    print(f"julian_date= {JD:.10g}")
+
+    yr, mo, d, hr, minute, sec = date_UT1
+    JD1 = g_date2jd(yr=yr, mo=mo, d=d, hr=hr, minute=minute, sec=sec)
+    print(f"\ndate_UT= {date_UT1}")
+    print(f"julian_date= {JD1:.8g}")
+
+    yr, mo, d, hr, minute, sec = date_UT2
+    JD2 = g_date2jd(yr=yr, mo=mo, d=d, hr=hr, minute=minute, sec=sec)
+    print(f"date_UT= {date_UT2}")
+    print(f"julian_date= {JD2:.8g}")
+
+    yr, mo, d, hr, minute, sec = date_UT3
+    JD3 = g_date2jd(yr=yr, mo=mo, d=d, hr=hr, minute=minute, sec=sec)
+    print(f"date_UT= {date_UT3}")
+    print(f"julian_date= {JD3:.8g}")
+
+    yr, mo, d, hr, minute, sec = date_UT4
+    JD4 = g_date2jd(yr=yr, mo=mo, d=d, hr=hr, minute=minute, sec=sec)
+    print(f"date_UT= {date_UT4}")
+    print(f"julian_date= {JD4:.8g}")
+
+    yr, mo, d, hr, minute, sec = date_UT5
+    JD5 = g_date2jd(yr=yr, mo=mo, d=d, hr=hr, minute=minute, sec=sec)
+    print(f"date_UT= {date_UT5}")
+    print(f"julian_date= {JD5:.8g}")
+
+    return None
+
+
+def main():
+    # placeholder at the end of the file; helps my edit navigation
+    return None
+
+
+# use the following to test/examine functions
+if __name__ == "__main__":
+
+    test_julian_date()  # test

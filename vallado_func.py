@@ -789,8 +789,8 @@ def planet_rv(planet_id, date_):
     # TA_rad = 2 * math.atan(math.sqrt((1 + ecc) / (1 - ecc)) * math.tan(E_rad / 2))
     TA_deg = TA_rad * rad2deg
 
-    print(f"E_deg= {E_deg:.8g} [deg]")
-    print(f"TA_deg= {TA_deg:.8g} [deg]")
+    # print(f"E_deg= {E_deg:.8g} [deg]")
+    # print(f"TA_deg= {TA_deg:.8g} [deg]")
 
     # s=semi-parameter (aka p), sma=semi-major axis (aka a)
     sp = sma * (1 - ecc**2)
@@ -807,22 +807,23 @@ def planet_rv(planet_id, date_):
     r_vec = np.ravel(r_vec)  # [au] convert column array to row vector
     v_vec = np.ravel(v_vec)  # [au/s]
     v_vec *= 86400  # [au/day] convert seconds to days
-    print(f"\nEquatorial/Heliocentric, XYZ")
-    print(f"r_vec= {r_vec} [au]")
-    print(f"v_vec= {v_vec} [au/day]")  # convert, seconds to days
+    # print(f"\nEquatorial/Heliocentric, XYZ")
+    # print(f"r_vec= {r_vec} [au]")
+    # print(f"v_vec= {v_vec} [au/day]")  # convert, seconds to days
 
     # rotate r_vec and v_vec from equatorial to ecliptic/heliocentric
     #   ecliptic angle, Vallado [4] p.217, eqn.3-69.
     e_angle = ecliptic_angle(jd_cJ2000)
-    print(f"ecliptic angle, e_angle= {e_angle:.8g} [deg]")
+    # print(f"ecliptic angle, e_angle= {e_angle:.8g} [deg]")
 
     r1_vec = r_vec @ rot_matrix(angle=-e_angle * deg2rad, axis=0)  # [au]
     v1_vec = v_vec @ rot_matrix(angle=-e_angle * deg2rad, axis=0)  # [au/s]
     v1_vec *= 86400  # [au/day] convert seconds to days
-    print(f"\nEcliptic/Heliocentric, XYZ")
-    print(f"r1_vec= {r1_vec} [au]")
-    print(f"v1_vec= {v1_vec} [au/day]")
+    # print(f"\nEcliptic/Heliocentric, XYZ")
+    # print(f"r1_vec= {r1_vec} [au]")
+    # print(f"v1_vec= {v1_vec} [au/day]")
 
+    # equatorial = r_vec, v_vec; ecliptic = r_vec, v_vec
     return r_vec, v_vec, r1_vec, v1_vec
 
 
