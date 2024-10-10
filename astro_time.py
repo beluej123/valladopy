@@ -5,13 +5,15 @@ Support various time functions.  Be mindful of the various scales
     to measure time; see comments in Notes: below.
 
 
-References: (see references.py for references list)
+References:
+----------
+    See references.py for references list
 Notes:
 ----------
     Generally, units shown in brackets [km, rad, deg, etc.].
     Generally, angles are saved in [rad], distance [km].
     
-    For reference, some common timescales (from Vallado chap.3, & skyfield):
+    Note some common timescales; Vallado [4] chap.3, & skyfield:
         From skyfield, https://rhodesmill.org/skyfield/time.html):
         UTC — Coordinated Universal Time (“Greenwich Time”)
         UT1 — Universal Time, usually a Julian date
@@ -27,15 +29,16 @@ import numpy as np
 
 def g_date2jd(yr, mo, d, hr=0, minute=0, sec=0.0, leap_sec=False) -> float:
     """
-    Convert gregorian/Julian date & time (yr, month, day, hour, second) to julian date.
-    This function is tricky if you need to go to negative years (BCE).  To me, the
-        computer implementation details in the literature need to be more specific.
-        Note, the Vallado [4] implementation does not cover BCE.
+    Convert Gregorian/Julian date & time (yr, month, day, hour, second) to julian date.
+    This function accomadates both Julian and Gregorian calendars and allows
+        negative years (BCE).
+    To me, the computer implementation details in the general literature need to
+        be more specific.  Vallado [4] algorithm 14, does not address the
+        complete julian range including BCE.  For details on addressing the full
+        Julian date range note; Wertz [5], https://en.wikipedia.org/wiki/Julian_day,
+        Meeus [6], and Duffett-Smith [7] for a good computer step-by-step implementation.
     Valid for any time system (UT1, UTC, AT, etc.) but should be identified to
         avoid confusion.  This routine superceeds Vallado [4], algorithm 14.
-    For details on addressing the full Julian date range note;
-        Wertz [5], https://en.wikipedia.org/wiki/Julian_day, Meeus [6], and
-        Duffett-Smith [7] for a good computer step-by-step implementation.
     Input Parameters:
     ----------
         yr       : int, four digit year
@@ -48,8 +51,15 @@ def g_date2jd(yr, mo, d, hr=0, minute=0, sec=0.0, leap_sec=False) -> float:
                    Flag if time is during leap second
     Returns:
     -------
-        jd       : float, date/time as julian date
+        jd       : float date/time as julian date
+    Notes:
+    ----------
+        Remember, the Gregorian calendar starts 1582-10-15 (Friday); skips 10
+        days...  Also note, The Gregorian calendar is off by 26 seconds per
+        year.  By 4909 it will be a day ahead of the solar year.
     """
+    import math as ma
+
     # commented code, below, is superceeded.
     #   the new code allows the "full" julian range; negative dates.
     # x = (7 * (yr + np.trunc((mo + 9) / 12))) / 4.0
@@ -60,7 +70,6 @@ def g_date2jd(yr, mo, d, hr=0, minute=0, sec=0.0, leap_sec=False) -> float:
     #     t = 60.0
     # z = (sec / t + minute) / 60.0 + hr
     # jd = 367 * yr - np.trunc(x) + np.trunc(y) + d + 1721013.5 + z / 24.0
-
     # verify year is > -4712
     if yr <= (-4713):
         print(f"** Year must be > -4712 for this algorithm; g_date2jd(). **")
@@ -79,7 +88,7 @@ def g_date2jd(yr, mo, d, hr=0, minute=0, sec=0.0, leap_sec=False) -> float:
     if mo < 3:
         mo_d = mo + 12
 
-    a_ = math.trunc(yr_d / 100)
+    a_ = ma.trunc(yr_d / 100)
     b_ = 0.0  # in the Julian calendar, b=0
     # check for gregorian calendar date
     if (
@@ -87,17 +96,17 @@ def g_date2jd(yr, mo, d, hr=0, minute=0, sec=0.0, leap_sec=False) -> float:
         or ((yr == 1582) and (mo > 10))
         or ((yr == 1582) and (mo == 10) and (d > 15))
     ):
-        b_ = 2 - a_ + math.trunc(a_ / 4)
+        b_ = 2 - a_ + ma.trunc(a_ / 4)
     if yr_d < 0:
-        c_ = math.trunc((365.25 * yr_d) - 0.75)
+        c_ = ma.trunc((365.25 * yr_d) - 0.75)
     else:
-        c_ = math.trunc(365.25 * yr_d)
+        c_ = ma.trunc(365.25 * yr_d)
 
-    d_ = math.trunc(30.6001 * (mo_d + 1))
+    d_ = ma.trunc(30.6001 * (mo_d + 1))
     d1 = d + (hr / 24) + (minute / 1440) + (sec / 86400)
     jd = b_ + c_ + d_ + d1 + 1720994.5
 
-    return jd  # g_date2jd()
+    return jd
 
 
 def jd_convTime(yr, mo, d, hr=0, min=0, sec=0.0, c_type=0):
@@ -463,6 +472,8 @@ def doy2ymd(day_of_year, year):
                 day = day_of_year
             else:
                 day = day_of_year - np.sum(mos[:idx])
+            # commented out return, not great practice;
+            #   does not allow proper linting
             # return (month, day)
             break
 

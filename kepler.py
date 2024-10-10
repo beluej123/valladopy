@@ -19,17 +19,9 @@ Notes:
 
 References:
 ----------
-    [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
-        Fundamentals of Astrodynamics. Dover Publications Inc.
-    [2] Vallado, David A., (2013, 4th ed.).
-        Fundamentals of Astrodynamics and Applications. Microcosm Press.
-    [3] Curtis, H.W. (2009 2nd ed.).
-        Orbital Mechanics for Engineering Students. Elsevier Ltd.
-    [4] Vallado, David A., (2022, 5th ed.).
-        Fundamentals of Astrodynamics and Applications. Microcosm Press.
+    See references.py for references list.
 
 Orbital Elements Naming Collection:
-
 Start with Kepler coe (classic orbital elements).
     https://ssd.jpl.nasa.gov/planets/approx_pos.html
     sma    : float [km or au] semi-major axis (aka a)
@@ -501,10 +493,12 @@ def coe2rv(p, ecc, inc, raan, aop, anom, mu=Earth.mu):
     Input Parameters:
     ----------
         p    : float, [km] semi-parameter
+                p=h^2 / mu
         ecc  : float, [--] eccentricity
         inc  : float, [rad] inclination
         raan : float, [rad] right ascension of the ascending node
-        aop  : float, [rad] argument of perigee
+        aop  : float, [rad] argument of periapsis (aka w, or omega)
+                w=w_bar-RAAN; undefined for RAAN=0, undefined for circular
         anom : float, [rad] true angle/anomaly (aka TA)
         mu   : float, [km^3/s^2] optional, Gravitational parameter
                 default= Earth.mu in solarsys.py
@@ -558,11 +552,21 @@ def coe2rv(p, ecc, inc, raan, aop, anom, mu=Earth.mu):
     return r_ijk, v_ijk
 
 
-def findTOF(r0, r, p, mu=Earth.mu):
+def findTOF(r0, r1, p, mu):
     """
     Find tof (time-of-flight) between two position vectors in IJK frame.
-    Reference Vallado [2], section 2.8, p.126, algorithm 11.
+        Vallado [2], section 2.8, algorithm 11, p.126.
+        Vallado [4], section 2.8, algorithm 11, pp.128; problem 2.7, p.130.
 
+    Input Parameters:
+    ----------
+        r0  : numpy.matrix (3x1), Initial position vector
+        r   : numpy.matrix (3x1), Second position vector
+        p   : float, [] semi-parameter (aka sp)
+        mu  : float, [km^3/s^2] gravitational parameter
+    Returns:
+    -------
+        TOF : float, time-of-flight [seconds]
     Note:
     ----------
         This routine requires a value for sp (semi-parameter, aka p), but in
@@ -572,48 +576,36 @@ def findTOF(r0, r, p, mu=Earth.mu):
         that parabolic and hyperbolic relations come out of the ellipse limits.
 
         As long as consistant units are passed to this routine unit definitions
-        are not explicitely required.
-
-    Parameters
-    ----------
-        r0: numpy.matrix (3x1), Initial position vector
-        r: numpy.matrix (3x1), Second position vector
-        p: double, Semi-parameter
-        mu: double, optional, default=3.986004415E5 [Earth.mu in solarsys.py]
-            Gravitational parameter [km^3/s^2]
-
-    Returns
-    -------
-        TOF: double, time-of-flight [seconds]
+        are not required.
     """
 
     r0_mag = np.linalg.norm(r0)
-    r_mag = np.linalg.norm(r)
+    r1_mag = np.linalg.norm(r1)
 
-    cosdv = np.dot(r0.T, r) / (r0_mag * r_mag)  # note r0.T = transpose
+    cosdv = np.dot(r0.T, r1) / (r0_mag * r1_mag)  # note r0.T = transpose
     del_anom = np.arccos(cosdv)
-    k = r0_mag * r_mag * (1.0 - cosdv)
-    l = r0_mag + r_mag
-    m = r0_mag * r_mag * (1.0 + cosdv)
+    k = r0_mag * r1_mag * (1.0 - cosdv)
+    l = r0_mag + r1_mag
+    m = r0_mag * r1_mag * (1.0 + cosdv)
 
     a = m * k * p / ((2.0 * m - l * l) * p * p + 2.0 * k * l * p - k * k)
-    f = 1.0 - (r_mag / p) * (1.0 - cosdv)
-    g = r0_mag * r_mag * np.sin(del_anom) / (np.sqrt(mu * p))
+    f = 1.0 - (r1_mag / p) * (1.0 - cosdv)
+    g = r0_mag * r1_mag * np.sin(del_anom) / (np.sqrt(mu * p))
 
     if a > 0.0:
         if a == np.inf:
-            c = np.sqrt(r0_mag**2 + r_mag**2 - 2.0 * r0_mag * r_mag * cosdv)
-            s = (r0_mag + r_mag + c) * 0.5
+            c = np.sqrt(r0_mag**2 + r1_mag**2 - 2.0 * r0_mag * r1_mag * cosdv)
+            s = (r0_mag + r1_mag + c) * 0.5
             TOF = (2.0 / 3.0) * np.sqrt(0.5 * s**3 / mu) * (1.0 - ((s - c) / s) ** 1.5)
             return TOF
         else:
             f_dot = (
                 np.sqrt(mu / p)
                 * np.tan(0.5 * del_anom)
-                * ((1.0 - cosdv) / p - 1.0 / r0_mag - 1 / r_mag)
+                * ((1.0 - cosdv) / p - 1.0 / r0_mag - 1 / r1_mag)
             )
             cosde = 1.0 - (r0_mag / a) * (1.0 - f)
-            sinde = (-r0_mag * r_mag * f_dot) / (np.sqrt(mu * a))
+            sinde = (-r0_mag * r1_mag * f_dot) / (np.sqrt(mu * a))
             del_E = np.arccos(cosde)
             TOF = g + np.sqrt(a**3 / mu) * (del_E - sinde)
             return TOF
@@ -631,9 +623,8 @@ def findTOF_a(r0, r1, p, mu=Earth.mu):
     """
     Same as findTOF() except this function returns internal calculations
     allowing user to understand orbit type; range of sp (semi-parameter).
-
-    Find tof (time-of-flight) between two position vectors in IJK frame.
-    Reference Vallado [2], section 2.8, p.126, algorithm 11.
+        Vallado [2], section 2.8, algorithm 11, p.126.
+        Vallado [4], section 2.8, algorithm 11, pp.128; problem 2.7, p.130.
 
     Note:
     ----------

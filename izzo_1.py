@@ -3,6 +3,7 @@ Algorithm devised by Izzo, circa 2015.
 Vallado [4] (2022), estensively discusses other Lambert solver methods; section 7.6.
 This file (filename changed) copied from LamberHub (isso.py) via GitHub, 2024-August.
 2024-October +, minor edits & ref updates by Jeff Belue.
+    TODO test performance with numba njit enabled; commented out in the code.
 
     All credits of the implementation go to Juan Luis Cano Rodríguez and the
     poliastro development team, from which this routine inherits. Some changes
@@ -13,14 +14,7 @@ This file (filename changed) copied from LamberHub (isso.py) via GitHub, 2024-Au
 
 References:
 ----------
-    [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
-        Fundamentals of Astrodynamics. Dover Publications Inc.
-    [2] Vallado, David A., (2013, 4th ed.).
-        Fundamentals of Astrodynamics and Applications. Microcosm Press.
-    [3] Curtis, H.W. (2009 2nd ed.).
-        Orbital Mechanics for Engineering Students. Elsevier Ltd.
-    [4] Vallado, David A., (2022, 5th ed.).
-        Fundamentals of Astrodynamics and Applications. Microcosm Press.
+    See references.py for references list.
 """
 
 import numpy as np

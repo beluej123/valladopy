@@ -1,5 +1,5 @@
 """
-Collection of Vallado python solutions to examples and problems; called as test_...
+Vallado python solutions to examples and problems.
 
 Notes:
 ----------
@@ -23,14 +23,7 @@ Notes:
 
 References:
 ----------
-    [1] BMWS; Bate, R. R., Mueller, D. D., White, J. E., & Saylor, W. W. (2020, 2nd ed.).
-        Fundamentals of Astrodynamics. Dover Publications Inc.
-    [2] Vallado, David A., (2013, 4th ed.).
-        Fundamentals of Astrodynamics and Applications. Microcosm Press.
-    [3] Curtis, H.W. (2009 2nd ed.).
-        Orbital Mechanics for Engineering Students. Elsevier Ltd.
-    [4] Vallado, David A., (2022, 5th ed.).
-        Fundamentals of Astrodynamics and Applications. Microcosm Press.
+    See references.py for references list.
 """
 
 import math
@@ -116,8 +109,8 @@ def test_prb2_7_tof() -> None:
     """
     print(f"\nTest Vallado [2] time-of-flight, prob 2.7:")
     mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado [2] p.1041, tbl.D-3
-    au = 149597870.7  # [km/au] Vallado [2] p.1043, tbl.D-5
-    r_earth = 6378.1363  # [km] earth radius; Vallado [2] p.1041, tbl.D-3
+    # au = 149597870.7  # [km/au] Vallado [2] p.1043, tbl.D-5
+    # r_earth = 6378.1363  # [km] earth radius; Vallado [2] p.1041, tbl.D-3
 
     r0_vec = np.array([-2574.9533, 4267.0671, 4431.5026])  # [km]
     r1_vec = np.array([2700.6738, -4303.5378, -4358.2499])  # [km]
@@ -125,12 +118,11 @@ def test_prb2_7_tof() -> None:
     r0_mag = np.linalg.norm(r0_vec)
     r1_mag = np.linalg.norm(r1_vec)
     # TODO calculate delta true anomalies...
-    cosdv = np.dot(r0_vec.T, r1_vec) / (
-        r0_mag * r1_mag
-    )  # note r0_vec.T = transpose of r0_vec
+    # note r0_vec.T = transpose of r0_vec
+    cosdv = np.dot(r0_vec.T, r1_vec) / (r0_mag * r1_mag)
     print(f"Delta true anomaly's, {math.acos(cosdv)*180/math.pi:.6g} [deg]")
 
-    tof = findTOF(r0=r0_vec, r=r1_vec, p=sp, mu=mu_earth_km)
+    tof = findTOF(r0=r0_vec, r1=r1_vec, p=sp, mu=mu_earth_km)
     print(f"Time of flight, tof= {tof:.8g} [s]")
     return
 
@@ -138,8 +130,8 @@ def test_prb2_7_tof() -> None:
 def test_prb2_7a_tof(plot_sp=False) -> None:
     """
     Find time of flight (tof) and orbit parameter limits.
-        Note Vallado, problem 2.7, p.128; tof, section 2.8, p.126, algorithm 11.
-        Note BMWS, sma as a function of sp, section 5.4.2, p.204.
+        Vallado[4], section 2.8, problem 2.7, p.130; algorithm 11, pp.128.
+        BMWS, sma as a function of sp, section 5.4.2, p.204.
 
     Notes:
     ----------
@@ -147,7 +139,7 @@ def test_prb2_7a_tof(plot_sp=False) -> None:
         defining orbital energy.  Since sp is given ths routine explores the
         limits of orbit definition by looking at ellipse limits.
 
-    Assume r0 in the vicinity of earth; thus assume
+    Assume r0 in the vicinity of earth; thus mu=earth
     Choose v0
     """
 
@@ -787,7 +779,7 @@ if __name__ == "__main__":
     # test_ex2_1KeplerE()  # kepler ellipse solve for eccentric anomaly
     # test_ex2_4_keplerUni()  # kepler propagation; Kepler universal variables
     # test_prb2_7_tof()  # time of flight, problem 2-7
-    # test_prb2_7a_tof(plot_sp=False)  # time-of-flight; plot sma vs. sp
+    test_prb2_7a_tof(plot_sp=False)  # time-of-flight; plot sma vs. sp
     # test_ex5_1_sunPosition()  # sun position
     # test_ex5_2_sunRiseSet()  # sunrise sunset
     # test_ex5_5_planetLocation()  # planet location
@@ -796,4 +788,4 @@ if __name__ == "__main__":
     # test_ex6_3_one_tan_burn()  # one-tangent transfer, example 6-3
     # test_planet_rv()  # test various dates and planets for planet_rv()
     # test_lambert_izzo()  # lambert solver by izzo
-    test_ex12_8_patchedConic()  # NOT Finished, gravity assist, Jupiter fly-by
+    # test_ex12_8_patchedConic()  # NOT Finished, gravity assist, Jupiter fly-by
