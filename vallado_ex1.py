@@ -703,6 +703,7 @@ def test_lambert_izzo():
 def test_ex12_8_patchedConic():
     """
     Test Jupiter fly-by. Vallado [4] example 12-8, p.978.
+    See Curtis [3] example 8.8, 8.9, 8.10, for patched conic comparisons.
 
     Given:
     ----------
