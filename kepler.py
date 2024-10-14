@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created Sun Jan 31 16:41:34 2016, @author: Alex
 Edits 2024-08-21 +, Jeff Belue.
@@ -66,6 +65,7 @@ Symbol & meaning [1 au= 149597870.700 km, 1 day= 86400.0 s]:
     AD     Apoapsis distance (au)
     PR     Sidereal orbit period (day)
 """
+
 import math
 
 import numpy as np
@@ -634,13 +634,13 @@ def findTOF_a(r0, r1, p, mu=Earth.mu):
         on ellipse orbit; parabolic and hyperbolic relations come out of
         the ellipse limits.
 
-    Parameters
+    Parameters:
     ----------
-    r0: numpy.matrix (3x1), Initial position vector
-    r1: numpy.matrix (3x1), Second position vector
-    p : float, Semi-parameter
-    mu: float, optional, default=3.986004415E5 [Earth.mu in solarsys.py]
-        Gravitational parameter [km^3/s^2]
+        r0: numpy.matrix (3x1), Initial position vector
+        r1: numpy.matrix (3x1), Second position vector
+        p : float, Semi-parameter
+        mu: float, optional, default=3.986004415E5 [Earth.mu in solarsys.py]
+            Gravitational parameter [km^3/s^2]
 
     Returns
     -------
@@ -698,6 +698,74 @@ def findTOF_a(r0, r1, p, mu=Earth.mu):
     else:
         TOF = None
         return TOF, a, sp_i, sp_ii
+
+
+def findTOF_b(r0_mag, r1_mag, delta_ta, sp, mu):
+    """
+    Find tof (time-of-flight) between two position magnitudes & delta_ta
+        Vallado [2], section 2.8, algorithm 11, p.126.
+        Vallado [4], section 2.8, algorithm 11, pp.128; problem 2.7, p.130.
+
+    Parameters:
+    ----------
+        r0_mag   : float, [km] initial position
+        r1_mag   : float, [km] second position
+        delta_ta : float, [rad] delta true anomaly/angle
+        sp       : float, [km] semi-parameter (aka p)
+        mu       : float, [km^3/s^2] gravitational parameter
+    Returns:
+    -------
+        TOF      : float, time-of-flight [seconds]
+    Note:
+    ----------
+        This routine requires a value for sp (semi-parameter, aka p), but in
+        practice ecc (eccentricity) and or sma (semi-major axis) must be
+        chosen to completely define the orbit -  to understand the sp limits
+        see findTOF_a() which returns sp limits on ellipse orbit, noting
+        that parabolic and hyperbolic relations come out of the ellipse limits.
+
+        As long as consistant units are passed to this routine unit definitions
+        are not required.
+    """
+
+    # r0_mag = np.linalg.norm(r0)
+    # r1_mag = np.linalg.norm(r1)
+    # cosdv = np.dot(r0.T, r1) / (r0_mag * r1_mag)  # note r0.T = transpose
+
+    del_anom = delta_ta
+    cosdv = math.cos(delta_ta)
+    k = r0_mag * r1_mag * (1.0 - cosdv)
+    l = r0_mag + r1_mag
+    m = r0_mag * r1_mag * (1.0 + cosdv)
+
+    a = m * k * sp / ((2.0 * m - l * l) * sp * sp + 2.0 * k * l * sp - k * k)
+    f = 1.0 - (r1_mag / sp) * (1.0 - cosdv)
+    g = r0_mag * r1_mag * np.sin(del_anom) / (np.sqrt(mu * sp))
+
+    if a > 0.0:
+        if a == np.inf:
+            c = np.sqrt(r0_mag**2 + r1_mag**2 - 2.0 * r0_mag * r1_mag * cosdv)
+            s = (r0_mag + r1_mag + c) * 0.5
+            TOF = (2.0 / 3.0) * np.sqrt(0.5 * s**3 / mu) * (1.0 - ((s - c) / s) ** 1.5)
+            return TOF
+        else:
+            f_dot = (
+                np.sqrt(mu / sp)
+                * np.tan(0.5 * del_anom)
+                * ((1.0 - cosdv) / sp - 1.0 / r0_mag - 1 / r1_mag)
+            )
+            cosde = 1.0 - (r0_mag / a) * (1.0 - f)
+            sinde = (-r0_mag * r1_mag * f_dot) / (np.sqrt(mu * a))
+            del_E = np.arccos(cosde)
+            TOF = g + np.sqrt(a**3 / mu) * (del_E - sinde)
+            return TOF
+    elif a < 0.0:
+        coshdh = 1.0 + (f - 1.0) * (r0_mag / a)
+        del_H = np.arccosh(coshdh)
+        TOF = g + np.sqrt((-a) ** 3 / mu) * (np.sinh(del_H) - del_H)
+        return TOF
+
+    # return TOF #findTOF_b()
 
 
 def keplerCOE(r0, v0, dt, mu=Earth.mu):
