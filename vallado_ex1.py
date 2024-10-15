@@ -14,8 +14,9 @@ Notes:
         but, if you use the function as stand alone you will need to copy the
         imports...
 
-    Reminder to me; cannot get black formatter to work within VSCode,
-        so in VSCode terminal type; "black *.py" or "black filename.py"
+    Reminder to me; I cannot get the "black" code/editor formatter to
+        automatically work within VSCode, so in VSCode terminal type;
+        "black *.py" or "black filename.py"
     Reminder to me; VSCode DocString, Keyboard shortcut: ctrl+shift+2.
     
     Generally, units shown in brackets [km, rad, deg, etc.].
@@ -33,7 +34,15 @@ import numpy as np
 
 import astro_time
 import vallado_func as vfunc  # Vallado functions collection.
-from kepler import coe2rv, eccentric_to_true, findTOF, findTOF_a, kep_eqtnE, keplerUni
+from kepler import (
+    coe2rv,
+    eccentric_to_true,
+    findTOF,
+    findTOF_a,
+    findTOF_b,
+    kep_eqtnE,
+    keplerUni,
+)
 from vallado_func import ecliptic_angle, planet_rv, plot_sp_vs_sma
 
 
@@ -90,25 +99,27 @@ def test_ex2_4_keplerUni():
 
 def test_prb2_7_tof() -> None:
     """
-    Find time of flight (tof). Vallado [2], problem 2.7, p.128.
+    Find time of flight (tof) given position vectors.
+        Vallado [2], problem 2.7, p.128.
 
     Input Parameters:
     ----------
-        None
+    
     Returns:
     -------
-        None
+    
     Notes:
     -------
         Interplanetary missions with patched conic in Vallado [2], chapter 12.
         Note Vallado [2], tof, section 2.8, p.126, algorithm 11.
         It is useful to understand the limits on orbit definition; see
             test_tof_prob2_7a.
-
-        Reference Details: see list at file beginning.
+    References:
+    ----------
+        See references.py for references list.
     """
     print(f"\nTest Vallado [4] time-of-flight, prob 2.7, p.130:")
-    rad2deg = 180/math.pi # save multiple function dalls
+    rad2deg = 180 / math.pi  # save multiple function dalls
     mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado [2] p.1041, tbl.D-3
     # au = 149597870.7  # [km/au] Vallado [2] p.1043, tbl.D-5
     # r_earth = 6378.1363  # [km] earth radius; Vallado [2] p.1041, tbl.D-3
@@ -118,21 +129,20 @@ def test_prb2_7_tof() -> None:
     sp = 6681.571  # [km] semi-parameter (aka p, also, aka semi-latus rectum)
     r0_mag = np.linalg.norm(r0_vec)
     r1_mag = np.linalg.norm(r1_vec)
-    # TODO calculate delta true anomalies...
     # note r0_vec.T = transpose of r0_vec
     cosdv = np.dot(r0_vec.T, r1_vec) / (r0_mag * r1_mag)
     print(f"Delta true anomaly's, {math.acos(cosdv)*rad2deg:.6g} [deg]")
 
-    tof = findTOF(r0=r0_vec, r1=r1_vec, p=sp, mu=mu_earth_km)
+    tof = findTOF(r0=r0_vec, r1=r1_vec, sp=sp, mu=mu_earth_km)
     print(f"Time of flight, tof= {tof:.8g} [s]")
-    
+
     # print(f"\n*** Examine Curtis[3] time to SOI (sphere of influence): ***")
-    
+
     # # earth orbit departure; relative to earth, NOT relative to sun
     # r0_vec = np.array([-2574.9533, 4267.0671, 4431.5026])  # [km]
     # # soi vector; relative to earth, NOT relative to sun
     # r1_vec = np.array([2700.6738, -4303.5378, -4358.2499])  # [km]
-    
+
     # sp = 6681.571  # [km] semi-parameter (aka p, also, aka semi-latus rectum)
     # r0_mag = np.linalg.norm(r0_vec)
     # r1_mag = np.linalg.norm(r1_vec)
@@ -140,16 +150,17 @@ def test_prb2_7_tof() -> None:
     # cosdv = np.dot(r0_vec.T, r1_vec) / (r0_mag * r1_mag)
     # print(f"Delta true anomaly's, {math.acos(cosdv)*rad2deg:.6g} [deg]")
 
-    # tof = findTOF(r0=r0_vec, r1=r1_vec, p=sp, mu=mu_earth_km)
+    # tof = findTOF(r0=r0_vec, r1=r1_vec, sp=sp, mu=mu_earth_km)
     # print(f"Time of flight, tof= {tof:.8g} [s]")
-    
-    return
+
+    return None
 
 
 def test_prb2_7a_tof(plot_sp=False) -> None:
     """
-    Find time of flight (tof) and orbit parameter limits.
-        Vallado[4], section 2.8, problem 2.7, p.130; algorithm 11, pp.128.
+    Find time of flight (tof) and orbit parameter limits;
+        given position vectors.
+    Specific to Vallado[4], section 2.8, problem 2.7, p.130; algorithm 11, pp.128.
         BMWS, sma as a function of sp, section 5.4.2, p.204.
 
     Notes:
@@ -161,7 +172,6 @@ def test_prb2_7a_tof(plot_sp=False) -> None:
     Assume r0 in the vicinity of earth; thus mu=earth
     Choose v0
     """
-
     print(f"\nTest Vallado [2] time-of-flight, prob 2.7a:")
     mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado [2] p.1041, tbl.D-3
     au = 149597870.7  # [km/au] Vallado [2] p.1042, tbl.D-5
@@ -180,7 +190,7 @@ def test_prb2_7a_tof(plot_sp=False) -> None:
     delta_nu = math.acos(cosdv)
     print(f"delta true anomaly's, {delta_nu*180/math.pi:.6g} [deg]")
 
-    tof, sma, sp_i, sp_ii = findTOF_a(r0=r0_vec, r1=r1_vec, p=sp, mu=mu_earth_km)
+    tof, sma, sp_i, sp_ii = findTOF_a(r0=r0_vec, r1=r1_vec, sp=sp, mu=mu_earth_km)
     ecc = math.sqrt(1 - sp / sma)
     print(f"semi-major axis, sma= {sma:.8g}")
     print(f"eccemtricity, ecc= {ecc:.8g}")
@@ -206,35 +216,49 @@ def test_prb2_7a_tof(plot_sp=False) -> None:
         )
     return  # test_tof_prob2_7a()
 
+
 def test_tof_b() -> None:
     """
-    Find time of flight (tof) and orbit parameter limits.
-        Vallado[4], section 2.8, algorithm 11, pp.128.
-        BMWS, sma as a function of sp, section 5.4.2, p.204.
+    Find tof (time of flight), given position magnitudes (not vectors).
+        Two test cases involving time to reach earth-sun
+        soi (sphere of influence)
+    Testing Vallado[4], section 2.8, algorithm 11, pp.128, note 
+        figure 12-3, p.963. Note, BMWS, sma as a function of
+        sp, section 5.4.2, p.204.
     Notes:
     ----------
         Problem statement gives a value for sp (semi-parameter, aka p), thus
-        defining orbital energy.  Since sp is given ths routine explores the
-        limits of orbit definition by looking at ellipse limits.
+            defining orbital energy.  Since sp is given ths routine explores
+            the limits of orbit definition by looking at ellipse limits.
 
     Assume r0 in the vicinity of earth; thus mu=earth
     Choose v0
     """
-
     print(f"\nTest Vallado tof_b(); time-of-flight:")
     mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado [2] p.1041, tbl.D-3
-    au = 149597870.7  # [km/au] Vallado [2] p.1042, tbl.D-5
 
-    sp = 6681.571  # [km] semi-parameter (aka p, also, aka semi-latus rectum)
-    r0_mag = 6558.1363 # [km]
-    r1_mag = 924644.2300 # [km]
-    delta_ta= 2.972957698 # [rad]
+    r0_mag = 6558.1363  # [km]
+    r1_mag = 924644.2300  # [km] r_soi_earth
 
-    # findTOF_b(r0_mag, r1_mag, delta_ta, sp, mu)
-    tof  = findTOF_b(r0_mag, r1_mag, delta_ta, sp, mu_earth_km)
-    
-    
-    return  None # test_tof_b()
+    # parabolic orbit
+    print(f"** Parabolic Test: **")
+    sp = 2 * r0_mag  # [km] semi-parameter (aka p, or semi-latus rectum)
+    delta_ta = 2.972957698  # [rad] v0 with r0 drives sp & ecc
+
+    tof, o_type = findTOF_b(r0_mag, r1_mag, delta_ta, sp, mu_earth_km)
+    print(f"orbit type= {o_type}")
+    print(f"tof= {tof:.8g} [sec], {tof/(3600*24):.6g} [days]")
+
+    # hyperbolic orbit
+    print(f"** Hyperbolic Test: **")
+    sp = 14332.8910  # [km] semi-parameter (aka p, or semi-latus rectum)
+    delta_ta = 2.550695985  # [rad] v0 with r0 drives sp & ecc & delta_ta
+
+    tof, o_type = findTOF_b(r0_mag, r1_mag, delta_ta, sp, mu_earth_km)
+    print(f"orbit type= {o_type}")
+    print(f"tof= {tof:.8g} [sec], {tof/(3600*24):.6g} [days]")
+
+    return None  # test_tof_b()
 
 
 def test_ex5_1_sunPosition():
@@ -828,7 +852,7 @@ def Main():  # helps editor navigation :--)
 if __name__ == "__main__":
     # test_ex2_1KeplerE()  # kepler ellipse solve for eccentric anomaly
     # test_ex2_4_keplerUni()  # kepler propagation; Kepler universal variables
-    test_prb2_7_tof()  # time of flight, problem 2-7
+    # test_prb2_7_tof()  # time of flight, problem 2-7
     # test_prb2_7a_tof(plot_sp=False)  # time-of-flight; plot sma vs. sp
     test_tof_b()  # time-of-flight
     # test_ex5_1_sunPosition()  # sun position

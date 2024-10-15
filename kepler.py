@@ -552,9 +552,9 @@ def coe2rv(p, ecc, inc, raan, aop, anom, mu=Earth.mu):
     return r_ijk, v_ijk
 
 
-def findTOF(r0, r1, p, mu):
+def findTOF(r0, r1, sp, mu):
     """
-    Find tof (time-of-flight) between two position vectors in IJK frame.
+    Find tof (time-of-flight) between two position vectors.
         Vallado [2], section 2.8, algorithm 11, p.126.
         Vallado [4], section 2.8, algorithm 11, pp.128; problem 2.7, p.130.
 
@@ -562,21 +562,23 @@ def findTOF(r0, r1, p, mu):
     ----------
         r0  : numpy.matrix (3x1), Initial position vector
         r   : numpy.matrix (3x1), Second position vector
-        p   : float, [] semi-parameter (aka sp)
+        sp  : float, [] semi-parameter (aka p)
         mu  : float, [km^3/s^2] gravitational parameter
     Returns:
     -------
-        TOF : float, time-of-flight [seconds]
+        TOF : float, [s] time-of-flight
     Note:
     ----------
+        Numeric precision plays a role in orbit type decisions; especially
+            for parabolic orbits; this routine deals with it...
         This routine requires a value for sp (semi-parameter, aka p), but in
-        practice ecc (eccentricity) and or sma (semi-major axis) must be
-        chosen to completely define the orbit -  to understand the sp limits
-        see findTOF_a() which returns sp limits on ellipse orbit, noting
-        that parabolic and hyperbolic relations come out of the ellipse limits.
+            practice ecc (eccentricity) and or sma (semi-major axis) must be
+            chosen to completely define the orbit -  to understand the sp limits
+            see findTOF_a() which returns sp limits on ellipse orbit, noting
+            that parabolic and hyperbolic relations come out of the ellipse limits.
 
         As long as consistant units are passed to this routine unit definitions
-        are not required.
+            are not required.
     """
 
     r0_mag = np.linalg.norm(r0)
@@ -588,66 +590,87 @@ def findTOF(r0, r1, p, mu):
     l = r0_mag + r1_mag
     m = r0_mag * r1_mag * (1.0 + cosdv)
 
-    a = m * k * p / ((2.0 * m - l * l) * p * p + 2.0 * k * l * p - k * k)
-    f = 1.0 - (r1_mag / p) * (1.0 - cosdv)
-    g = r0_mag * r1_mag * np.sin(del_anom) / (np.sqrt(mu * p))
+    f = 1.0 - (r1_mag / sp) * (1.0 - cosdv)
+    g = r0_mag * r1_mag * np.sin(del_anom) / (np.sqrt(mu * sp))
+
+    # Look for parabolic and near parabolic orbits; numeric precision
+    #   plays a critical role in orbit-type.
+    # The following eqn is brokend down into a1 & a2; to prevent divide by 0.
+    # a = m * k * sp / (((2.0 * m - l * l) * sp * sp) + (2.0 * k * l * sp) - k * k)
+    a1 = m * k * sp
+    a2 = ((2.0 * m - l * l) * sp * sp) + (2.0 * k * l * sp) - k * k
+    # note, large a1/a2 ratios are very near parabolic, define as parabolic
+    if a2 == 0:
+        a = np.inf
+    else:
+        a = a1 / a2
+        if abs(a) > 1e16:
+            a = np.inf
 
     if a > 0.0:
         if a == np.inf:
+            # parabolic
             c = np.sqrt(r0_mag**2 + r1_mag**2 - 2.0 * r0_mag * r1_mag * cosdv)
             s = (r0_mag + r1_mag + c) * 0.5
             TOF = (2.0 / 3.0) * np.sqrt(0.5 * s**3 / mu) * (1.0 - ((s - c) / s) ** 1.5)
-            return TOF
+            # return TOF
         else:
+            # elliptic
             f_dot = (
-                np.sqrt(mu / p)
+                np.sqrt(mu / sp)
                 * np.tan(0.5 * del_anom)
-                * ((1.0 - cosdv) / p - 1.0 / r0_mag - 1 / r1_mag)
+                * ((1.0 - cosdv) / sp - 1.0 / r0_mag - 1 / r1_mag)
             )
             cosde = 1.0 - (r0_mag / a) * (1.0 - f)
             sinde = (-r0_mag * r1_mag * f_dot) / (np.sqrt(mu * a))
             del_E = np.arccos(cosde)
             TOF = g + np.sqrt(a**3 / mu) * (del_E - sinde)
-            return TOF
+            # return TOF
     elif a < 0.0:
+        # hyperbolic
         coshdh = 1.0 + (f - 1.0) * (r0_mag / a)
         del_H = np.arccosh(coshdh)
         TOF = g + np.sqrt((-a) ** 3 / mu) * (np.sinh(del_H) - del_H)
-        return TOF
+        # return TOF
     else:
+        # should never get here
         TOF = None
-        return TOF
+    return TOF
 
 
-def findTOF_a(r0, r1, p, mu=Earth.mu):
+def findTOF_a(r0, r1, sp, mu):
     """
     Same as findTOF() except this function returns internal calculations
-    allowing user to understand orbit type; range of sp (semi-parameter).
+        allowing user to understand orbit type; range of sp (semi-parameter).
         Vallado [2], section 2.8, algorithm 11, p.126.
         Vallado [4], section 2.8, algorithm 11, pp.128; problem 2.7, p.130.
 
     Note:
     ----------
+        Numeric precision plays a role in orbit type decisions; especially
+            for parabolic orbits; this routine deals with it...
         This routine requires a value for sp (semi-parameter, aka p), but in
-        practice ecc (eccentricity) and or sma (semi-major axis) must be
-        chosen to completely define the orbit. This routine returns limits
-        on ellipse orbit; parabolic and hyperbolic relations come out of
-        the ellipse limits.
+            practice ecc (eccentricity) and or sma (semi-major axis) must be
+            chosen to completely define the orbit -  to understand the sp limits
+            see findTOF_a() which returns sp limits on ellipse orbit, noting
+            that parabolic and hyperbolic relations come out of the ellipse limits.
+
+        As long as consistant units are passed to this routine unit definitions
+            are not required.
 
     Parameters:
     ----------
-        r0: numpy.matrix (3x1), Initial position vector
-        r1: numpy.matrix (3x1), Second position vector
-        p : float, Semi-parameter
-        mu: float, optional, default=3.986004415E5 [Earth.mu in solarsys.py]
-            Gravitational parameter [km^3/s^2]
+        r0  : numpy.matrix (3x1), initial position vector
+        r1  : numpy.matrix (3x1), final position vector
+        sp  : float, [km] Semi-parameter (aka p)
+        mu  : float, [km^3/s^2] gravitational parameter
 
     Returns
     -------
-        TOF  : float, time-of-flight [seconds]
+        TOF  : float, [s] time-of-flight
         a    : float, semi-major axis (aka sma)
-        sp_i : float, minimum ellipse semi-parameter (aka p)
-        sp_ii: float, maximum ellipse semi-parameter (aka p)
+        sp_i : float, minimum ellipse semi-parameter
+        sp_ii: float, maximum ellipse semi-parameter
     """
 
     r0_mag = np.linalg.norm(r0)
@@ -669,35 +692,51 @@ def findTOF_a(r0, r1, p, mu=Earth.mu):
     # maximum sp for ellipse; calculated value is actually a parabola
     sp_ii = k / (l - np.sqrt(2 * m))  # BMWS [2], p.208, eqn 5-53
 
-    a = m * k * p / ((2.0 * m - l * l) * p * p + 2.0 * k * l * p - k * k)
-    f = 1.0 - (r1_mag / p) * (1.0 - cosdv)
-    g = r0_mag * r1_mag * np.sin(del_anom) / (np.sqrt(mu * p))
+    f = 1.0 - (r1_mag / sp) * (1.0 - cosdv)
+    g = r0_mag * r1_mag * np.sin(del_anom) / (np.sqrt(mu * sp))
+    # Look for parabolic and near parabolic orbits; numeric precision
+    #   plays a critical role in orbit-type.
+    # The following eqn is brokend down into a1 & a2; to prevent divide by 0.
+    # a = m * k * sp / (((2.0 * m - l * l) * sp * sp) + (2.0 * k * l * sp) - k * k)
+    a1 = m * k * sp
+    a2 = ((2.0 * m - l * l) * sp * sp) + (2.0 * k * l * sp) - k * k
+    # note, large a1/a2 ratios are very near parabolic, define as parabolic
+    if a2 == 0:
+        a = np.inf
+    else:
+        a = a1 / a2
+        if abs(a) > 1e16:
+            a = np.inf
 
     if a > 0.0:
         if a == np.inf:
+            # parabola
             c = np.sqrt(r0_mag**2 + r1_mag**2 - 2.0 * r0_mag * r1_mag * cosdv)
             s = (r0_mag + r1_mag + c) * 0.5
             TOF = (2.0 / 3.0) * np.sqrt(0.5 * s**3 / mu) * (1.0 - ((s - c) / s) ** 1.5)
-            return TOF, a, sp_i, sp_ii
+            # return TOF, a, sp_i, sp_ii
         else:
+            # ellipse
             f_dot = (
-                np.sqrt(mu / p)
+                np.sqrt(mu / sp)
                 * np.tan(0.5 * del_anom)
-                * ((1.0 - cosdv) / p - 1.0 / r0_mag - 1 / r1_mag)
+                * ((1.0 - cosdv) / sp - 1.0 / r0_mag - 1 / r1_mag)
             )
             cosde = 1.0 - (r0_mag / a) * (1.0 - f)
             sinde = (-r0_mag * r1_mag * f_dot) / (np.sqrt(mu * a))
             del_E = np.arccos(cosde)
             TOF = g + np.sqrt(a**3 / mu) * (del_E - sinde)
-            return TOF, a, sp_i, sp_ii
+            # return TOF, a, sp_i, sp_ii
     elif a < 0.0:
+        # hyperbola
         coshdh = 1.0 + (f - 1.0) * (r0_mag / a)
         del_H = np.arccosh(coshdh)
         TOF = g + np.sqrt((-a) ** 3 / mu) * (np.sinh(del_H) - del_H)
-        return TOF, a, sp_i, sp_ii
+        # return TOF, a, sp_i, sp_ii
     else:
+        # should never get here
         TOF = None
-        return TOF, a, sp_i, sp_ii
+    return TOF, a, sp_i, sp_ii
 
 
 def findTOF_b(r0_mag, r1_mag, delta_ta, sp, mu):
@@ -708,29 +747,32 @@ def findTOF_b(r0_mag, r1_mag, delta_ta, sp, mu):
 
     Parameters:
     ----------
-        r0_mag   : float, [km] initial position
-        r1_mag   : float, [km] second position
+        r0_mag   : float, [km] initial position magnitude
+        r1_mag   : float, [km] final position magnitude
         delta_ta : float, [rad] delta true anomaly/angle
         sp       : float, [km] semi-parameter (aka p)
         mu       : float, [km^3/s^2] gravitational parameter
     Returns:
     -------
-        TOF      : float, time-of-flight [seconds]
+        TOF      : float, [sec] time-of-flight
+        o_type   : str, orbit type; e=ellipse, p=parabola, h=hyperbola
     Note:
     ----------
+        Numeric precision plays a role in orbit type decisions; especially
+            for parabolic orbits; this routine deals with it...
         This routine requires a value for sp (semi-parameter, aka p), but in
-        practice ecc (eccentricity) and or sma (semi-major axis) must be
-        chosen to completely define the orbit -  to understand the sp limits
-        see findTOF_a() which returns sp limits on ellipse orbit, noting
-        that parabolic and hyperbolic relations come out of the ellipse limits.
+            practice ecc (eccentricity) and or sma (semi-major axis) must be
+            chosen to completely define the orbit -  to understand the sp limits
+            see findTOF_a() which returns sp limits on ellipse orbit, noting
+            that parabolic and hyperbolic relations come out of the ellipse limits.
 
         As long as consistant units are passed to this routine unit definitions
-        are not required.
+            are not required.
     """
-
-    # r0_mag = np.linalg.norm(r0)
-    # r1_mag = np.linalg.norm(r1)
-    # cosdv = np.dot(r0.T, r1) / (r0_mag * r1_mag)  # note r0.T = transpose
+    # began to explore numerical precision; especailly near parabolic orbits.
+    # import decimal
+    # from decimal import Decimal, getcontext
+    # getcontext().prec = 28
 
     del_anom = delta_ta
     cosdv = math.cos(delta_ta)
@@ -738,34 +780,62 @@ def findTOF_b(r0_mag, r1_mag, delta_ta, sp, mu):
     l = r0_mag + r1_mag
     m = r0_mag * r1_mag * (1.0 + cosdv)
 
-    a = m * k * sp / ((2.0 * m - l * l) * sp * sp + 2.0 * k * l * sp - k * k)
     f = 1.0 - (r1_mag / sp) * (1.0 - cosdv)
-    g = r0_mag * r1_mag * np.sin(del_anom) / (np.sqrt(mu * sp))
-
+    g = r0_mag * r1_mag * math.sin(del_anom) / (math.sqrt(mu * sp))
+    # the following eqn is brokend down into a1 & a2; to prevent divide by 0
+    # a = m * k * sp / (((2.0 * m - l * l) * sp * sp) + (2.0 * k * l * sp) - k * k)
+    a1 = m * k * sp
+    a2 = ((2.0 * m - l * l) * sp * sp) + (2.0 * k * l * sp) - k * k
+    # define very large a ratios as very near parabolic, as parabolic
+    if a2 == 0:
+        a = np.inf
+    else:
+        a = a1 / a2
+        if abs(a) > 1e16:
+            a = np.inf
     if a > 0.0:
+        # parabolic
         if a == np.inf:
-            c = np.sqrt(r0_mag**2 + r1_mag**2 - 2.0 * r0_mag * r1_mag * cosdv)
+            c = math.sqrt(r0_mag**2 + r1_mag**2 - 2.0 * r0_mag * r1_mag * cosdv)
             s = (r0_mag + r1_mag + c) * 0.5
-            TOF = (2.0 / 3.0) * np.sqrt(0.5 * s**3 / mu) * (1.0 - ((s - c) / s) ** 1.5)
-            return TOF
+            TOF = (
+                (2.0 / 3.0) * math.sqrt(0.5 * s**3 / mu) * (1.0 - ((s - c) / s) ** 1.5)
+            )
+            o_type = "p"  # orbit type, parabolic
         else:
+            # elliptic
             f_dot = (
-                np.sqrt(mu / sp)
-                * np.tan(0.5 * del_anom)
+                math.sqrt(mu / sp)
+                * math.tan(0.5 * del_anom)
                 * ((1.0 - cosdv) / sp - 1.0 / r0_mag - 1 / r1_mag)
             )
             cosde = 1.0 - (r0_mag / a) * (1.0 - f)
             sinde = (-r0_mag * r1_mag * f_dot) / (np.sqrt(mu * a))
-            del_E = np.arccos(cosde)
-            TOF = g + np.sqrt(a**3 / mu) * (del_E - sinde)
-            return TOF
+            del_E = math.acos(cosde)
+            TOF = g + math.sqrt(a**3 / mu) * (del_E - sinde)
+            o_type = "e"  # orbit type, eliptic
     elif a < 0.0:
+        # hyperbolic
         coshdh = 1.0 + (f - 1.0) * (r0_mag / a)
-        del_H = np.arccosh(coshdh)
-        TOF = g + np.sqrt((-a) ** 3 / mu) * (np.sinh(del_H) - del_H)
-        return TOF
+        del_H = math.acosh(coshdh)
+        TOF = g + math.sqrt((-a) ** 3 / mu) * (math.sinh(del_H) - del_H)
+        o_type = "h"  # orbit type, hyperbolic
+    # troubleshooting print statements; commented out at this point
+    # print(f"orbit type, {o_type}")
+    # print(f"cosdv= {cosdv:.8g}")  # cos(delta ta)
+    # print(f"k= {k:.8g}")
+    # print(f"l= {l:.8g}")
+    # print(f"m= {m:.8g}")
+    # print(f"f= {f:.8g}")
+    # print(f"g= {g:.8g}")
+    # print(f"a1= {a1:.8g}")
+    # print(f"a2= {a2:.8g}")
+    # print(f"a= {a:.8g}")
+    # if a < 0.0:
+    #     print(f"coshdh= {coshdh:.8g}")
+    #     print(f"del_h= {del_H:.8g}")
 
-    # return TOF #findTOF_b()
+    return TOF, o_type  # findTOF_b()
 
 
 def keplerCOE(r0, v0, dt, mu=Earth.mu):
