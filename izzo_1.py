@@ -1,7 +1,7 @@
 """
 Algorithm devised by Izzo, circa 2015.
 Vallado [4] (2022), estensively discusses other Lambert solver methods; section 7.6.
-This file (filename changed) copied from LamberHub (isso.py) via GitHub, 2024-August.
+This file (filename changed) copied from LambertHub (isso.py) via GitHub, 2024-August.
 2024-October +, minor edits & ref updates by Jeff Belue.
     TODO test performance with numba njit enabled; commented out in the code.
 
@@ -76,7 +76,7 @@ def izzo2015(
         Copyright (c) 2012-2021 Juan Luis Cano Rodríguez and the poliastro
         development team.
 
-    References
+    References (in addition to listings in references.py)
     ----------
     [1] Izzo, D. (2015). Revisiting Lambert's problem. Celestial Mechanics
            and Dynamical Astronomy, 121(1), 1-15.

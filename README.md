@@ -4,7 +4,7 @@ Python implementation of algorithms/examples/problems presented in David A. Vall
 Python Implementation Goals:
 1) Build a set of tested tools to develope orbital missions.
 2) Automate patched conic methods.
-3) Explore astronomy related calculation
+3) Explore astronomy related calculations.
 
 See full list of references in the file references.py.\
 Also examples/solutions H.D. Curtis book, and Braeunig's orbital mechanics on-line http://www.braeunig.us/space/interpl.htm .\

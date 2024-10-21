@@ -50,7 +50,7 @@ Other coe elements:
     M_     : float [deg] mean anomaly (often replaces TA)
 
 From JPL Horizizons, osculating elements:
-Symbol & meaning [1 au= 149597870.700 km, 1 day= 86400.0 s]:
+    Symbol & meaning [1 au= 149597870.700 km, 1 day= 86400.0 s]:
     JDTDB  Julian Day Number, Barycentric Dynamical Time
     EC     Eccentricity, e
     QR     Periapsis distance, q (au)
@@ -484,7 +484,7 @@ def rv2coe(r_vec, v_vec, mu=Earth.mu):
     return sp, sma, ecc_mag, incl, raan, w_, TA, o_type
 
 
-def coe2rv(p, ecc, inc, raan, aop, anom, mu=Earth.mu):
+def coe2rv(p, ecc, inc, raan, aop, anom, mu):
     """
     Convert Keplerian orbital elements to position/velocity vectors; IJK frame.
     Vallado [2], section 2.6, algorithm 10, pp.118
@@ -500,8 +500,7 @@ def coe2rv(p, ecc, inc, raan, aop, anom, mu=Earth.mu):
         aop  : float, [rad] argument of periapsis (aka w, or omega)
                 w=w_bar-RAAN; undefined for RAAN=0, undefined for circular
         anom : float, [rad] true angle/anomaly (aka TA)
-        mu   : float, [km^3/s^2] optional, Gravitational parameter
-                default= Earth.mu in solarsys.py
+        mu   : float, [km^3/s^2] gravitational parameter
     Returns:
     -------
         r_ijk : numpy.array, [km] position vector in IJK frame
@@ -548,25 +547,25 @@ def coe2rv(p, ecc, inc, raan, aop, anom, mu=Earth.mu):
     # Convert to IJK frame
     r_ijk = m_pqw2ijk * r_pqw
     v_ijk = m_pqw2ijk * v_pqw
-
     return r_ijk, v_ijk
 
 
-def findTOF(r0, r1, sp, mu):
+def findTOF(r0_vec, r1_vec, sp, mu):
     """
     Find tof (time-of-flight) between two position vectors.
+        Now there are three tof functions; 2024-10-14: tof(), tof_a(), tof_b().
         Vallado [2], section 2.8, algorithm 11, p.126.
         Vallado [4], section 2.8, algorithm 11, pp.128; problem 2.7, p.130.
 
     Input Parameters:
     ----------
-        r0  : numpy.matrix (3x1), Initial position vector
-        r   : numpy.matrix (3x1), Second position vector
-        sp  : float, [] semi-parameter (aka p)
-        mu  : float, [km^3/s^2] gravitational parameter
+        r0_vec : numpy.array, initial position vector
+        r1_vec : numpy.array, final position vector
+        sp     : float, [] semi-parameter (aka p)
+        mu     : float, [km^3/s^2] gravitational parameter
     Returns:
     -------
-        TOF : float, [s] time-of-flight
+        TOF    : float, [s] time-of-flight
     Note:
     ----------
         Numeric precision plays a role in orbit type decisions; especially
@@ -581,10 +580,10 @@ def findTOF(r0, r1, sp, mu):
             are not required.
     """
 
-    r0_mag = np.linalg.norm(r0)
-    r1_mag = np.linalg.norm(r1)
+    r0_mag = np.linalg.norm(r0_vec)
+    r1_mag = np.linalg.norm(r1_vec)
 
-    cosdv = np.dot(r0.T, r1) / (r0_mag * r1_mag)  # note r0.T = transpose
+    cosdv = np.dot(r0_vec.T, r1_vec) / (r0_mag * r1_mag)  # note r0.T = transpose
     del_anom = np.arccos(cosdv)
     k = r0_mag * r1_mag * (1.0 - cosdv)
     l = r0_mag + r1_mag
@@ -642,6 +641,7 @@ def findTOF_a(r0, r1, sp, mu):
     """
     Same as findTOF() except this function returns internal calculations
         allowing user to understand orbit type; range of sp (semi-parameter).
+        Now there are three tof functions; 2024-10-14: tof(), tof_a(), tof_b().
         Vallado [2], section 2.8, algorithm 11, p.126.
         Vallado [4], section 2.8, algorithm 11, pp.128; problem 2.7, p.130.
 
@@ -741,7 +741,9 @@ def findTOF_a(r0, r1, sp, mu):
 
 def findTOF_b(r0_mag, r1_mag, delta_ta, sp, mu):
     """
-    Find tof (time-of-flight) between two position magnitudes & delta_ta
+    Find tof (time-of-flight) between two position magnitudes, delta_ta, sp.
+        Now there are three tof functions; 2024-10-14: tof(), tof_a(), tof_b().
+        This function origionally designed to find tof to soi (sphere of influence).
         Vallado [2], section 2.8, algorithm 11, p.126.
         Vallado [4], section 2.8, algorithm 11, pp.128; problem 2.7, p.130.
 
@@ -766,11 +768,11 @@ def findTOF_b(r0_mag, r1_mag, delta_ta, sp, mu):
             see findTOF_a() which returns sp limits on ellipse orbit, noting
             that parabolic and hyperbolic relations come out of the ellipse limits.
 
-        As long as consistant units are passed to this routine unit definitions
+        As long as consistant units are passed to this routine, unit definitions
             are not required.
     """
-    # began to explore numerical precision; especailly near parabolic orbits.
-    # import decimal
+    # numerical precision can be problematic, especially near parabolic orbits.
+    # import decimal # explore numerical precision
     # from decimal import Decimal, getcontext
     # getcontext().prec = 28
 
@@ -838,7 +840,7 @@ def findTOF_b(r0_mag, r1_mag, delta_ta, sp, mu):
     return TOF, o_type  # findTOF_b()
 
 
-def keplerCOE(r0, v0, dt, mu=Earth.mu):
+def keplerCOE(r0, v0, dt, mu):
     """
     Two body orbit propagation using classical orbital elements (Algorithm 7)
 
@@ -890,7 +892,7 @@ def keplerCOE(r0, v0, dt, mu=Earth.mu):
         H = kep_eqtnH(M, ecc)
         t_anom = hyperbolic_to_true(H, ecc)
 
-    r, v = coe2rv(p, ecc, inc, raan, aop, t_anom)
+    r, v = coe2rv(p, ecc, inc, raan, aop, t_anom, mu)
     return r, v
 
 

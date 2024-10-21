@@ -1,10 +1,12 @@
 """
 Vallado function collection.
 Edits 2024-08-21 +, Jeff Belue.
+Careful, some Vallado examples have calculation errors; after all the book
+    is 1000+ pages.
 
 Notes:
 ----------
-    Note, some lines have AUTO-formatting instructions for "black" formatter!
+    Note, some code below, have AUTO-formatting instructions for "black" formatter!
         Generally, donot format numeric arrays (tables); use # fmt: off/on
     Generally, units shown in brackets [km, rad, deg, etc.].
     Generally, angles are saved in [rad], distance [km].
@@ -439,7 +441,9 @@ def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
     Input Parameters:
     ----------
         planet_id  : int,
-            JPL Horizons eph_data=0, 1->8 Mercury->Neptune
+            JPL Horizons eph_data=0, 0->7 Mercury->Neptune
+                0=Mercury, 1=Venus, 2=Earth, 3=Mars, 4=Jupiter,
+                5=Saturn, 6 = Urnaus, 7=Neptune, not yet entered
             Standish eph_data=1, 1->8 Mercury->Neptune
         eph_data   : int, 0 or 1: ephemeris data set
             0 = JPL horizons data set, Table 1
@@ -447,21 +451,21 @@ def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
         au_units   : boolean; output true=distance units in au
         rad_units  : boolean; output true=angular units in radians
 
-    Returns (for planet_id input):
+    Returns: (for planet_id input):
     -------
         J2000_coe   : numpy.array, J2000 clasic orbital elements (Kepler).
         J2000_rates : numpy.array, coe rate change (x/century) from 2000-01-01.
     Notes:
     ----------
-        Note, I want to prevent array auto formatting (with vscode black), so you
-            will see various schemes; mostly they do not work - frustraiting.
+        Note, I want to prevent **array** auto formatting (with vscode black),
+            so I use the "# fmt: off" and "# fmt: on" commands.
         Orbital element naming amongst many authors is still challenging...
-        Element list output:
+        Element list output, Curtis [3] order; not Horizons order !
             sma   = [km] semi-major axis (aka a)
             ecc   = [--] eccentricity
             incl  = [deg] inclination angle; to the ecliptic
             RAAN  = [deg] right ascension of ascending node (aka capital W)
-                    longitude node
+                    (aka longitude node)
             w_bar = [deg] longitude of periapsis
             L     = [deg] mean longitude
 
@@ -481,7 +485,8 @@ def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
 
         #   JPL Table 1 order of the elements is different then the other list below.
         #   Also note, Table 1 list earth-moon barycenter, not just earth.
-        #           sma   |    ecc      |     incl    | long.node   | long.peri   | mean.long
+        #           sma   |    ecc      |     incl    | mean.long   | long.peri   | long.node
+        #                 |             |             |     L       |  w_bar      | raan
         #       au, au/cy | ecc, ecc/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy
         # fmt: off
         J2000=np.array(
@@ -577,8 +582,9 @@ def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
 
     # extract user requested planet coe data & rates;
     #   reminder, coe=classic orbital elements (Kepler)
-    J2000_coe = J2000_elements[planet_id - 1]
-    J2000_rates = cent_rates[planet_id - 1]
+    # J2000_coe = J2000_elements[planet_id - 1]
+    J2000_coe = J2000_elements[planet_id]
+    J2000_rates = cent_rates[planet_id]
     return J2000_coe, J2000_rates
 
 
@@ -600,6 +606,9 @@ def planet_ele_1(planet_id):
             6 = Urnaus, not yet entered
             7 = Neptune, not yet entered
             8 = Pluto, not yet entered
+    Returns: (for planet_id input):
+    -------
+        J2000_coefs   : numpy.array, J2000 clasic orbital elements (Kepler).
     Notes:
     ----------
     Data below, Vallado [4], appendix D.4, Planetary Ephemerides, pp.1062.
