@@ -436,18 +436,18 @@ def k_l_m_sp(k, l, m, sp):
 
 def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
     """
-    Planet orbital elements: ephemeris data, JPL Horizons or Standish.
+    Planet orbital elements from ephemeris data set:
+        1) JPL Horizons Table 1.
+        2) Curtis [3] Table 8.1, p.472
 
     Input Parameters:
     ----------
         planet_id  : int,
-            JPL Horizons eph_data=0, 0->7 Mercury->Neptune
-                0=Mercury, 1=Venus, 2=Earth, 3=Mars, 4=Jupiter,
-                5=Saturn, 6 = Urnaus, 7=Neptune, not yet entered
-            Standish eph_data=1, 1->8 Mercury->Neptune
-        eph_data   : int, 0 or 1: ephemeris data set
-            0 = JPL horizons data set, Table 1
-            1 = Standish 1992 data
+            0=Mercury, 1=Venus, 2=Earth, 3=Mars, 4=Jupiter,
+            5=Saturn, 6 = Urnaus, 7=Neptune
+        eph_data   : int, ephemeris data set
+            0 = JPL horizons Table 1 data set
+            1 = Curtis [3] Table 8.1, p.472
         au_units   : boolean; output true=distance units in au
         rad_units  : boolean; output true=angular units in radians
 
@@ -460,7 +460,7 @@ def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
         Note, I want to prevent **array** auto formatting (with vscode black),
             so I use the "# fmt: off" and "# fmt: on" commands.
         Orbital element naming amongst many authors is still challenging...
-        Element list output, Curtis [3] order; not Horizons order !
+        Element list output, Curtis [3] order; not same as Horizons order !
             sma   = [km] semi-major axis (aka a)
             ecc   = [--] eccentricity
             incl  = [deg] inclination angle; to the ecliptic
@@ -476,15 +476,14 @@ def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
     #   https://ssd.jpl.nasa.gov/planets/approx_pos.html
     #   https://ssd.jpl.nasa.gov/tools/orbit_viewer.html
     #   Mean ecliptic and equinox of J2000; time-interval 1800 AD - 2050 AD.
-
     #   NOTICE !!
-    #   *** UNITS are different between the two data sets. ***
+    #   *** ANGLE UNITS are different between the two data sets. ***
 
     if eph_data == 0:  # JPL horizons data set
         # Horizons Table 1 data set COPIED DIRECTLY from the web-site noted above.
 
         #   JPL Table 1 order of the elements is different then the other list below.
-        #   Also note, Table 1 list earth-moon barycenter, not just earth.
+        #   Also note, Table 1 list earth-moon barycenter, not just earth; ecliptic data!
         #           sma   |    ecc      |     incl    | mean.long   | long.peri   | long.node
         #                 |             |             |     L       |  w_bar      | raan
         #       au, au/cy | ecc, ecc/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy
@@ -513,8 +512,8 @@ def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
         J2000_elements = J2000[::2]  # every other row, starting row 0
         cent_rates = J2000[1::2]  # every other row, starting row 1
 
-    # Data below, copied Curtis tbl 8.1, Standish et.al. 1992
-    # Elements, numpy.array
+    # Data below, Curtis [3] p.472, tbl 8.1; not sure Standish et.al. 1992?
+    # Earth-moon barycenter ?, ecliptic data!
     # (semi-major axis)|             |             |(RAAN, Omega)| (omega_bar) |
     #            sma   |    ecc      |     incl    | long.node   | long.peri   |  mean.long (L)
     #        au, au/cy | ecc, ecc/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy | deg, deg/cy
@@ -534,14 +533,14 @@ def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
             ]
         )
         # fmt: on
-        # century [cy] rates, numpy.array
-        # Data below, copied Curtis tbl 8.1, Standish et.al. 1992
+        # julian century [cy] rates
+        # Data below, Curtis [3] p.472, tbl 8.1; not sure Standish et.al. 1992?
         # Units of rates table:
         # "au/cy", "1/cy", "arc-sec/cy", "arc-sec/cy", "arc-sec/cy", "arc-sec/cy"
         # fmt: off
         cent_rates = np.array(
             [
-                [0.00000066, 0.00002527, -23.51, -446.30, 573.57, 538101628.29],  # xxx
+                [0.00000066, 0.00002527, -23.51, -446.30, 573.57, 538101628.29],
                 [0.00000092, -0.00004938, -2.86, -996.89, -108.80, 210664136.06],
                 [-0.0000005, -0.00003804, -46.94, -18228.25, 1198.28, 129597740.63],
                 [-0.00007221, 0.00011902, -25.47, -1020.19, 1560.78, 68905103.78],
@@ -590,7 +589,7 @@ def planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False):
 
 def planet_ele_1(planet_id):
     """
-    Planet elements coefficients table, heliocentric/equatorial.
+    Vallado [4], planet elements coefficients table, heliocentric/equatorial.
         Table of polynomial coefficients in t_TDB.
         t_TDB = julian centuries of tdb (barycentric dynamic time).
         Format: x0*t_TDB^0 + x1*t_TDB^1 + x2*t_TDB^2 + ...

@@ -141,19 +141,19 @@ def test_ex2_6_coe2rv() -> None:
     print(f"\nEquatorial, Heliocentric, XYZ")
     print(f"r_vec= {r_vec} [km]")
     print(f"v_vec= {v_vec} [km/s]")
-    
+
     # now verify with Curtis [3] example
     print(f"\n** Now a Curtis [3] cross-check: **")
     print(f"Notice the Curtis example is geocentric, not heliocentric.")
     print(f"Curtis cross-check proves out coe2rv() function.")
     h, ecc, inc_deg, raan_deg, w_deg, TA_deg = 80000, 1.4, 30, 40, 60, 30
-    sp=(h*h)/mu_earth_km
+    sp = (h * h) / mu_earth_km
 
     inc_rad = inc_deg * deg2rad  # angular conversion
     raan_rad = raan_deg * deg2rad
     w_rad = w_deg * deg2rad
     TA_rad = TA_deg * deg2rad
-    
+
     # function inputs, coe2rv(p, ecc, inc, raan, aop, anom, mu)
     r_vec, v_vec = coe2rv(
         p=sp,
@@ -403,20 +403,18 @@ def test_ex5_2_sunRiseSet():
 
 def test_ex5_5_planetPos_1():
     """
-    Find planet location; essentially Vallado's PlanetRV(), algorithm 33.
+    Planet coe and position/velocity with Vallado [4] data set (ecliptic output).
+        Data in this function comes from planet_ele_1().
+        Position/velocity from Vallado's PlanetRV(), algorithm 33.
         Vallado [2], example 5-5, pp.297, algorithm 33, pp.296.
         Vallado [4], example 5-5, pp.304, algorithm 33, pp.303.
-    NOTE, I am struggling to get the planet position tables to even be
-        close with JPL Horizons! Vallado algorithm 33 does not match well
-        even with his examples.
     Notes:
     ----------
-    NOTE Vallado [2] and [4] appendix D.4 tables DONOT correlate well with
-        JPL Horizons outputs for Jupiter; well kind-da same ball park.
-            1994, 5, 20, 20, 0, 0 # ex.5-5, reviewed equatorial, not ecliptic
-            1979, 3, 5, 12, 5, 26 # ex.12-8, reviewed equatorial, not ecliptic
-    This effort debugged the function planet_rv() saved in vallado_func.py.
-    See kepler.py Notes for list of orbital element nameing definitions.
+        Outputs compare's ok with JPL Horizons on-line.
+        1994, 5, 20, 20, 0, 0 # ex.5-5, reviewed 
+        1979, 3, 5, 12, 5, 26 # ex.12-8, reviewed
+        This effort debugged the function planet_rv() saved in vallado_func.py.
+        See kepler.py Notes for list of orbital element nameing definitions.
 
     https://ssd.jpl.nasa.gov/planets/approx_pos.html
     Horizons on-line look-up https://ssd.jpl.nasa.gov/horizons/app.html#/
@@ -440,7 +438,7 @@ def test_ex5_5_planetPos_1():
     LT= 3.133179623650530E-02, RG= 5.424932350393856E+00, RR=-1.189710609786379E-03
     """
     print(f"\nTest planet position_1, Vallado [4] example 5-5:")
-    
+
     np.set_printoptions(precision=6)  # numpy, set vector printing size
     deg2rad = math.pi / 180  # used multiple times
     rad2deg = 180 / math.pi  # used multiple times
@@ -477,11 +475,15 @@ def test_ex5_5_planetPos_1():
     x2 = np.full(coef_col, jd_cJ2000)  # base time value; t_tdb
     x3 = x2**x1  # time multiplier series
 
-    sma = np.sum(J2000_coefs[0, :] * x3)  # [au]
-    ecc = np.sum(J2000_coefs[1, :] * x3)  # [--]
+    sma = np.sum(J2000_coefs[0, :] * x3)  # [au] semi-major axis (aka a)
+    ecc = np.sum(J2000_coefs[1, :] * x3)  # [--] eccentricity
+    # inclination to ecliptic plane
     incl_deg = np.sum(J2000_coefs[2, :] * x3) % 360  # [deg]
+    # right ascension of ascending node
     raan_deg = np.sum(J2000_coefs[3, :] * x3) % 360  # [deg]
+    # longitude of periapsis
     w_bar_deg = np.sum(J2000_coefs[4, :] * x3) % 360  # [deg]
+    # mean longitude
     L_bar_deg = np.sum(J2000_coefs[5, :] * x3) % 360  # [deg]
 
     incl_rad = incl_deg * deg2rad
@@ -489,35 +491,18 @@ def test_ex5_5_planetPos_1():
     w_bar_rad = w_bar_deg * deg2rad
     L_bar_rad = L_bar_deg * deg2rad
 
-    # print(f"J2000_coefs, full, {J2000_coefs}")
-    print(f"sma= {sma:.8g} [au]")
-    print(f"ecc= {ecc:.8g}")
-    print(f"incl= {incl_deg:.8g} [deg]")
-    print(f"raan= {raan_deg:.8g} [deg]")
-    print(f"w_bar= {w_bar_deg:.8g} [deg]")  # longitude of periapsis
-    print(f"L_bar= {L_bar_deg:.8g} [deg]")
-
     M_deg = L_bar_deg - w_bar_deg  # [deg] mean angle/anomaly
     M_rad = M_deg * deg2rad
     w_deg = w_bar_deg - raan_deg  # [deg] argument of periapsis (aka aop, or arg_p)
     w_rad = w_deg * deg2rad
-    print(f"\nM_deg= {M_deg:.8g} [deg]")
-    print(f"w_deg= {w_deg:.8g} [deg]")
 
     E_rad = kep_eqtnE(M=M_rad, e=ecc)
     E_deg = E_rad * rad2deg
     # TA_rad below, no quadrent ambiguity; addresses near pi values
     TA_rad = eccentric_to_true(E=E_rad, e=ecc)
-    # below, commented out, Curtis [3] solution, p.160, eqn 3.13b.
-    # TA_rad = 2 * math.atan(math.sqrt((1 + ecc) / (1 - ecc)) * math.tan(E_rad / 2))
     TA_deg = TA_rad * rad2deg
 
-    print(f"E_deg= {E_deg:.8g} [deg]")
-    print(f"TA_deg= {TA_deg:.8g} [deg]")
-
     sp = sma * (1 - ecc**2)
-    print(f"sp= {sp:.8g} [au]")
-
     # function inputs, coe2rv(p, ecc, inc, raan, aop, anom, mu)
     r_vec, v_vec = coe2rv(
         p=sp,
@@ -530,33 +515,51 @@ def test_ex5_5_planetPos_1():
     )
     r_vec = np.ravel(r_vec)  # convert column array to row vector
     v_vec = np.ravel(v_vec) * 86400  # convert, seconds to days
+    # rotate r_vec and v_vec from equatorial to ecliptic/heliocentric
+    e_angle = vfunc.ecliptic_angle(jd_cJ2000)  # ecliptic angle
+    r1_vec = r_vec @ vfunc.rot_matrix(angle=-e_angle * deg2rad, axis=0)
+    v1_vec = v_vec @ vfunc.rot_matrix(angle=-e_angle * deg2rad, axis=0)
+
+    print(f"sma= {sma:.8g} [au]")
+    print(f"ecc= {ecc:.8g}")
+    print(f"incl= {incl_deg:.8g} [deg]")
+    print(f"raan= {raan_deg:.8g} [deg]")
+    print(f"w_bar= {w_bar_deg:.8g} [deg]")
+    print(f"L_bar= {L_bar_deg:.8g} [deg]")
+
+    print(f"\nM_deg= {M_deg:.8g} [deg]")
+    print(f"w_deg= {w_deg:.8g} [deg]")
+    print(f"E_deg= {E_deg:.8g} [deg]")
+    print(f"TA_deg= {TA_deg:.8g} [deg]")
+    print(f"sp= {sp:.8g} [au]")
+
     print(f"\nEquatorial, Heliocentric, XYZ")
     print(f"r_vec= {r_vec} [au]")
     print(f"v_vec= {v_vec} [au/day]")
     print(f"r_vec= {r_vec*au} [km]")
     print(f"v_vec= {v_vec*au/86400} [km/s]")
-
-    # rotate r_vec and v_vec from equatorial to ecliptic/heliocentric
-    e_angle = vfunc.ecliptic_angle(jd_cJ2000)  # ecliptic angle
-    r1_vec = r_vec @ vfunc.rot_matrix(angle=-e_angle * deg2rad, axis=0)
-    v1_vec = v_vec @ vfunc.rot_matrix(angle=-e_angle * deg2rad, axis=0)
     print(f"ecliptic angle, e_angle= {e_angle:.8g} [deg]")
+
     print(f"\nEcliptic/Heliocentric, XYZ")
     print(f"r1_vec= {r1_vec} [au]")
     print(f"v1_vec= {v1_vec} [au/day]")
 
+    return None
+
 
 def test_ex5_5_planetPos_0():
     """
-    Find planet location using the JPL Horizons data set.
-        Compare with Vallado [4], algorithm 33, pp.303.
-    NOTE, I am struggling to get the planet position tables to even be
-        close with JPL Horizons! Vallado algorithm 33 does not match well
-        even with his examples.
+    Planet coe and position/velocity with a couple of data sets:
+        1) JPL Horizons Table1 (ecliptic output)
+        2) Curtis [3] Table 8.1, p.472 (ecliptic output)
+        Data in this function comes from planet_ele_1().
+        Compare with Vallado [4], algorithm 33, pp.303, planet_ele_0().
     Notes:
     ----------
-        1994, 5, 20, 20, 0, 0 # ex.5-5, reviewed equatorial, not ecliptic
-        1979, 3, 5, 12, 5, 26 # ex.12-8, reviewed equatorial, not ecliptic
+        Functions outputs compare's ok with JPL Horizons on-line.
+        
+        1994, 5, 20, 20, 0, 0 # from Vallado [4] ex.5-5, reviewed
+        1979, 3, 5, 12, 5, 26 # from Vallado [4] ex.12-8, reviewed
         See kepler.py Notes for list of orbital element nameing definitions.
 
     https://ssd.jpl.nasa.gov/planets/approx_pos.html
@@ -580,8 +583,7 @@ def test_ex5_5_planetPos_0():
     VX= 5.342571281658752E-03, VY= -3.857849397745642E-03, VZ=-1.791799534510893E-03
     LT= 3.133179623650530E-02, RG= 5.424932350393856E+00, RR=-1.189710609786379E-03
     """
-    print(f"\nTest planet position, JPL Horizons:")
-    print(f"  Jupiter:")
+    print(f"\nTest planet position_0, JPL Horizons, Table1:")
     np.set_printoptions(precision=6)  # numpy, set vector printing size
     deg2rad = math.pi / 180  # used multiple times
     rad2deg = 180 / math.pi  # used multiple times
@@ -603,95 +605,169 @@ def test_ex5_5_planetPos_0():
     print(f"jd= {jd:.10g}, jd_cent={jd_cJ2000:.10g}")
 
     """
-    planet_id : int, 0=mercury, 1=venus. 2=earth, 3=mars, 4=jupiter
-                     5=saturn, 6=uranus, 7=neptune, 8=pluto
+    planet_id : 0=mercury, 1=venus. 2=earth, 3=mars, 4=jupiter
+                5=saturn, 6=uranus, 7=neptune, 8=pluto
+    eph_data  : 0=Horizons Table1, ecliptic; 1=Curtis [3]
     """
+    # planet_ele_0(planet_id, eph_data, au_units=True, rad_units=False)
+    planet_id = 4  # jupiter
+    eph_data = 0  # Horizons Table 1, ecliptic!
+    if eph_data == 0:
+        print(f"** Jupiter, Horizons data set: **")
+        J2000_coefs, J2000_rates = vfunc.planet_ele_0(
+            planet_id=planet_id, eph_data=eph_data, au_units=True, rad_units=False
+        )
+        # J2000_coefs returns [deg] and [au]
+        # rates time is t_tdb = julian centuries of barycentric dynamical time
+        # calculate planet coe (classic orbital elements)
+        p_coe = J2000_coefs + (J2000_rates * jd_cJ2000)
+        sma = p_coe[0]  # [au] semi-major axis (aka a)
+        ecc = p_coe[1]  # [--] eccentricity
+        incl_deg = p_coe[2] % 360 # [deg] inclination to ecliptic plane
+        raan_deg = p_coe[5]  % 360 # [deg] right ascension of ascending node
+        w_bar_deg = p_coe[4] % 360# [deg] longitude of periapsis
+        L_bar_deg = p_coe[3] % 360 # [deg] mean longitude
+
+        incl_rad = incl_deg * deg2rad
+        raan_rad = raan_deg * deg2rad
+        w_bar_rad = w_bar_deg * deg2rad
+        L_bar_rad = L_bar_deg * deg2rad
+        #  mean angle/anomaly
+        M_deg = (L_bar_deg - w_bar_deg) % 360 # [deg]
+        M_rad = M_deg * deg2rad
+        # argument of periapsis (aka aop, or arg_p)
+        w_deg = (w_bar_deg - raan_deg) % 360 # [deg] 
+        w_rad = w_deg * deg2rad
+
+        E_rad = kep_eqtnE(M=M_rad, e=ecc)
+        E_deg = E_rad * rad2deg
+        # TA_rad below, no quadrent ambiguity; addresses near pi values
+        TA_rad = eccentric_to_true(E=E_rad, e=ecc)
+        TA_deg = TA_rad * rad2deg
+
+        sp = sma * (1 - ecc**2)
+        # function inputs; coe2rv(p, ecc, inc, raan, aop, anom, mu)
+        r_vec, v_vec = coe2rv(
+            p=sp,
+            ecc=ecc,
+            inc=incl_rad,
+            raan=raan_rad,
+            aop=w_rad,
+            anom=TA_rad,
+            mu=mu_sun_au,
+        )
+        r_vec = np.ravel(r_vec)  # convert column array to row vector
+        v_vec = np.ravel(v_vec) * 86400  # convert, seconds to days
+
+        # rotate r_vec, v_vec from ecliptic to equatorial
+        e_angle = vfunc.ecliptic_angle(jd_cJ2000)  # ecliptic angle
+        r1_vec = r_vec @ vfunc.rot_matrix(angle=e_angle * deg2rad, axis=0)
+        v1_vec = v_vec @ vfunc.rot_matrix(angle=e_angle * deg2rad, axis=0)
+
+        print(f"sma= {sma:.8g} [au]")
+        print(f"ecc= {ecc:.8g}")
+        print(f"incl= {incl_deg:.8g} [deg]")
+        print(f"raan= {raan_deg:.8g} [deg]")
+        print(f"w_bar= {w_bar_deg:.8g} [deg], longitude of periapsis")
+        print(f"L_bar= {L_bar_deg:.8g} [deg], mean longitude")
+
+        print(f"\nM_deg= {M_deg:.8g} [deg], mean anomaly")
+        print(f"w_deg= {w_deg:.8g} [deg], arguement of periapsis")
+        print(f"E_deg= {E_deg:.8g} [deg]")
+        print(f"TA_deg= {TA_deg:.8g} [deg], true anomaly")
+        print(f"sp= {sp:.8g} [au]")
+
+        print(f"\nEcliptic XYZ")
+        print(f"r_vec= {r_vec} [au]")
+        print(f"v_vec= {v_vec} [au/day]")
+        print(f"r_vec= {r_vec*au} [km]")
+        print(f"v_vec= {v_vec*au/86400} [km/s]")
+        print(f"ecliptic angle, e_angle= {e_angle:.8g} [deg]")
+
+        print(f"\nEquatorial XYZ")
+        print(f"r1_vec= {r1_vec} [au]")
+        print(f"v1_vec= {v1_vec} [au/day]")
+
+    # test next ephemeris data set; Curtis [3]
     # planet_ele_0(planet_id: int, eph_data=0, au_units=True, rad_units=False)
     planet_id = 4  # jupiter
-    J2000_coefs, J2000_rates = vfunc.planet_ele_0(
-        planet_id=planet_id, eph_data=0, au_units=True, rad_units=False
-    )
+    eph_data = 1  # Curtis [3] Table 8.1, p.472 data set
+    if eph_data == 1:
+        # !! note Curtis data set coe is in a different order than Horizons !!
+        print(f"** Jupiter, Curtis [3] Table 8.1 data set: **")
+        J2000_coefs, J2000_rates = vfunc.planet_ele_0(
+            planet_id=planet_id, eph_data=eph_data, au_units=True, rad_units=False
+        )
+        # J2000_coefs returns [deg] and [au]
+        # rates time is t_tdb = julian centuries of barycentric dynamical time
+        # calculate planet coe (classic orbital elements); NOTE p_coe[5,3] positions
+        p_coe = J2000_coefs + (J2000_rates * jd_cJ2000)
+        sma = p_coe[0]  # [au] semi-major axis (aka a)
+        ecc = p_coe[1]  # [--] eccentricity
+        incl_deg = p_coe[2] % 360 # [deg] inclination to ecliptic plane
+        raan_deg = p_coe[3] % 360 # [deg] right ascension of ascending node
+        w_bar_deg = p_coe[4] % 360 # [deg] longitude of periapsis
+        L_bar_deg = p_coe[5] % 360 # [deg] mean longitude
 
-    # J2000_coefs = vfunc.planet_ele_1()  # returns [deg] and [au]
-    # coeffs format; x0*t_TDB^0 + x1*t_TDB^1 + x2*t_TDB^2 + ...
-    #   time, t_tdb = julian centuries of barycentric dynamical time
-     # extract number of columns/exponents in power series
-    coef_col = J2000_coefs.shape[0]-1
-    x1 = np.arange(coef_col)  # exponents used in power series
-    x2 = np.full(coef_col, jd_cJ2000)  # base time value; t_tdb
-    x3 = x2**x1  # time multiplier series
-    print(f"J2000_coefs= {J2000_coefs}")
-    print(f"J2000_rates= {J2000_rates}")
-    print(f"J2000_coefs.shape= {J2000_coefs.shape[0]}")
-    
-    return
+        incl_rad = incl_deg * deg2rad
+        raan_rad = raan_deg * deg2rad
+        w_bar_rad = w_bar_deg * deg2rad
+        L_bar_rad = L_bar_deg * deg2rad
+        #  mean angle/anomaly
+        M_deg = (L_bar_deg - w_bar_deg) % 360 # [deg]
+        M_rad = M_deg * deg2rad
+        # argument of periapsis (aka aop, or arg_p)
+        w_deg = (w_bar_deg - raan_deg) % 360 # [deg] 
+        w_rad = w_deg * deg2rad
 
-    sma = np.sum(J2000_coefs[0, :] * x3)  # [au]
-    ecc = np.sum(J2000_coefs[1, :] * x3)  # [--]
-    incl_deg = np.sum(J2000_coefs[2, :] * x3)  # [deg]
-    raan_deg = np.sum(J2000_coefs[3, :] * x3)  # [deg]
-    w_bar_deg = np.sum(J2000_coefs[4, :] * x3)  # [deg]
-    L_bar_deg = np.sum(J2000_coefs[5, :] * x3)  # [deg]
+        E_rad = kep_eqtnE(M=M_rad, e=ecc)
+        E_deg = E_rad * rad2deg
+        # TA_rad below, no quadrent ambiguity; addresses near pi values
+        TA_rad = eccentric_to_true(E=E_rad, e=ecc)
+        TA_deg = TA_rad * rad2deg
 
-    incl_rad = incl_deg * deg2rad
-    raan_rad = raan_deg * deg2rad
-    w_bar_rad = w_bar_deg * deg2rad
-    L_bar_rad = L_bar_deg * deg2rad
+        sp = sma * (1 - ecc**2)
+        # function inputs; coe2rv(p, ecc, inc, raan, aop, anom, mu)
+        r_vec, v_vec = coe2rv(
+            p=sp,
+            ecc=ecc,
+            inc=incl_rad,
+            raan=raan_rad,
+            aop=w_rad,
+            anom=TA_rad,
+            mu=mu_sun_au,
+        )
+        r_vec = np.ravel(r_vec)  # convert column array to row vector
+        v_vec = np.ravel(v_vec) * 86400  # convert, seconds to days
 
-    print(f"sma= {sma:.8g} [au]")
-    print(f"ecc= {ecc:.8g}")
-    print(f"incl= {incl_deg:.8g} [deg]")
-    print(f"raan= {raan_deg:.8g} [deg]")
-    print(f"w_bar= {w_bar_deg:.8g} [deg]")  # longitude of periapsis
-    print(f"L_bar= {L_bar_deg:.8g} [deg]")
+        # rotate r_vec, v_vec from ecliptic/heliocentric to equatorial
+        e_angle = vfunc.ecliptic_angle(jd_cJ2000)  # ecliptic angle
+        r1_vec = r_vec @ vfunc.rot_matrix(angle=e_angle * deg2rad, axis=0)
+        v1_vec = v_vec @ vfunc.rot_matrix(angle=e_angle * deg2rad, axis=0)
 
-    M_deg = L_bar_deg - w_bar_deg  # [deg] mean angle/anomaly
-    M_rad = M_deg * deg2rad
-    w_deg = w_bar_deg - raan_deg  # [deg] argument of periapsis (aka aop, or arg_p)
-    w_rad = w_deg * deg2rad
-    print(f"\nM_deg= {M_deg:.8g} [deg]")
-    print(f"w_deg= {w_deg:.8g} [deg]")
+        print(f"sma= {sma:.8g} [au]")
+        print(f"ecc= {ecc:.8g}")
+        print(f"incl= {incl_deg:.8g} [deg]")
+        print(f"raan= {raan_deg:.8g} [deg]")
+        print(f"w_bar= {w_bar_deg:.8g} [deg], longitude of periapsis")
+        print(f"L_bar= {L_bar_deg:.8g} [deg], mean longitude")
 
-    E_rad = kep_eqtnE(M=M_rad, e=ecc)
-    E_deg = E_rad * rad2deg
-    # TA_rad below, no quadrent ambiguity; addresses near pi values
-    TA_rad = eccentric_to_true(E=E_rad, e=ecc)
-    # below, commented out, Curtis [3] solution, p.160, eqn 3.13b.
-    # TA_rad = 2 * math.atan(math.sqrt((1 + ecc) / (1 - ecc)) * math.tan(E_rad / 2))
-    TA_deg = TA_rad * rad2deg
+        print(f"\nM_deg= {M_deg:.8g} [deg], mean anomaly")
+        print(f"w_deg= {w_deg:.8g} [deg], arguement of periapsis")
+        print(f"E_deg= {E_deg:.8g} [deg]")
+        print(f"TA_deg= {TA_deg:.8g} [deg], true anomaly")
+        print(f"sp= {sp:.8g} [au]")
 
-    print(f"E_deg= {E_deg:.8g} [deg]")
-    print(f"TA_deg= {TA_deg:.8g} [deg]")
+        print(f"\nEcliptic XYZ")
+        print(f"r_vec= {r_vec} [au]")
+        print(f"v_vec= {v_vec} [au/day]")
+        print(f"r_vec= {r_vec*au} [km]")
+        print(f"v_vec= {v_vec*au/86400} [km/s]")
+        print(f"ecliptic angle, e_angle= {e_angle:.8g} [deg]")
 
-    sp = sma * (1 - ecc**2)
-    print(f"sp= {sp:.8g} [au]")
-
-    # function inputs, coe2rv(p, ecc, inc, raan, aop, anom, mu=Earth.mu)
-    r_vec, v_vec = coe2rv(
-        p=sp,
-        ecc=ecc,
-        inc=incl_rad,
-        raan=raan_rad,
-        aop=w_rad,
-        anom=TA_rad,
-        mu=mu_sun_au,
-    )
-    r_vec = np.ravel(r_vec)  # convert column array to row vector
-    v_vec = np.ravel(v_vec) * 86400  # convert, seconds to days
-    print(f"\nEquatorial, Heliocentric, XYZ")
-    print(f"r_vec= {r_vec} [au]")
-    print(f"v_vec= {v_vec} [au/day]")
-    print(f"r_vec= {r_vec*au} [km]")
-    print(f"v_vec= {v_vec*au/86400} [km/s]")
-
-    # rotate r_vec and v_vec from equatorial to ecliptic/heliocentric
-    e_angle = vfunc.ecliptic_angle(jd_cJ2000)  # ecliptic angle
-    r1_vec = r_vec @ vfunc.rot_matrix(angle=-e_angle * deg2rad, axis=0)
-    v1_vec = v_vec @ vfunc.rot_matrix(angle=-e_angle * deg2rad, axis=0)
-    print(f"ecliptic angle, e_angle= {e_angle:.8g} [deg]")
-    print(f"\nEcliptic/Heliocentric, XYZ")
-    print(f"r1_vec= {r1_vec} [au]")
-    print(f"v1_vec= {v1_vec} [au/day]")
+        print(f"\nEquatorial XYZ")
+        print(f"r1_vec= {r1_vec} [au]")
+        print(f"v1_vec= {v1_vec} [au/day]")
     return None
 
 
@@ -1097,7 +1173,7 @@ if __name__ == "__main__":
     # test_ex5_1_sunPosition()  # sun position
     # test_ex5_2_sunRiseSet()  # sunrise sunset
     test_ex5_5_planetPos_1()  # planet position, Vallado data set
-    test_ex5_5_planetPos_0()  # planet position, JPL Horizons data set
+    # test_ex5_5_planetPos_0()  # planet position, Horizons & Curtis data sets
     # test_ex6_1_hohmann()  # hohmann transfer, example 6-1
     # test_ex6_2_bielliptic()  # bi-elliptic transfer, example 6-2
     # test_ex6_3_one_tan_burn()  # one-tangent transfer, example 6-3
