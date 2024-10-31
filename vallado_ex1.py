@@ -43,6 +43,7 @@ from kepler import (
     findTOF_b,
     kep_eqtnE,
     keplerUni,
+    rv2coe,
 )
 from vallado_func import ecliptic_angle, planet_rv, plot_sp_vs_sma
 
@@ -94,6 +95,37 @@ def test_ex2_4_keplerUni():
     r1_vec, v1_vec = keplerUni(r0_vec, v0_vec, dt=delta_t, mu=mu_earth_km, tol=1e-6)
     print(f"r1_vec= {r1_vec} [km]")
     print(f"v1_vec= {v1_vec} [km]")
+
+    return None  #
+
+
+def test_ex2_5_rv2coe():
+    """
+    Find orbital elements given:  r0_vec, v0_vec, dt -> coe.
+        Vallado [4] example 2-5, pp.116; from algorithm 9, pp.115.
+    Notes:
+    ----------
+    """
+    print(f"\nTest rv2coe, Vallado [4] example 2-5; r0, v0 -> coe:")
+    rad2deg=180/math.pi
+    np.set_printoptions(precision=6)  # numpy, set vector printing size
+
+    # given
+    mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado [2] p.1041, tbl.D-3
+    r0_vec = np.array([6524.834, 6862.875, 6448.296])  # [km]
+    v0_vec = np.array([4.901327, 5.533756, -1.976341])  # [km/s]
+    # function parameters; rv2coe(r_vec, v_vec, mu=Earth.mu):
+    sp, sma, ecc_mag, incl, raan, w_, TA, o_type = rv2coe(
+        r0_vec, v0_vec, mu=mu_earth_km
+    )
+    print(f"** {o_type} **")
+    print(f"semi-parameter, sp= {sp} [km]")
+    print(f"semi-major-axis, sma= {sma} [km]")
+    print(f"eccentricity, ecc_mag= {ecc_mag}")
+    print(f"inclination, incl= {incl} [rad], {incl*rad2deg} [deg]")
+    print(f"raan= {raan} [rad], {raan*rad2deg} [deg]")
+    print(f"arguement of periapsis, w_= {w_} [rad], {w_*rad2deg} [deg]")
+    print(f"true anomaly, TA= {TA} [rad], {TA*rad2deg} [deg]")
 
     return
 
@@ -411,7 +443,7 @@ def test_ex5_5_planetPos_1():
     Notes:
     ----------
         Outputs compare's ok with JPL Horizons on-line.
-        1994, 5, 20, 20, 0, 0 # ex.5-5, reviewed 
+        1994, 5, 20, 20, 0, 0 # ex.5-5, reviewed
         1979, 3, 5, 12, 5, 26 # ex.12-8, reviewed
         This effort debugged the function planet_rv() saved in vallado_func.py.
         See kepler.py Notes for list of orbital element nameing definitions.
@@ -557,7 +589,7 @@ def test_ex5_5_planetPos_0():
     Notes:
     ----------
         Functions outputs compare's ok with JPL Horizons on-line.
-        
+
         1994, 5, 20, 20, 0, 0 # from Vallado [4] ex.5-5, reviewed
         1979, 3, 5, 12, 5, 26 # from Vallado [4] ex.12-8, reviewed
         See kepler.py Notes for list of orbital element nameing definitions.
@@ -623,20 +655,20 @@ def test_ex5_5_planetPos_0():
         p_coe = J2000_coefs + (J2000_rates * jd_cJ2000)
         sma = p_coe[0]  # [au] semi-major axis (aka a)
         ecc = p_coe[1]  # [--] eccentricity
-        incl_deg = p_coe[2] % 360 # [deg] inclination to ecliptic plane
-        raan_deg = p_coe[5]  % 360 # [deg] right ascension of ascending node
-        w_bar_deg = p_coe[4] % 360# [deg] longitude of periapsis
-        L_bar_deg = p_coe[3] % 360 # [deg] mean longitude
+        incl_deg = p_coe[2] % 360  # [deg] inclination to ecliptic plane
+        raan_deg = p_coe[5] % 360  # [deg] right ascension of ascending node
+        w_bar_deg = p_coe[4] % 360  # [deg] longitude of periapsis
+        L_bar_deg = p_coe[3] % 360  # [deg] mean longitude
 
         incl_rad = incl_deg * deg2rad
         raan_rad = raan_deg * deg2rad
         w_bar_rad = w_bar_deg * deg2rad
         L_bar_rad = L_bar_deg * deg2rad
         #  mean angle/anomaly
-        M_deg = (L_bar_deg - w_bar_deg) % 360 # [deg]
+        M_deg = (L_bar_deg - w_bar_deg) % 360  # [deg]
         M_rad = M_deg * deg2rad
         # argument of periapsis (aka aop, or arg_p)
-        w_deg = (w_bar_deg - raan_deg) % 360 # [deg] 
+        w_deg = (w_bar_deg - raan_deg) % 360  # [deg]
         w_rad = w_deg * deg2rad
 
         E_rad = kep_eqtnE(M=M_rad, e=ecc)
@@ -704,20 +736,20 @@ def test_ex5_5_planetPos_0():
         p_coe = J2000_coefs + (J2000_rates * jd_cJ2000)
         sma = p_coe[0]  # [au] semi-major axis (aka a)
         ecc = p_coe[1]  # [--] eccentricity
-        incl_deg = p_coe[2] % 360 # [deg] inclination to ecliptic plane
-        raan_deg = p_coe[3] % 360 # [deg] right ascension of ascending node
-        w_bar_deg = p_coe[4] % 360 # [deg] longitude of periapsis
-        L_bar_deg = p_coe[5] % 360 # [deg] mean longitude
+        incl_deg = p_coe[2] % 360  # [deg] inclination to ecliptic plane
+        raan_deg = p_coe[3] % 360  # [deg] right ascension of ascending node
+        w_bar_deg = p_coe[4] % 360  # [deg] longitude of periapsis
+        L_bar_deg = p_coe[5] % 360  # [deg] mean longitude
 
         incl_rad = incl_deg * deg2rad
         raan_rad = raan_deg * deg2rad
         w_bar_rad = w_bar_deg * deg2rad
         L_bar_rad = L_bar_deg * deg2rad
         #  mean angle/anomaly
-        M_deg = (L_bar_deg - w_bar_deg) % 360 # [deg]
+        M_deg = (L_bar_deg - w_bar_deg) % 360  # [deg]
         M_rad = M_deg * deg2rad
         # argument of periapsis (aka aop, or arg_p)
-        w_deg = (w_bar_deg - raan_deg) % 360 # [deg] 
+        w_deg = (w_bar_deg - raan_deg) % 360  # [deg]
         w_rad = w_deg * deg2rad
 
         E_rad = kep_eqtnE(M=M_rad, e=ecc)
@@ -1158,7 +1190,7 @@ def test_ex12_8_patchedConic():
     return  # test_ex12_8_patchedConic()
 
 
-def Main():  # helps editor navigation :--)
+def Main():  # helps with my code editor navigation :--)
     return
 
 
@@ -1166,13 +1198,14 @@ def Main():  # helps editor navigation :--)
 if __name__ == "__main__":
     # test_ex2_1KeplerE()  # kepler ellipse solve for eccentric anomaly
     # test_ex2_4_keplerUni()  # kepler propagation; Kepler universal variables
+    test_ex2_5_rv2coe()  #
     # test_ex2_6_coe2rv()  # test coe2rv(), example 2-6 & Curtis
     # test_prb2_7_tof()  # time of flight, problem 2-7
     # test_prb2_7a_tof(plot_sp=False)  # time-of-flight; plot sma vs. sp
     # test_tof_b()  # time-of-flight
     # test_ex5_1_sunPosition()  # sun position
     # test_ex5_2_sunRiseSet()  # sunrise sunset
-    test_ex5_5_planetPos_1()  # planet position, Vallado data set
+    # test_ex5_5_planetPos_1()  # planet position, Vallado data set
     # test_ex5_5_planetPos_0()  # planet position, Horizons & Curtis data sets
     # test_ex6_1_hohmann()  # hohmann transfer, example 6-1
     # test_ex6_2_bielliptic()  # bi-elliptic transfer, example 6-2
