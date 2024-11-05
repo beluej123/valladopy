@@ -1,8 +1,8 @@
 """
 Vallado function collection.
 Edits 2024-08-21 +, Jeff Belue.
-Careful, some Vallado examples have calculation errors; after all the book
-    is 1000+ pages.
+Be careful of Vallado book example answers. Some Vallado examples have calculation errors,
+    after all the book is 1000+ pages.
 
 Notes:
 ----------

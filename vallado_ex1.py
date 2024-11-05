@@ -43,6 +43,7 @@ from kepler import (
     findTOF_b,
     kep_eqtnE,
     keplerUni,
+    print_coe,
     rv2coe,
 )
 from vallado_func import ecliptic_angle, planet_rv, plot_sp_vs_sma
@@ -107,7 +108,7 @@ def test_ex2_5_rv2coe():
     ----------
     """
     print(f"\nTest rv2coe, Vallado [4] example 2-5; r0, v0 -> coe:")
-    rad2deg=180/math.pi
+    rad2deg = 180 / math.pi
     np.set_printoptions(precision=6)  # numpy, set vector printing size
 
     # given
@@ -115,17 +116,8 @@ def test_ex2_5_rv2coe():
     r0_vec = np.array([6524.834, 6862.875, 6448.296])  # [km]
     v0_vec = np.array([4.901327, 5.533756, -1.976341])  # [km/s]
     # function parameters; rv2coe(r_vec, v_vec, mu=Earth.mu):
-    sp, sma, ecc_mag, incl, raan, w_, TA, o_type = rv2coe(
-        r0_vec, v0_vec, mu=mu_earth_km
-    )
-    print(f"** {o_type} **")
-    print(f"semi-parameter, sp= {sp} [km]")
-    print(f"semi-major-axis, sma= {sma} [km]")
-    print(f"eccentricity, ecc_mag= {ecc_mag}")
-    print(f"inclination, incl= {incl} [rad], {incl*rad2deg} [deg]")
-    print(f"raan= {raan} [rad], {raan*rad2deg} [deg]")
-    print(f"arguement of periapsis, w_= {w_} [rad], {w_*rad2deg} [deg]")
-    print(f"true anomaly, TA= {TA} [rad], {TA*rad2deg} [deg]")
+    o_type, elements = rv2coe(r_vec=r0_vec, v_vec=v0_vec, mu=mu_earth_km)
+    print_coe(o_type=o_type, elements=elements)
 
     return
 
