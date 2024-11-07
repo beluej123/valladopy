@@ -66,7 +66,7 @@ def calc_ecc(r_peri: float, r_apo: float) -> float:
     Input Parameters:
     ----------
         r_peri : float, radius of periapsis
-        r_apo : float, radius of apoapsis
+        r_apo  : float, radius of apoapsis
 
     Returns:
     -------
@@ -75,13 +75,27 @@ def calc_ecc(r_peri: float, r_apo: float) -> float:
     return (r_apo - r_peri) / (r_apo + r_peri)
 
 
+def calc_v_inf(r_ini: float, r_fin: float, mu: float) -> float:
+    """
+    Calculate velocity at infinity.
+
+    Input Parameters:
+    ----------
+        r_ini  : float, [km] initial position; denominator
+        r_ini  : float, [km] final position
+
+    Returns:
+    -------
+        v_inf  : float, [km]
+    """
+    v_inf = math.sqrt(mu / r_ini) * (math.sqrt((2 * r_fin) / (r_ini + r_fin)) - 1)
+    return v_inf
+
+
 def val_hohmann(r_init: float, r_final: float, mu_trans: float):
     """
-    Hohmann Transfer, calculate tof, eccentricity, delta-v; Vallado [4] example 6-1, pp.330.
-        Vallado [2] p.325, algorithm 36.
-        Vallado [4] p.329, algorithm 36.
+    Hohmann Transfer, calculate tof, eccentricity, delta-v.
     Assume one central body; inner and outer circular orbits.
-    See Vallado [4] fig 6-4, p327.
 
     Input Parameters:
     ----------
@@ -90,37 +104,30 @@ def val_hohmann(r_init: float, r_final: float, mu_trans: float):
         mu_trans : float, transfer central body gravitational constant
 
     Returns:
-    -------
+    ----------
         tof_hoh   :
         ecc_trans :
         dv_total  :
-
+    Notes:
+    ----------
+        Vallado [4] example 6-1 pp.330.
+        Vallado [2] p.325 algorithm 36, Vallado [4] p.329.
+        See Vallado [4] fig 6-4, p327.
     """
     r1 = r_init
     r2 = r_final
     mu = mu_trans
 
-    v_init = calc_v1(mu, r1)  # circular orbit velocity
-    # print(f"v1 initial velocity: {v_init:0.8g} [km/s]")
-    v_final = calc_v1(mu, r2)
-    # print(f"v2 final velocity: {v_final:0.8g} [km/s]")
-    a_trans = cal_a(r1, r2)  # transfer semi-major axis
-    # print(f"transfer semimajor axis (a): {a_trans:0.8g} [km]")
-
+    v_init = calc_v1(mu=mu, r1=r1)  # circular velocity
+    v_final = calc_v1(mu=mu, r1=r2)  # circular velocity
+    a_trans = cal_a(r1=r1, r2=r2)  # transfer semi-major axis
     # transfer ellipse relations: point a and point b
-    v_trans_a = calc_v2(mu, r1, a_trans)  # elliptical orbit velocity at a
-    # print(f"velocity, transfer periapsis: {v_trans_a:0.8g} [km/s]")
-    v_trans_b = calc_v2(mu, r2, a_trans)  # elliptical orbit velocity at b
-    # print(f"velocity, transfer apoapsis: {v_trans_b:0.8g} [km/s]")
-
+    v_trans_a = calc_v2(mu=mu, r1=r1, a=a_trans)  # elliptical velocity at a
+    v_trans_b = calc_v2(mu=mu, r1=r2, a=a_trans)  # elliptical velocity at b
     # delta-velocity relations
     dv_total = abs(v_trans_a - v_init) + abs(v_final - v_trans_b)
-    # print(f"total delta-velocity: {dv_total:0.8g} [km/s]")
-
     # time of flight (tof) for hohmann transfer
     tof_hoh = calc_tof(mu, a_trans)
-    # print(f"\nHohmann transfer time: {(tof_hoh/2):0.8g} [s], {tof_hoh/(2*60):0.8g} [m]")
-
     # calculate transfer eccentricity
     if r_init < r_final:
         r_peri = r_init
@@ -132,7 +139,35 @@ def val_hohmann(r_init: float, r_final: float, mu_trans: float):
         r_apo = r_init
 
     ecc_trans = calc_ecc(r_peri, r_apo)
+    # print(f"v1 initial velocity: {v_init:0.8g} [km/s]")
+    # print(f"v2 final velocity: {v_final:0.8g} [km/s]")
+    # print(f"transfer semimajor axis (a): {a_trans:0.8g} [km]")
+    # print(f"velocity, transfer periapsis: {v_trans_a:0.8g} [km/s]")
+    # print(f"velocity, transfer apoapsis: {v_trans_b:0.8g} [km/s]")
+    # print(f"total delta-velocity: {dv_total:0.8g} [km/s]")
+    # print(f"\nHohmann transfer time: {(tof_hoh/2):0.8g} [s], {tof_hoh/(2*60):0.8g} [m]")
     return (tof_hoh, ecc_trans, dv_total)
+
+
+def val_hohmann_patch():
+    """
+    Hohmann patched conic, calculate tof, eccentricity, delta-v.
+    NOTE, 2024-11-06, I have to figure out how to make this general.
+        (1) start off with earth->mars from spreadsheet; Hohmann(jb1).xlsx
+        (2) see Curtis [3] pp.446 example 8.4, 
+    Assume 3 central bodies; i.e. planet, sun, planet.
+
+    """
+    au_ = 149597870  # [km/au] Vallado [4] p.1057
+    # constants that will probably be captured in a python class
+    mu_sun_km = 1.32712428e11  # [km^3/s^2] Vallado [4] p.1059, tbl.D-5
+    mu_earth_km = 3.986004415e5  # [km^3/s^2] Vallado [4] p.1057, tbl.D-3
+    mu_mars_km = 4.305e4  # [km^3/s^2] Vallado [4] p.1057, tbl.D-3
+    a_earth = 149598023  # [km] earth sma (aka a); Vallado [4] p.1057, tbl.D-3
+    a_mars = 227939186  # [km] mars sma (aka a); Vallado [4] p.1057, tbl.D-3
+
+    # two distances define elliptical transfer orbit
+    return
 
 
 def val_bielliptic(r_init: float, r_b: float, r_final: float, mu_trans: float):

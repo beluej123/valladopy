@@ -797,7 +797,7 @@ def test_ex5_5_planetPos_0():
 
 def test_ex6_1_hohmann():
     """
-    Hohmann Transfer, Vallado [2], example 6-1, p.326; uses p.325, algirithm 36.
+    Hohmann Transfer, Vallado [4], pp.330 example 6-1; uses p.329 algorithm 36.
     Hohmann, one central body for the transfer ellipse.
 
     Notes:
@@ -808,7 +808,7 @@ def test_ex6_1_hohmann():
             2) transfer body - transfer
             3) final body - arrival
     """
-    print(f"\nTest Hohmann Transfer, Vallado [2], example 6.1")
+    print(f"\nTest Hohmann Transfer, Vallado [4], pp.330 example 6.1:")
     # define constants
     au = 149597870.7  # [km/au] Vallado[2] p.1042, tbl.D-5
     mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado [2] p.1041, tbl.D-3
@@ -822,14 +822,56 @@ def test_ex6_1_hohmann():
     tof_hoh, ecc_trans, dv_total = vfunc.val_hohmann(
         r_init=r1, r_final=r2, mu_trans=mu_earth_km
     )
+    print(f"** Earth LEO -> GEO **")
     print(f"Hohmann transfer time: {(tof_hoh/2):0.8g} [s], {tof_hoh/(2*60):0.8g} [min]")
     print(f"Transfer eccentricity, ecc_trans= {ecc_trans:.6g}")
     print(f"Total transfer delta-v, dv_total= {dv_total:.6g} [km/s]")
 
+    print(f"** Earth -> Mars **")
+    # define constants
+    mu_sun_km = 1.32712428e11  # [km^3/s^2], Vallado [4] p.1059, tbl.D-5
+    a_earth = 149598023  # [km] earth sma (aka a); Vallado [4] p.1057, tbl.D-3
+    a_mars = 227939186  # [km] mars sma (aka a); Vallado [4] p.1057, tbl.D-3
+
+    # two distances define elliptical transfer orbit
+    r1 = a_earth  # [km]
+    r2 = a_mars  # [km]
+    # vallado hohmann transfer
+    tof_hoh, ecc_trans, dv_total = vfunc.val_hohmann(
+        r_init=r1, r_final=r2, mu_trans=mu_sun_km
+    )
+    print(
+        f"Hohmann transfer time: {(tof_hoh/2):0.8g} [s], {tof_hoh/(2*86400):0.8g} [days]"
+    )
+    print(f"Transfer, ecc_trans= {ecc_trans:.6g}")
+    print(f"Transfer, dv_total= {dv_total:.6g} [km/s]")
+
+
+def test_hohmann_patch():
+    """
+    Hohmann patched conic transfer.
+    Hohmann, one central body for the transfer ellipse.
+
+    Notes:
+    ----------
+        Note, interplanetary patched conic missions in Vallado [4] chapter 12, pp.959.
+        Interplanetary missions use the patched conic; 3 orbit types:
+            1) initial body - departure
+            2) transfer body - transfer
+            3) final body - arrival
+    """
+    print(f"\nTest Hohmann Patched Conic:")
+    print(f"Follow-on to Vallado [4], pp.330 example 6.1:")
+
+    # vallado hohmann transfer
+    vfunc.val_hohmann_patch()
+
+    return None
+
 
 def test_ex6_2_bielliptic():
     """
-    Bi-Elliptic Transfer, Vallado [2], example 6-2, p327.
+    Bi-Elliptic Transfer, Vallado [4], pp.331 example 6-2.
     Bi-Elliptic uses one central body for the transfer ellipse.
     Two transfer ellipses; one at periapsis, the other at apoapsis.
         1) initial body - departure
@@ -844,7 +886,7 @@ def test_ex6_2_bielliptic():
             2) transfer body - transfer
             3) final body - arrival
     """
-    print("\nTest Vallado [2] Bi-Elliptic Transfer, example 6-2")  # temporary print
+    print("\nTest Bi-Elliptic Transfer, Vallado [4], pp.331 example 6-2:")
     # define constants
     mu_earth_km = 3.986004415e5  # [km^3/s^2], Vallado [2] p.1041, tbl.D-3
     r_earth = 6378.1363  # [km] earth radius; Vallado [2] p.1041, tbl.D-3
@@ -1016,7 +1058,7 @@ def test_lambert_izzo():
     mu = GM_sun_au
 
     # *********** Braeuning example 5.4 *********
-    print(f"** Test of Braeunig's examples, ex5.3, ex5.4; Earth->Mars: **")
+    print(f"** Test Braeunig's examples, ex5.3, ex5.4; Earth->Mars: **")
     tof = 207 * 24 * 60 * 60  # [s] given, time of flight; 207 days
     # Ecliptic coordinates; Braeunig ex5.3, ex5.4
     r1_vec = np.array([0.473265, -0.899215, 0])  # [au]
@@ -1190,7 +1232,7 @@ def Main():  # helps with my code editor navigation :--)
 if __name__ == "__main__":
     # test_ex2_1KeplerE()  # kepler ellipse solve for eccentric anomaly
     # test_ex2_4_keplerUni()  # kepler propagation; Kepler universal variables
-    test_ex2_5_rv2coe()  #
+    # test_ex2_5_rv2coe()  # vallado and curtis data sets
     # test_ex2_6_coe2rv()  # test coe2rv(), example 2-6 & Curtis
     # test_prb2_7_tof()  # time of flight, problem 2-7
     # test_prb2_7a_tof(plot_sp=False)  # time-of-flight; plot sma vs. sp
@@ -1199,7 +1241,8 @@ if __name__ == "__main__":
     # test_ex5_2_sunRiseSet()  # sunrise sunset
     # test_ex5_5_planetPos_1()  # planet position, Vallado data set
     # test_ex5_5_planetPos_0()  # planet position, Horizons & Curtis data sets
-    # test_ex6_1_hohmann()  # hohmann transfer, example 6-1
+    test_ex6_1_hohmann()  # hohmann transfer, example 6-1
+    test_hohmann_patch()  # patched conic, extenstion of example 6-1
     # test_ex6_2_bielliptic()  # bi-elliptic transfer, example 6-2
     # test_ex6_3_one_tan_burn()  # one-tangent transfer, example 6-3
     # test_planet_rv()  # test various dates and planets for planet_rv()

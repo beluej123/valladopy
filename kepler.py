@@ -44,7 +44,7 @@ Start with Kepler coe (classic orbital elements).
                 Note, w_bar = w + RAAN
     u_     : float, [rad] argument of lattitude (aka ), circular inclined
 
-    Other coe Elements:
+    Other orbital elements:
         w_p    : float [rad] longitude of periapsis (aka w_bar) ??
         L_     : float, [deg] mean longitude
                     NOT mean anomaly, M
@@ -397,7 +397,7 @@ def rv2coe(r_vec, v_vec, mu):
         raan   : float, [rad] right ascension of ascending node (aka capital W)
         w_     : float, [rad] arguement of periapsis (aka aop, or arg_p)
         TA     : float, [rad] true angle/anomaly (aka t_anom, or theta)
-        
+
         alternative orbital elements for circular & equatorial:
         Lt0    : float, [rad] true longitude at epoch, circular equatorial
                         when incl=0, ecc=0
@@ -469,7 +469,7 @@ def rv2coe(r_vec, v_vec, mu):
     ecc_mag = np.linalg.norm(ecc_vec)
     if ecc_mag < SMALL_c:
         ecc_mag = 0.0
-        ecc_vec=ecc_vec*0
+        ecc_vec = ecc_vec * 0
         ecc_inv = np.inf
     elif ecc_mag > (1 - SMALL_p) and ecc_mag < (1 + SMALL_p):
         ecc_mag = 1
@@ -1161,7 +1161,7 @@ def test_rv2coe():
     v0_vec = np.array([-3.0, 5.2, 5.9])  # [km/s]
     o_type, elements = rv2coe(r_vec=r0_vec, v_vec=v0_vec, mu=mu_earth_km)
     print_coe(o_type=o_type, elements=elements)
-    
+
     print(f"\n** Vallado [4]; test rv2coe(): **")
     print(f"** Example 2-5, pp.116: **")
     r0_vec = np.array([6524.834, 6862.875, 6448.296])  # [km]
