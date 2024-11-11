@@ -1,6 +1,6 @@
 """
 Created Sun Jan 31 16:41:34 2016, @author: Alex
-Edits 2024-08-21 +, Jeff Belue.
+Tons of edits 2024-08-21 +, Jeff Belue.
 
 Notes:
 ----------
@@ -19,11 +19,12 @@ References:
 ----------
     See references.py for references list.
 
-Orbital Elements Naming Collection:
+Orbital elements naming collection - data save in solarsys.py.
 Start with Kepler coe (classic orbital elements).
     https://ssd.jpl.nasa.gov/planets/approx_pos.html
+    Horizons web-ephemeris, https://ssd.jpl.nasa.gov/horizons/app.html#/
 
-    o_type : int  , [-] orbit type (python dictionary list below)
+    o_type : int  , [-] orbit type (python dictionary list)
                     0:"circular", 1:"circular inclined", 2:"circular equatorial"
                     3:"elliptical", 4:"elliptical equatorial"
                     5:"parabolic", 6:"parabolic equatorial"
@@ -32,16 +33,18 @@ Start with Kepler coe (classic orbital elements).
     sma    : float, [km or au] semi-major axis (aka a)
     ecc    : float, [--] eccentricity
     incl   : float, [rad] inclination
-    raan   : float, [rad] right ascension of ascending node (aka capital W)
-    w_     : float, [rad] arguement of periapsis (aka aop, or arg_p)
+    raan   : float, [rad] right ascension of ascending node,
+                    also called Longitude of Ascending Node (Omega, or capital W)
+    w_     : float, [rad] argument of periapsis (aka aop, or arg_p)
     TA     : float, [rad] true angle/anomaly (aka t_anom, or theta)
 
-    alternative coe's for circular & equatirial:
+    alternative coe's including circular & equatirial:
     Lt0    : float, [rad] true longitude at epoch, circular equatorial
+                    Position on the ecliptic, accounting for its inclination.
                     when incl=0, ecc=0
     w_bar  : float, [rad] longitude of periapsis (aka II), equatorial
-                NOT argument of periapsis, w_
-                Note, w_bar = w + RAAN
+                NOTE ** NOT argument of periapsis, w_ ??????????????????? **
+                Note, w_bar = w_ + RAAN, measured in 2 planes (Vallado [4] p.1015)
     u_     : float, [rad] argument of lattitude (aka ), circular inclined
 
     Other orbital elements:

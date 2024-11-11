@@ -7,7 +7,7 @@ Be careful of Vallado book example answers. Some Vallado examples have calculati
 Notes:
 ----------
     Note, some code below, have AUTO-formatting instructions for "black" formatter!
-        Generally, donot format numeric arrays (tables); use # fmt: off/on
+        Generally, donot auto-format numeric arrays (tables); use # fmt: off/on
     Generally, units shown in brackets [km, rad, deg, etc.].
     Generally, angles are saved in [rad], distance [km].
     Reminder to me; cannot get black formatter to work within VSCode,
@@ -154,7 +154,7 @@ def val_hohmann_patch():
     Hohmann patched conic, calculate tof, eccentricity, delta-v.
     NOTE, 2024-11-06, I have to figure out how to make this general.
         (1) start off with earth->mars from spreadsheet; Hohmann(jb1).xlsx
-        (2) see Curtis [3] pp.446 example 8.4, 
+        (2) see Curtis [3] pp.446 example 8.4,
     Assume 3 central bodies; i.e. planet, sun, planet.
 
     """
